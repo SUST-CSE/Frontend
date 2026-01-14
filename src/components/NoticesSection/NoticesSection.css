@@ -1,0 +1,120 @@
+.notices-section {
+    padding: 80px 20px;
+    background: #f9f9f9;
+}
+
+.notices-section .container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.section-header h2 {
+    font-size: 42px;
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 12px;
+}
+
+.section-header p {
+    font-size: 18px;
+    color: #666;
+}
+
+.notices-grid {
+    display: flex;
+    gap: 30px;
+    overflow-x: hidden;
+    animation: scrollNotices 30s linear infinite;
+    padding: 20px 0;
+}
+
+@keyframes scrollNotices {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+.notices-grid:hover {
+    animation-play-state: paused;
+}
+
+.notice-card {
+    min-width: 350px;
+    flex-shrink: 0;
+    background: #fff;
+    border: 2px solid #000;
+    border-radius: 8px;
+    padding: 24px;
+    transition: all 0.3s ease;
+    box-shadow: 4px 4px 0 #000;
+    position: relative;
+}
+
+.notice-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 6px 6px 0 #dc143c;
+}
+
+.notice-date {
+    font-size: 13px;
+    font-weight: 600;
+    color: #dc143c;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+}
+
+.notice-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+
+.notice-content {
+    font-size: 15px;
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+
+.notice-category {
+    display: inline-block;
+    padding: 6px 14px;
+    background: #000;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+@media (max-width: 768px) {
+    .notices-section {
+        padding: 60px 20px;
+    }
+
+    .section-header h2 {
+        font-size: 32px;
+    }
+
+    .notices-grid {
+        animation: scrollNotices 20s linear infinite;
+    }
+
+    .notice-card {
+        min-width: 280px;
+        padding: 20px;
+    }
+}
