@@ -18,6 +18,7 @@ import {
 import { LucideSearch, LucideCalendar, LucidePin, LucideFileText, LucideExternalLink } from 'lucide-react';
 import gsap from 'gsap';
 import { useGetNoticesQuery } from '@/features/content/contentApi';
+import Link from 'next/link';
 
 const CATEGORIES = ['ALL', 'ACADEMIC', 'ADMINISTRATIVE', 'EVENT', 'GENERAL'];
 
@@ -108,7 +109,7 @@ export default function NoticesPage() {
           <Grid container spacing={4} ref={listRef}>
             {filteredNotices.length > 0 ? (
               filteredNotices.map((notice: any) => (
-                <Grid item xs={12} key={notice._id} className="notice-card">
+                <Grid size={{ xs: 12 }} key={notice._id} className="notice-card">
                   <Paper 
                     elevation={0}
                     sx={{ 
@@ -153,6 +154,8 @@ export default function NoticesPage() {
 
                     <Stack direction="row" spacing={2}>
                       <Button 
+                        component={Link}
+                        href={`/notices/${notice._id}`}
                         startIcon={<LucideFileText size={18} />}
                         endIcon={<LucideExternalLink size={14} />}
                         sx={{ color: '#2563eb', fontWeight: 700, textTransform: 'none' }}
@@ -164,7 +167,7 @@ export default function NoticesPage() {
                 </Grid>
               ))
             ) : (
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Box sx={{ textAlign: 'center', py: 10, bgcolor: '#ffffff', borderRadius: 4, border: '1px dashed #cbd5e1' }}>
                   <Typography variant="h6" color="text.secondary">No notices found matching your criteria.</Typography>
                 </Box>

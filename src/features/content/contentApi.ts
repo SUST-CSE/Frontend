@@ -10,6 +10,10 @@ export const contentApi = apiSlice.injectEndpoints({
       query: () => '/content/notices',
       providesTags: ['Notice'],
     }),
+    getNoticeById: builder.query({
+      query: (id) => `/content/notices/${id}`,
+      providesTags: (result, error, id) => [{ type: 'Notice', id }],
+    }),
     getAchievements: builder.query({
       query: () => '/content/achievements',
       providesTags: ['Achievement'],
@@ -22,12 +26,21 @@ export const contentApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Notice'],
     }),
+    deleteNotice: builder.mutation({
+      query: (id) => ({
+        url: `/content/notices/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Notice'],
+    }),
   }),
 });
 
 export const {
   useGetHomepageQuery,
   useGetNoticesQuery,
+  useGetNoticeByIdQuery,
   useGetAchievementsQuery,
   useCreateNoticeMutation,
+  useDeleteNoticeMutation,
 } = contentApi;

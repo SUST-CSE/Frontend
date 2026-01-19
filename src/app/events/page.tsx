@@ -17,6 +17,7 @@ import { LucideCalendar, LucideMapPin, LucideSearch, LucideArrowRight } from 'lu
 import gsap from 'gsap';
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { useGetEventsQuery } from '@/features/event/eventApi';
+import Link from 'next/link';
 
 const CATEGORIES = ['ALL', 'WORKSHOP', 'SEMINAR', 'COMPETITION', 'SOCIAL', 'TECHNICAL'];
 
@@ -155,6 +156,8 @@ export default function EventsPage() {
 
                     <Button
                       fullWidth
+                      component={Link}
+                      href={`/events/${event._id}`}
                       variant="outlined"
                       endIcon={<LucideArrowRight size={18} />}
                       sx={{ 

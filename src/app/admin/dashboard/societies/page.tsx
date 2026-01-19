@@ -21,17 +21,20 @@ import {
   CircularProgress
 } from '@mui/material';
 import { LucidePlus, LucideUsers, LucideSettings } from 'lucide-react';
-import { useGetSocietiesQuery, useCreateSocietyMutation } from '@/features/society/societyApi';
+import { useGetSocietiesQuery, useCreateSocietyMutation, useUpdateSocietyMutation } from '@/features/society/societyApi';
 import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 
 export default function AdminSocietiesPage() {
   const { data: societyData, isLoading } = useGetSocietiesQuery({});
   const [createSociety, { isLoading: isCreating }] = useCreateSocietyMutation();
-  const [openCreateDialog, setOpenCreateDialog] = useState(false);
+  const [updateSociety, { isLoading: isUpdating }] = useUpdateSocietyMutation(); // Need to export this
+  const [openDialog, setOpenDialog] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [selectedSocietyId, setSelectedSocietyId] = useState<string | null>(null);
   const societies = societyData?.data || [];
 
-  const { control, handleSubmit, reset, formState: { errors } } = useForm({
+  const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm({
     defaultValues: {
       name: '',
       category: 'TECHNICAL',
@@ -40,6 +43,23 @@ export default function AdminSocietiesPage() {
       logo: null
     }
   });
+
+  const handleCreateOpen = () => {
+     setIsEditMode(false);
+     setSelectedSocietyId(null);
+     reset({ name: '', category: 'TECHNICAL', description: '', foundedDate: '', logo: null });
+     setOpenDialog(true);
+  };
+
+  const handleEditOpen = (society: any) => {
+     setIsEditMode(true);
+     setSelectedSocietyId(society._id);
+     setValue('name', society.name);
+     setValue('category', society.category);
+     setValue('description', society.description);
+     setValue('foundedDate', new Date(society.foundedDate).toISOString().split('T')[0]);
+     setOpenDialog(true);
+  };
 
   const onSubmit = async (data: any) => {
     try {
@@ -52,12 +72,18 @@ export default function AdminSocietiesPage() {
          formData.append('logo', data.logo);
       }
 
-      await createSociety(formData).unwrap();
-      setOpenCreateDialog(false);
+      if (isEditMode && selectedSocietyId) {
+         await updateSociety({ id: selectedSocietyId, data: formData }).unwrap();
+         alert("Society updated successfully");
+      } else {
+         await createSociety(formData).unwrap();
+         alert("Society created successfully");
+      }
+      setOpenDialog(false);
       reset();
     } catch (error) {
-      console.error("Failed to create society", error);
-      alert("Failed to create society");
+      console.error("Failed to save society", error);
+      alert("Failed to save society");
     }
   };
 
@@ -67,14 +93,17 @@ export default function AdminSocietiesPage() {
           <Typography variant="h4" fontWeight={900} color="#0f172a">
             Society <span style={{ color: '#16a34a' }}>Management</span>
           </Typography>
-          <Button 
-            variant="contained" 
-            startIcon={<LucidePlus size={18} />}
-            onClick={() => setOpenCreateDialog(true)}
-            sx={{ bgcolor: '#000000', fontWeight: 700, '&:hover': { bgcolor: '#16a34a' } }}
-          >
-            Create Society
-          </Button>
+          {/* Hide Create Button if society exists to enforce single society rule, or keep for flexibility */}
+          {societies.length === 0 && (
+             <Button 
+               variant="contained" 
+               startIcon={<LucidePlus size={18} />}
+               onClick={handleCreateOpen}
+               sx={{ bgcolor: '#000000', fontWeight: 700, '&:hover': { bgcolor: '#16a34a' } }}
+             >
+               Create Society
+             </Button>
+          )}
        </Stack>
 
       {isLoading ? <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress /></Box> : (
@@ -94,19 +123,29 @@ export default function AdminSocietiesPage() {
                           {society.description.substring(0, 100)}...
                        </Typography>
                        <Stack direction="row" spacing={1}>
-                          <Chip size="small" icon={<LucideUsers size={14} />} label="View Members" />
+                          <Chip size="small" icon={<LucideUsers size={14} />} label="Active" sx={{ bgcolor: '#dcfce7', color: '#166534', fontWeight: 700 }} />
                        </Stack>
                     </CardContent>
-                    <CardActions sx={{ p: 2, borderTop: '1px solid #f1f5f9', bgcolor: '#f8fafc' }}>
+                    <CardActions sx={{ p: 2, borderTop: '1px solid #f1f5f9', bgcolor: '#f8fafc', display: 'flex', gap: 1 }}>
                        <Button 
                           fullWidth 
                           variant="outlined" 
                           color="inherit" 
                           size="small"
+                          onClick={() => handleEditOpen(society)}
+                          sx={{ borderColor: '#e2e8f0', color: '#64748b' }}
+                       >
+                          Edit Details
+                       </Button>
+                       <Button 
+                          fullWidth 
+                          variant="contained" 
+                          size="small"
                           startIcon={<LucideSettings size={16} />}
                           href={`/admin/dashboard/societies/${society._id}`}
+                          sx={{ bgcolor: '#000000', '&:hover': { bgcolor: '#16a34a' } }}
                        >
-                          Manage Members
+                          Members
                        </Button>
                     </CardActions>
                  </Card>
@@ -115,9 +154,9 @@ export default function AdminSocietiesPage() {
         </Grid>
       )}
 
-      {/* Create Society Dialog */}
-      <Dialog open={openCreateDialog} onClose={() => setOpenCreateDialog(false)} maxWidth="sm" fullWidth>
-         <DialogTitle fontWeight={800}>Create New Society</DialogTitle>
+      {/* Create/Edit Society Dialog */}
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
+         <DialogTitle fontWeight={800}>{isEditMode ? 'Edit Society Details' : 'Create New Society'}</DialogTitle>
          <form onSubmit={handleSubmit(onSubmit)}>
             <DialogContent>
                <Stack spacing={3} sx={{ pt: 1 }}>
@@ -183,9 +222,9 @@ export default function AdminSocietiesPage() {
                </Stack>
             </DialogContent>
             <DialogActions>
-               <Button onClick={() => setOpenCreateDialog(false)} sx={{ color: '#64748b' }}>Cancel</Button>
-               <Button type="submit" variant="contained" disabled={isCreating} sx={{ bgcolor: '#000000' }}>
-                  {isCreating ? 'Creating...' : 'Create Society'}
+               <Button onClick={() => setOpenDialog(false)} sx={{ color: '#64748b' }}>Cancel</Button>
+               <Button type="submit" variant="contained" disabled={isCreating || isUpdating} sx={{ bgcolor: '#000000' }}>
+                  {isCreating || isUpdating ? 'Saving...' : (isEditMode ? 'Update Society' : 'Create Society')}
                </Button>
             </DialogActions>
          </form>

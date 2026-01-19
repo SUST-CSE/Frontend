@@ -11,6 +11,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Avatar,
   Table,
   TableBody,
   TableCell,
@@ -56,17 +57,19 @@ interface MemberFormData {
   session: string; // Add session
 }
 
-export default function AdminSocietyMembersPage({ params }: { params: { id: string } }) {
+import { useParams } from 'next/navigation';
+
+export default function AdminSocietyMembersPage() {
   const router = useRouter();
-  const { id: societyId } = params;
+  const { id: societyId } = useParams() as { id: string };
   const [activeTab, setActiveTab] = useState<'current' | 'former'>('current');
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const { data: societyData } = useGetSocietyByIdQuery(societyId);
-  const { data: currentMembersData, isLoading: loadingCurrent } = useGetSocietyMembersQuery(societyId);
-  const { data: formerMembersData, isLoading: loadingFormer } = useGetFormerSocietyMembersQuery(societyId);
-  const { data: usersData, isLoading: loadingUsers } = useGetAllUsersQuery({ email: searchTerm, limit: 10 }, { skip: !searchTerm });
+  const { data: societyData } = useGetSocietyByIdQuery(societyId, { skip: !societyId });
+  const { data: currentMembersData, isLoading: loadingCurrent } = useGetSocietyMembersQuery(societyId, { skip: !societyId });
+  const { data: formerMembersData, isLoading: loadingFormer } = useGetFormerSocietyMembersQuery(societyId, { skip: !societyId });
+  const { data: usersData, isLoading: loadingUsers } = useGetAllUsersQuery({ email: searchTerm, limit: 10 }, { skip: !openAddDialog && !searchTerm });
   
   const [addMember, { isLoading: isAdding }] = useAddMemberMutation();
   const [removeMember] = useRemoveMemberMutation();
@@ -183,8 +186,13 @@ export default function AdminSocietyMembersPage({ params }: { params: { id: stri
                     <TableCell>
                        <Stack direction="row" alignItems="center" spacing={2}>
                           <Box sx={{ width: 40, height: 40, borderRadius: '50%', bgcolor: '#f1f5f9', overflow: 'hidden' }}>
-                             {/* Prefer member.image, fall back to user profile image, then placeholder */}
-                             <img src={member.image || member.user?.profileImage || "/placeholder-avatar.png"} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              <Avatar 
+                                 src={member.image || member.user?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.user?.name || 'Member')}&background=random`} 
+                                 alt={member.user?.name}
+                                 sx={{ width: '100%', height: '100%', borderRadius: '50%' }}
+                              >
+                                 {member.user?.name?.charAt(0).toUpperCase()}
+                              </Avatar>
                           </Box>
                           <Box>
                              <Typography fontWeight={700}>{member.user?.name}</Typography>

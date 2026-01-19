@@ -25,13 +25,14 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  FormHelperText
+  IconButton
 } from '@mui/material';
-import { LucidePlus, LucideTrash2, LucideEdit, LucideCalendar, LucideFileText } from 'lucide-react';
+import { LucidePlus, LucideTrash2, LucideEdit, LucideCalendar, LucideFileText, LucideUpload } from 'lucide-react';
 import { useState } from 'react';
 import { useGetEventsQuery, useCreateEventMutation, useDeleteEventMutation } from '@/features/event/eventApi';
+import { useGetNoticesQuery, useCreateNoticeMutation, useDeleteNoticeMutation } from '@/features/content/contentApi';
 import { useForm, Controller } from 'react-hook-form';
-import { z } from 'zod'; // Assuming zod is installed
+import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 interface TabPanelProps {
@@ -64,21 +65,42 @@ const eventSchema = z.object({
   location: z.string().min(1, 'Location is required'),
   organizer: z.string().min(1, 'Organizer is required'),
   category: z.enum(['WORKSHOP', 'SEMINAR', 'COMPETITION', 'SOCIAL', 'TECHNICAL']),
-  image: z.string().optional(),
+  registrationLink: z.string().optional(),
+  isFeatured: z.boolean().default(false),
+});
+
+const noticeSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  description: z.string().min(1, 'Description is required'),
+  category: z.enum(['ACADEMIC', 'ADMINISTRATIVE', 'EVENT', 'GENERAL']),
+  isPinned: z.boolean().default(false),
 });
 
 type EventFormData = z.infer<typeof eventSchema>;
+type NoticeFormData = z.infer<typeof noticeSchema>;
 
 export default function AdminContentPage() {
-  const [tabFor, setTabFor] = useState(0);
+  const [tabIndex, setTabIndex] = useState(0);
+  
+  // Event State
   const [openEventDialog, setOpenEventDialog] = useState(false);
+  const [eventFiles, setEventFiles] = useState<File[]>([]);
+  const [eventAttachments, setEventAttachments] = useState<File[]>([]);
   const { data: eventData, isLoading: eventsLoading } = useGetEventsQuery({});
-  const [createEvent, { isLoading: isCreating }] = useCreateEventMutation();
+  const [createEvent, { isLoading: isCreatingEvent }] = useCreateEventMutation();
   const [deleteEvent] = useDeleteEventMutation();
   
-  const events = eventData?.data || [];
+  // Notice State
+  const [openNoticeDialog, setOpenNoticeDialog] = useState(false);
+  const [noticeFiles, setNoticeFiles] = useState<File[]>([]);
+  const { data: noticeData, isLoading: noticesLoading } = useGetNoticesQuery({});
+  const [createNotice, { isLoading: isCreatingNotice }] = useCreateNoticeMutation();
+  const [deleteNotice] = useDeleteNoticeMutation();
 
-  const { control, handleSubmit, reset, formState: { errors } } = useForm<EventFormData>({
+  const events = eventData?.data || [];
+  const notices = noticeData?.data || [];
+
+  const eventForm = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
     defaultValues: {
       title: '',
@@ -90,42 +112,95 @@ export default function AdminContentPage() {
       location: '',
       organizer: '',
       category: 'WORKSHOP',
-      image: ''
     }
   });
 
-  const onSubmit = async (data: EventFormData) => {
+  const noticeForm = useForm<NoticeFormData>({
+    resolver: zodResolver(noticeSchema),
+    defaultValues: {
+      title: '',
+      description: '',
+      category: 'GENERAL',
+      isPinned: false
+    }
+  });
+
+  const onEventSubmit = async (data: EventFormData) => {
     try {
-      // Combine date and time to ISO string if needed by backend, or send separate fields
-      // Assuming backend accepts these fields directly per earlier viewed schemas or typical implementation
-      const startDateTime = new Date(`${data.startDate}T${data.startTime}`);
-      const endDateTime = new Date(`${data.endDate}T${data.endTime}`);
+      const formData = new FormData();
+      formData.append('title', data.title);
+      formData.append('description', data.description);
+      formData.append('startDate', new Date(`${data.startDate}T${data.startTime}`).toISOString());
+      formData.append('endDate', new Date(`${data.endDate}T${data.endTime}`).toISOString());
+      formData.append('location', data.location);
+      formData.append('organizer', data.organizer);
+      formData.append('category', data.category);
+      if (data.registrationLink) formData.append('registrationLink', data.registrationLink);
+      formData.append('isFeatured', String(data.isFeatured || false));
+      
+      eventFiles.forEach(file => {
+        formData.append('images', file);
+      });
+      
+      eventAttachments.forEach(file => {
+        formData.append('attachments', file);
+      });
 
-      const payload = {
-        title: data.title,
-        description: data.description,
-        startDate: startDateTime.toISOString(),
-        endDate: endDateTime.toISOString(),
-        location: data.location,
-        organizer: data.organizer,
-        category: data.category,
-        image: data.image
-      };
-
-      await createEvent(payload).unwrap();
+      await createEvent(formData).unwrap();
       setOpenEventDialog(false);
-      reset();
+      eventForm.reset();
+      setEventFiles([]);
+      setEventAttachments([]);
     } catch (error) {
        console.error("Failed to create event", error);
        alert("Failed to create event. Please try again.");
     }
   };
 
-  const handleDelete = async (id: string) => {
-     if(confirm("Are you sure you want to delete this event?")) {
-        await deleteEvent(id);
-     }
-  }
+  const onNoticeSubmit = async (data: NoticeFormData) => {
+    try {
+      const formData = new FormData();
+      formData.append('title', data.title);
+      formData.append('description', data.description);
+      formData.append('category', data.category);
+      formData.append('isPinned', String(data.isPinned));
+      
+      noticeFiles.forEach(file => {
+        formData.append('attachments', file);
+      });
+
+      await createNotice(formData).unwrap();
+      setOpenNoticeDialog(false);
+      noticeForm.reset();
+      setNoticeFiles([]);
+    } catch (error) {
+       console.error("Failed to create notice", error);
+       alert("Failed to create notice. Please try again.");
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'event' | 'notice') => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      if (type === 'event') {
+        setEventFiles(prev => [...prev, ...newFiles]);
+      } else if (type === 'event-attachment') {
+        setEventAttachments(prev => [...prev, ...newFiles]);
+      } else {
+        setNoticeFiles(prev => [...prev, ...newFiles]);
+      }
+    }
+  };
+
+  const removeFile = (index: number, type: 'event' | 'notice') => {
+    if (type === 'event') {
+      setEventFiles(prev => prev.filter((_, i) => i !== index));
+    } else if (type === 'event-attachment') {
+      setEventAttachments(prev => prev.filter((_, i) => i !== index));
+    } else {
+      setNoticeFiles(prev => prev.filter((_, i) => i !== index));
+    }
+  };
 
   return (
     <Box>
@@ -134,14 +209,14 @@ export default function AdminContentPage() {
       </Typography>
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={tabFor} onChange={(_, v) => setTabFor(v)}>
+        <Tabs value={tabIndex} onChange={(_, v) => setTabIndex(v)}>
           <Tab label="Events" icon={<LucideCalendar size={18} />} iconPosition="start" />
-          <Tab label="Notices (Coming Soon)" icon={<LucideFileText size={18} />} iconPosition="start" />
+          <Tab label="Notices" icon={<LucideFileText size={18} />} iconPosition="start" />
         </Tabs>
       </Box>
 
       {/* Events Tab */}
-      <CustomTabPanel value={tabFor} index={0}>
+      <CustomTabPanel value={tabIndex} index={0}>
         <Stack direction="row" justifyContent="flex-end" sx={{ mb: 4 }}>
            <Button 
               variant="contained" 
@@ -167,9 +242,9 @@ export default function AdminContentPage() {
                    </TableRow>
                  </TableHead>
                  <TableBody>
-                   {events.map((event: any) => (
+                   {events.map((event: { _id: string; title: string; startDate: string; organizer: string; status: string }) => (
                      <TableRow key={event._id} hover>
-                       <TableCell fontWeight={600}>{event.title}</TableCell>
+                       <TableCell sx={{ fontWeight: 600 }}>{event.title}</TableCell>
                        <TableCell>{new Date(event.startDate).toLocaleDateString()}</TableCell>
                        <TableCell>{event.organizer}</TableCell>
                        <TableCell>
@@ -184,8 +259,8 @@ export default function AdminContentPage() {
                           />
                        </TableCell>
                        <TableCell align="right">
-                          <Button size="small" color="inherit"><LucideEdit size={16} /></Button>
-                          <Button size="small" color="error" onClick={() => handleDelete(event._id)}><LucideTrash2 size={16} /></Button>
+                          <IconButton size="small"><LucideEdit size={16} /></IconButton>
+                          <IconButton size="small" color="error" onClick={() => { if(confirm("Delete event?")) deleteEvent(event._id) }}><LucideTrash2 size={16} /></IconButton>
                        </TableCell>
                      </TableRow>
                    ))}
@@ -197,76 +272,117 @@ export default function AdminContentPage() {
       </CustomTabPanel>
 
       {/* Notices Tab */}
-      <CustomTabPanel value={tabFor} index={1}>
-         <Box sx={{ py: 8, textAlign: 'center', color: '#94a3b8' }}>
-            <Typography>Notice management module is under construction.</Typography>
-         </Box>
+      <CustomTabPanel value={tabIndex} index={1}>
+        <Stack direction="row" justifyContent="flex-end" sx={{ mb: 4 }}>
+           <Button 
+              variant="contained" 
+              startIcon={<LucidePlus size={18} />}
+              onClick={() => setOpenNoticeDialog(true)}
+              sx={{ bgcolor: '#000000', fontWeight: 700, '&:hover': { bgcolor: '#16a34a' } }}
+           >
+              Create Notice
+           </Button>
+        </Stack>
+
+        <Paper elevation={0} sx={{ p: 0, borderRadius: 4, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+           {noticesLoading ? <Box sx={{ p: 4, display: 'flex', justifyContent: 'center' }}><CircularProgress /></Box> : (
+             <TableContainer>
+               <Table>
+                 <TableHead sx={{ bgcolor: '#f8fafc' }}>
+                   <TableRow>
+                     <TableCell sx={{ fontWeight: 800 }}>Title</TableCell>
+                     <TableCell sx={{ fontWeight: 800 }}>Category</TableCell>
+                     <TableCell sx={{ fontWeight: 800 }}>Date</TableCell>
+                     <TableCell sx={{ fontWeight: 800, textAlign: 'right' }}>Actions</TableCell>
+                   </TableRow>
+                 </TableHead>
+                 <TableBody>
+                   {notices.map((notice: { _id: string; title: string; category: string; publishDate: string; isPinned: boolean }) => (
+                     <TableRow key={notice._id} hover>
+                       <TableCell sx={{ fontWeight: 600 }}>
+                          {notice.isPinned && <LucideFileText size={14} style={{ marginRight: 8, color: '#eab308' }} />}
+                          {notice.title}
+                       </TableCell>
+                       <TableCell>
+                          <Chip label={notice.category} size="small" />
+                       </TableCell>
+                       <TableCell>{new Date(notice.publishDate).toLocaleDateString()}</TableCell>
+                       <TableCell align="right">
+                          <IconButton size="small" color="error" onClick={() => { if(confirm("Delete notice?")) deleteNotice(notice._id) }}><LucideTrash2 size={16} /></IconButton>
+                       </TableCell>
+                     </TableRow>
+                   ))}
+                 </TableBody>
+               </Table>
+             </TableContainer>
+           )}
+        </Paper>
       </CustomTabPanel>
 
-      {/* Create Event Dialog */}
+      {/* Event Dialog */}
       <Dialog open={openEventDialog} onClose={() => setOpenEventDialog(false)} maxWidth="sm" fullWidth>
          <DialogTitle fontWeight={800}>Create New Event</DialogTitle>
-         <form onSubmit={handleSubmit(onSubmit)}>
+         <form onSubmit={eventForm.handleSubmit(onEventSubmit)}>
             <DialogContent>
                <Stack spacing={3} sx={{ pt: 1 }}>
                   <Controller
                      name="title"
-                     control={control}
+                     control={eventForm.control}
                      render={({ field }) => (
-                        <TextField {...field} label="Event Title" fullWidth error={!!errors.title} helperText={errors.title?.message} />
+                        <TextField {...field} label="Event Title" fullWidth error={!!eventForm.formState.errors.title} helperText={eventForm.formState.errors.title?.message} />
                      )}
                   />
                   <Stack direction="row" spacing={2}>
                      <Controller
                         name="startDate"
-                        control={control}
+                        control={eventForm.control}
                         render={({ field }) => (
-                           <TextField {...field} label="Start Date" type="date" fullWidth InputLabelProps={{ shrink: true }} error={!!errors.startDate} helperText={errors.startDate?.message} />
+                           <TextField {...field} label="Start Date" type="date" fullWidth InputLabelProps={{ shrink: true }} error={!!eventForm.formState.errors.startDate} helperText={eventForm.formState.errors.startDate?.message} />
                         )}
                      />
                      <Controller
                         name="startTime"
-                        control={control}
+                        control={eventForm.control}
                         render={({ field }) => (
-                           <TextField {...field} label="Start Time" type="time" fullWidth InputLabelProps={{ shrink: true }} error={!!errors.startTime} helperText={errors.startTime?.message} />
+                           <TextField {...field} label="Start Time" type="time" fullWidth InputLabelProps={{ shrink: true }} error={!!eventForm.formState.errors.startTime} helperText={eventForm.formState.errors.startTime?.message} />
                         )}
                      />
                   </Stack>
                   <Stack direction="row" spacing={2}>
                      <Controller
                         name="endDate"
-                        control={control}
+                        control={eventForm.control}
                         render={({ field }) => (
-                           <TextField {...field} label="End Date" type="date" fullWidth InputLabelProps={{ shrink: true }} error={!!errors.endDate} helperText={errors.endDate?.message} />
+                           <TextField {...field} label="End Date" type="date" fullWidth InputLabelProps={{ shrink: true }} error={!!eventForm.formState.errors.endDate} helperText={eventForm.formState.errors.endDate?.message} />
                         )}
                      />
                      <Controller
                         name="endTime"
-                        control={control}
+                        control={eventForm.control}
                         render={({ field }) => (
-                           <TextField {...field} label="End Time" type="time" fullWidth InputLabelProps={{ shrink: true }} error={!!errors.endTime} helperText={errors.endTime?.message} />
+                           <TextField {...field} label="End Time" type="time" fullWidth InputLabelProps={{ shrink: true }} error={!!eventForm.formState.errors.endTime} helperText={eventForm.formState.errors.endTime?.message} />
                         )}
                      />
                   </Stack>
                   <Controller
                      name="location"
-                     control={control}
+                     control={eventForm.control}
                      render={({ field }) => (
-                        <TextField {...field} label="Location" fullWidth error={!!errors.location} helperText={errors.location?.message} />
+                        <TextField {...field} label="Location" fullWidth error={!!eventForm.formState.errors.location} helperText={eventForm.formState.errors.location?.message} />
                      )}
                   />
                   <Controller
                      name="organizer"
-                     control={control}
+                     control={eventForm.control}
                      render={({ field }) => (
-                        <TextField {...field} label="Organizer" fullWidth error={!!errors.organizer} helperText={errors.organizer?.message} />
+                        <TextField {...field} label="Organizer" fullWidth error={!!eventForm.formState.errors.organizer} helperText={eventForm.formState.errors.organizer?.message} />
                      )}
                   />
                    <Controller
                      name="category"
-                     control={control}
+                     control={eventForm.control}
                      render={({ field }) => (
-                        <FormControl fullWidth error={!!errors.category}>
+                        <FormControl fullWidth error={!!eventForm.formState.errors.category}>
                            <InputLabel>Category</InputLabel>
                            <Select {...field} label="Category">
                               <MenuItem value="WORKSHOP">Workshop</MenuItem>
@@ -275,30 +391,165 @@ export default function AdminContentPage() {
                               <MenuItem value="SOCIAL">Social</MenuItem>
                               <MenuItem value="TECHNICAL">Technical</MenuItem>
                            </Select>
-                           <FormHelperText>{errors.category?.message}</FormHelperText>
                         </FormControl>
                      )}
                   />
-                   <Controller
-                     name="image"
-                     control={control}
+                  <Controller
+                     name="registrationLink"
+                     control={eventForm.control}
                      render={({ field }) => (
-                        <TextField {...field} label="Image URL (Optional)" fullWidth error={!!errors.image} helperText={errors.image?.message} />
+                        <TextField {...field} label="Registration Link (Optional)" fullWidth placeholder="https://..." />
                      )}
                   />
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                     <input 
+                        type="checkbox" 
+                        {...eventForm.register('isFeatured')} 
+                        style={{ marginRight: 8, width: 18, height: 18 }} 
+                     />
+                     <Typography variant="body2" fontWeight={600}>Feature this event on home page</Typography>
+                  </Box>
+                  
+                  <Box>
+                    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1 }}>Event Images</Typography>
+                    <Button
+                      variant="outlined"
+                      component="label"
+                      fullWidth
+                      startIcon={<LucideUpload size={18} />}
+                      sx={{ py: 1.5, borderStyle: 'dashed', borderRadius: 2 }}
+                    >
+                      Upload Images
+                      <input type="file" hidden multiple accept="image/*" onChange={(e) => handleFileChange(e, 'event')} />
+                    </Button>
+                    <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mt: 2 }}>
+                       {eventFiles.map((file, i) => (
+                         <Chip 
+                          key={i} 
+                          label={file.name} 
+                          onDelete={() => removeFile(i, 'event')}
+                          size="small"
+                        />
+                       ))}
+                    </Stack>
+                  </Box>
+
+                  <Box>
+                    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1 }}>Event Attachments (PDF, Docs)</Typography>
+                    <Button
+                      variant="outlined"
+                      component="label"
+                      fullWidth
+                      startIcon={<LucideUpload size={18} />}
+                      sx={{ py: 1.5, borderStyle: 'dashed', borderRadius: 2 }}
+                    >
+                      Upload Attachments
+                      <input type="file" hidden multiple onChange={(e) => handleFileChange(e, 'event-attachment')} />
+                    </Button>
+                    <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mt: 2 }}>
+                       {eventAttachments.map((file, i) => (
+                         <Chip 
+                          key={i} 
+                          label={file.name} 
+                          onDelete={() => removeFile(i, 'event-attachment')}
+                          size="small"
+                        />
+                       ))}
+                    </Stack>
+                  </Box>
+
                   <Controller
                      name="description"
-                     control={control}
+                     control={eventForm.control}
                      render={({ field }) => (
-                        <TextField {...field} label="Description" multiline rows={4} fullWidth error={!!errors.description} helperText={errors.description?.message} />
+                        <TextField {...field} label="Description" multiline rows={4} fullWidth error={!!eventForm.formState.errors.description} helperText={eventForm.formState.errors.description?.message} />
                      )}
                   />
                </Stack>
             </DialogContent>
-            <DialogActions>
+            <DialogActions sx={{ p: 3 }}>
                <Button onClick={() => setOpenEventDialog(false)} sx={{ color: '#64748b' }}>Cancel</Button>
-               <Button type="submit" variant="contained" disabled={isCreating} sx={{ bgcolor: '#000000' }}>
-                  {isCreating ? 'Creating...' : 'Create Event'}
+               <Button type="submit" variant="contained" disabled={isCreatingEvent} sx={{ bgcolor: '#000000', px: 4 }}>
+                  {isCreatingEvent ? <CircularProgress size={20} /> : 'Create Event'}
+               </Button>
+            </DialogActions>
+         </form>
+      </Dialog>
+
+      {/* Notice Dialog */}
+      <Dialog open={openNoticeDialog} onClose={() => setOpenNoticeDialog(false)} maxWidth="sm" fullWidth>
+         <DialogTitle fontWeight={800}>Create New Notice</DialogTitle>
+         <form onSubmit={noticeForm.handleSubmit(onNoticeSubmit)}>
+            <DialogContent>
+               <Stack spacing={3} sx={{ pt: 1 }}>
+                  <Controller
+                     name="title"
+                     control={noticeForm.control}
+                     render={({ field }) => (
+                        <TextField {...field} label="Notice Title" fullWidth error={!!noticeForm.formState.errors.title} helperText={noticeForm.formState.errors.title?.message} />
+                     )}
+                  />
+                  <Controller
+                     name="category"
+                     control={noticeForm.control}
+                     render={({ field }) => (
+                        <FormControl fullWidth error={!!noticeForm.formState.errors.category}>
+                           <InputLabel>Category</InputLabel>
+                           <Select {...field} label="Category">
+                              <MenuItem value="GENERAL">General</MenuItem>
+                              <MenuItem value="ACADEMIC">Academic</MenuItem>
+                              <MenuItem value="ADMINISTRATIVE">Administrative</MenuItem>
+                              <MenuItem value="EVENT">Event</MenuItem>
+                           </Select>
+                        </FormControl>
+                     )}
+                  />
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                     <input 
+                        type="checkbox" 
+                        {...noticeForm.register('isPinned')} 
+                        style={{ marginRight: 8, width: 18, height: 18 }} 
+                     />
+                     <Typography variant="body2" fontWeight={600}>Pin this notice to top</Typography>
+                  </Box>
+                  
+                  <Box>
+                    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1 }}>Attachments</Typography>
+                    <Button
+                      variant="outlined"
+                      component="label"
+                      fullWidth
+                      startIcon={<LucideUpload size={18} />}
+                      sx={{ py: 1.5, borderStyle: 'dashed', borderRadius: 2 }}
+                    >
+                      Upload Files
+                      <input type="file" hidden multiple onChange={(e) => handleFileChange(e, 'notice')} />
+                    </Button>
+                    <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mt: 2 }}>
+                       {noticeFiles.map((file, i) => (
+                         <Chip 
+                          key={i} 
+                          label={file.name} 
+                          onDelete={() => removeFile(i, 'notice')}
+                          size="small"
+                        />
+                       ))}
+                    </Stack>
+                  </Box>
+
+                  <Controller
+                     name="description"
+                     control={noticeForm.control}
+                     render={({ field }) => (
+                        <TextField {...field} label="Description" multiline rows={6} fullWidth error={!!noticeForm.formState.errors.description} helperText={noticeForm.formState.errors.description?.message} />
+                     )}
+                  />
+               </Stack>
+            </DialogContent>
+            <DialogActions sx={{ p: 3 }}>
+               <Button onClick={() => setOpenNoticeDialog(false)} sx={{ color: '#64748b' }}>Cancel</Button>
+               <Button type="submit" variant="contained" disabled={isCreatingNotice} sx={{ bgcolor: '#000000', px: 4 }}>
+                  {isCreatingNotice ? <CircularProgress size={20} /> : 'Create Notice'}
                </Button>
             </DialogActions>
          </form>

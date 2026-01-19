@@ -81,9 +81,9 @@ const sortMembers = (members: any[]) => {
 
 export default function SocietyDetailsPage() {
   const { id } = useParams();
-  const { data: societyData, isLoading: socLoading } = useGetSocietyByIdQuery(id);
-  const { data: currentMemberData, isLoading: curMemLoading } = useGetSocietyMembersQuery(id);
-  const { data: formerMemberData, isLoading: formerMemLoading } = useGetFormerSocietyMembersQuery(id);
+  const { data: societyData, isLoading: socLoading } = useGetSocietyByIdQuery(id, { skip: !id });
+  const { data: currentMemberData, isLoading: curMemLoading } = useGetSocietyMembersQuery(id, { skip: !id });
+  const { data: formerMemberData, isLoading: formerMemLoading } = useGetFormerSocietyMembersQuery(id, { skip: !id });
   const { data: eventsData, isLoading: eventsLoading } = useGetEventsQuery({}); // Fetch all events, filter client-side
   
   const [tabFor, setTabFor] = useState(0);
@@ -252,9 +252,12 @@ export default function SocietyDetailsPage() {
                           <TableRow key={member._id} hover>
                              <TableCell>
                                 <Avatar 
-                                   src={member.image || member.user?.profileImage} 
-                                   sx={{ width: 50, height: 50, border: '1px solid #e2e8f0' }}
-                                />
+                                   src={member.image || member.user?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.user?.name || 'Member')}&background=random`} 
+                                   alt={member.user?.name}
+                                   sx={{ width: 50, height: 50, border: '1px solid #e2e8f0', fontSize: '1.2rem' }}
+                                >
+                                   {member.user?.name?.charAt(0).toUpperCase()}
+                                </Avatar>
                              </TableCell>
                              <TableCell sx={{ fontWeight: 700 }}>{member.user?.name}</TableCell>
                              <TableCell>
@@ -295,9 +298,12 @@ export default function SocietyDetailsPage() {
                            <TableRow key={member._id} hover>
                               <TableCell>
                                  <Avatar 
-                                    src={member.image || member.user?.profileImage} 
-                                    sx={{ width: 50, height: 50, border: '1px solid #e2e8f0', filter: 'grayscale(100%)' }}
-                                 />
+                                    src={member.image || member.user?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.user?.name || 'Member')}&background=random`} 
+                                    alt={member.user?.name}
+                                    sx={{ width: 50, height: 50, border: '1px solid #e2e8f0', filter: 'grayscale(100%)', fontSize: '1.2rem' }}
+                                 >
+                                    {member.user?.name?.charAt(0).toUpperCase()}
+                                 </Avatar>
                               </TableCell>
                               <TableCell sx={{ fontWeight: 700, color: '#64748b' }}>{member.user?.name}</TableCell>
                               <TableCell>

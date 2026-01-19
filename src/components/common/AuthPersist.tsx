@@ -12,8 +12,10 @@ export default function AuthPersist({ children }: { children: React.ReactNode })
   const dispatch = useDispatch();
   const [token, setToken] = useState<string | null>(null);
   const [isChecking, setIsChecking] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
     const storedToken = Cookies.get('token');
     
     if (storedToken) {
@@ -35,7 +37,7 @@ export default function AuthPersist({ children }: { children: React.ReactNode })
           }
           setToken(storedToken);
         }
-      } catch (error) {
+      } catch {
         dispatch(logout());
         setIsChecking(false);
       }
@@ -44,7 +46,7 @@ export default function AuthPersist({ children }: { children: React.ReactNode })
     }
   }, [dispatch]);
 
-  const { data, isError, isLoading, isSuccess } = useGetMeQuery(undefined, {
+  const { data, isError, isSuccess } = useGetMeQuery(undefined, {
     skip: !token, 
   });
 
@@ -60,6 +62,8 @@ export default function AuthPersist({ children }: { children: React.ReactNode })
        setIsChecking(false);
     }
   }, [token, data, isError, isSuccess, dispatch]);
+
+  if (!isMounted) return null;
 
   if (isChecking && !token) {
      // Only block if we haven't even found a token yet or are in the middle of initial decode

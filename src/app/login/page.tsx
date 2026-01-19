@@ -61,7 +61,22 @@ export default function LoginPage() {
         user: result.data.user, 
         accessToken: result.data.tokens.accessToken 
       }));
-      router.push('/');
+
+      // Role-based redirection
+      const role = result.data.user.role;
+      switch (role) {
+        case 'ADMIN':
+          router.push('/admin/dashboard');
+          break;
+        case 'STUDENT':
+          router.push('/dashboard/student');
+          break;
+        case 'TEACHER':
+          router.push('/dashboard/teacher');
+          break;
+        default:
+          router.push('/');
+      }
     } catch (err) {
       console.error('Failed to login:', err);
     }
@@ -189,7 +204,10 @@ export default function LoginPage() {
               <Box sx={{ textAlign: 'center', mt: 2 }}>
                 <Typography variant="body2" sx={{ color: '#64748b' }}>
                   Don&apos;t have an account?{' '}
-                  <Button sx={{ textTransform: 'none', color: '#2563eb', fontWeight: 700, p: 0 }}>
+                  <Button 
+                    onClick={() => router.push('/register')}
+                    sx={{ textTransform: 'none', color: '#2563eb', fontWeight: 700, p: 0 }}
+                  >
                     Register now
                   </Button>
                 </Typography>

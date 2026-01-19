@@ -1,6 +1,7 @@
 import { apiSlice } from '@/store/apiSlice';
 
 export const societyApi = apiSlice.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getSocieties: builder.query({
       query: () => '/society',
@@ -11,11 +12,11 @@ export const societyApi = apiSlice.injectEndpoints({
       providesTags: (result, error, id) => [{ type: 'Society', id }],
     }),
     getSocietyMembers: builder.query({
-      query: (id) => `/society/${id}/members/current`,
+      query: (id) => `/society/${id}/members?isCurrent=true`,
       providesTags: (result, error, id) => [{ type: 'Society', id: `MEMBERS-${id}` }],
     }),
     getFormerSocietyMembers: builder.query({
-      query: (id) => `/society/${id}/members/past`,
+      query: (id) => `/society/${id}/members?isCurrent=false`,
       providesTags: (result, error, id) => [{ type: 'Society', id: `FORMER-MEMBERS-${id}` }],
     }),
     createSociety: builder.mutation({
@@ -26,8 +27,16 @@ export const societyApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Society'],
     }),
+    updateSociety: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `/society/${id}`,
+        method: 'PATCH',
+        body: data,
+      }),
+      invalidatesTags: (result, error, { id }) => ['Society', { type: 'Society', id }],
+    }),
     addMember: builder.mutation({
-      query: ({ societyId, ...data }) => ({
+      query: ({ societyId, data }) => ({
         url: `/society/${societyId}/members`,
         method: 'POST',
         body: data,
@@ -39,7 +48,7 @@ export const societyApi = apiSlice.injectEndpoints({
     }),
     removeMember: builder.mutation({
       query: ({ societyId, memberId }) => ({
-        url: `/society/${societyId}/members/${memberId}`,
+        url: `/society/members/${memberId}`,
         method: 'DELETE',
         body: {},
       }),
@@ -57,6 +66,7 @@ export const {
   useGetSocietyMembersQuery,
   useGetFormerSocietyMembersQuery,
   useCreateSocietyMutation,
+  useUpdateSocietyMutation,
   useAddMemberMutation,
   useRemoveMemberMutation,
 } = societyApi;
