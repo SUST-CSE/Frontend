@@ -10,6 +10,10 @@ export const blogApi = apiSlice.injectEndpoints({
       query: () => '/blogs/pending',
       providesTags: ['Post'],
     }),
+    getMyBlogs: builder.query({
+      query: () => '/blogs/mine',
+      providesTags: ['Post'],
+    }),
     getBlogById: builder.query({
       query: (id) => `/blogs/${id}`,
       providesTags: (result, error, id) => [{ type: 'Post', id }],
@@ -43,6 +47,7 @@ export const blogApi = apiSlice.injectEndpoints({
 export const {
   useGetBlogsQuery,
   useGetPendingBlogsQuery,
+  useGetMyBlogsQuery,
   useGetBlogByIdQuery,
   useCreateBlogMutation,
   useVerifyBlogMutation,

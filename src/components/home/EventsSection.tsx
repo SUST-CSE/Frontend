@@ -220,8 +220,6 @@ export default function EventsSection() {
                       </Stack>
 
                       <Button 
-                        component={Link}
-                        href={`/events/${event._id}`}
                         size="small" 
                         variant="outlined"
                         sx={{ 

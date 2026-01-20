@@ -168,8 +168,6 @@ export default function NoticesSection() {
                     </Stack>
 
                     <Button 
-                      component={Link}
-                      href={`/notices/${notice._id}`}
                       size="small" 
                       variant="outlined"
                       sx={{ 
