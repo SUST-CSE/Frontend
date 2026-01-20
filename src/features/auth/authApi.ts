@@ -33,6 +33,20 @@ export const authApi = apiSlice.injectEndpoints({
         method: 'POST',
       }),
     }),
+    verifyEmail: builder.mutation({
+      query: (data) => ({
+        url: '/auth/verify-email',
+        method: 'POST',
+        body: data,
+      }),
+    }),
+    resendCode: builder.mutation({
+      query: (data) => ({
+        url: '/auth/resend-code',
+        method: 'POST',
+        body: data,
+      }),
+    }),
   }),
 });
 
@@ -42,4 +56,6 @@ export const {
   useRegisterTeacherMutation,
   useGetMeQuery,
   useLogoutUserMutation,
+  useVerifyEmailMutation,
+  useResendCodeMutation,
 } = authApi;

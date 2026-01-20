@@ -22,21 +22,24 @@ export default function Stats() {
   }, []);
 
   return (
-    <Box sx={{ py: 10, bgcolor: '#ffffff' }}>
+    <Box sx={{ py: 12, bgcolor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
       <Container maxWidth="lg">
         <Grid container spacing={4}>
           {processedStats.map((stat, idx) => (
-            <Grid item xs={12} sm={6} md={3} key={idx}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }} key={idx}>
               <Paper
                 elevation={0}
                 sx={{
                   p: 4,
                   textAlign: 'center',
-                  bgcolor: '#f1f5f9',
+                  bgcolor: '#ffffff',
                   borderRadius: 4,
-                  transition: 'transform 0.3s ease',
+                  border: '1px solid #e2e8f0',
+                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                   '&:hover': {
-                    transform: 'translateY(-8px)',
+                    transform: 'translateY(-10px)',
+                    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02)',
+                    borderColor: '#3b82f6'
                   }
                 }}
               >

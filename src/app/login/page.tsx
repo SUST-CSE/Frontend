@@ -77,8 +77,16 @@ export default function LoginPage() {
         default:
           router.push('/');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to login:', err);
+      
+      // Check if the error is due to unverified email
+      if (err?.status === 403 || err?.data?.message?.includes('verify your email')) {
+        // Extract email from form data
+        const emailFromForm = data.email;
+        router.push(`/verify?email=${encodeURIComponent(emailFromForm)}`);
+      }
+      // If it's a different error, it will be displayed by the Alert component above
     }
   };
 

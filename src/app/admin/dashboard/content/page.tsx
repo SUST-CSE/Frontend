@@ -25,12 +25,19 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  IconButton
+  IconButton,
+  Grid
 } from '@mui/material';
 import { LucidePlus, LucideTrash2, LucideEdit, LucideCalendar, LucideFileText, LucideUpload } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useGetEventsQuery, useCreateEventMutation, useDeleteEventMutation } from '@/features/event/eventApi';
-import { useGetNoticesQuery, useCreateNoticeMutation, useDeleteNoticeMutation } from '@/features/content/contentApi';
+import { 
+  useGetNoticesQuery, 
+  useCreateNoticeMutation, 
+  useDeleteNoticeMutation,
+  useGetHomepageQuery,
+  useUpdateHomepageMutation 
+} from '@/features/content/contentApi';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -76,8 +83,17 @@ const noticeSchema = z.object({
   isPinned: z.boolean().default(false),
 });
 
+const heroSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  subtitle: z.string().min(1, 'Subtitle is required'),
+  description: z.string().min(1, 'Description is required'),
+  ctaText: z.string().min(1, 'CTA Text is required'),
+  ctaLink: z.string().min(1, 'CTA Link is required'),
+});
+
 type EventFormData = z.infer<typeof eventSchema>;
 type NoticeFormData = z.infer<typeof noticeSchema>;
+type HeroFormData = z.infer<typeof heroSchema>;
 
 export default function AdminContentPage() {
   const [tabIndex, setTabIndex] = useState(0);
@@ -97,8 +113,15 @@ export default function AdminContentPage() {
   const [createNotice, { isLoading: isCreatingNotice }] = useCreateNoticeMutation();
   const [deleteNotice] = useDeleteNoticeMutation();
 
+  // Hero State
+  const { data: heroData } = useGetHomepageQuery({});
+  const [updateHomepage, { isLoading: isUpdatingHero }] = useUpdateHomepageMutation();
+  const [heroFile, setHeroFile] = useState<File | null>(null);
+  const [heroPreview, setHeroPreview] = useState<string>('');
+
   const events = eventData?.data || [];
   const notices = noticeData?.data || [];
+  const hero = heroData?.data;
 
   const eventForm = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
@@ -124,6 +147,42 @@ export default function AdminContentPage() {
       isPinned: false
     }
   });
+
+  const heroForm = useForm<HeroFormData>({
+    resolver: zodResolver(heroSchema),
+    defaultValues: {
+      title: '',
+      subtitle: '',
+      description: '',
+      ctaText: '',
+      ctaLink: '',
+    }
+  });
+
+  useEffect(() => {
+    if (hero) {
+      heroForm.reset({
+        title: hero.title || '',
+        subtitle: hero.subtitle || '',
+        description: hero.description || '',
+        ctaText: hero.ctaText || '',
+        ctaLink: hero.ctaLink || '',
+      });
+    }
+  }, [hero, heroForm]);
+
+  useEffect(() => {
+    let url = '';
+    if (heroFile) {
+      url = URL.createObjectURL(heroFile);
+      setHeroPreview(url);
+    } else {
+      setHeroPreview(hero?.heroImage || '');
+    }
+    return () => {
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [heroFile, hero?.heroImage]);
 
   const onEventSubmit = async (data: EventFormData) => {
     try {
@@ -179,9 +238,33 @@ export default function AdminContentPage() {
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'event' | 'notice') => {
-    if (e.target.files) {
+  const onHeroSubmit = async (data: HeroFormData) => {
+    try {
+      const formData = new FormData();
+      Object.entries(data).forEach(([key, value]) => {
+        formData.append(key, String(value));
+      });
+      if (heroFile) {
+        formData.append('heroImage', heroFile);
+      }
+
+      await updateHomepage(formData).unwrap();
+      alert("Homepage banner updated successfully!");
+    } catch (error) {
+      console.error("Failed to update homepage", error);
+      alert("Failed to update homepage banner. Please try again.");
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'event' | 'notice' | 'event-attachment' | 'hero') => {
+    if (e.target.files && e.target.files[0]) {
       const newFiles = Array.from(e.target.files);
+      if (type === 'hero') {
+        const file = e.target.files[0];
+        setHeroFile(file);
+        setHeroPreview(URL.createObjectURL(file));
+        return;
+      }
       if (type === 'event') {
         setEventFiles(prev => [...prev, ...newFiles]);
       } else if (type === 'event-attachment') {
@@ -205,18 +288,118 @@ export default function AdminContentPage() {
   return (
     <Box>
        <Typography variant="h4" fontWeight={900} color="#0f172a" sx={{ mb: 6 }}>
-        Content <span style={{ color: '#16a34a' }}>Management</span>
+        Homepage & <span style={{ color: '#16a34a' }}>Content</span>
       </Typography>
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={tabIndex} onChange={(_, v) => setTabIndex(v)}>
+          <Tab label="Homepage Banner" icon={<LucideFileText size={18} />} iconPosition="start" />
           <Tab label="Events" icon={<LucideCalendar size={18} />} iconPosition="start" />
           <Tab label="Notices" icon={<LucideFileText size={18} />} iconPosition="start" />
         </Tabs>
       </Box>
 
-      {/* Events Tab */}
+      {/* Hero Banner Tab */}
       <CustomTabPanel value={tabIndex} index={0}>
+        <Grid container spacing={4}>
+          <Grid item xs={12} md={7}>
+            <Paper elevation={0} sx={{ p: 4, borderRadius: 4, border: '1px solid #e2e8f0' }}>
+              <form onSubmit={heroForm.handleSubmit(onHeroSubmit)}>
+                <Stack spacing={3}>
+                  <Controller
+                    name="subtitle"
+                    control={heroForm.control}
+                    render={({ field }) => (
+                      <TextField {...field} label="Subtitle (Accent Text)" fullWidth error={!!heroForm.formState.errors.subtitle} helperText={heroForm.formState.errors.subtitle?.message} />
+                    )}
+                  />
+                  <Controller
+                    name="title"
+                    control={heroForm.control}
+                    render={({ field }) => (
+                      <TextField {...field} label="Main Title" fullWidth multiline rows={2} error={!!heroForm.formState.errors.title} helperText={heroForm.formState.errors.title?.message} />
+                    )}
+                  />
+                  <Controller
+                    name="description"
+                    control={heroForm.control}
+                    render={({ field }) => (
+                      <TextField {...field} label="Hero Description" fullWidth multiline rows={4} error={!!heroForm.formState.errors.description} helperText={heroForm.formState.errors.description?.message} />
+                    )}
+                  />
+                  <Stack direction="row" spacing={2}>
+                    <Controller
+                      name="ctaText"
+                      control={heroForm.control}
+                      render={({ field }) => (
+                        <TextField {...field} label="Button Text" fullWidth error={!!heroForm.formState.errors.ctaText} helperText={heroForm.formState.errors.ctaText?.message} />
+                      )}
+                    />
+                    <Controller
+                      name="ctaLink"
+                      control={heroForm.control}
+                      render={({ field }) => (
+                        <TextField {...field} label="Button Link" fullWidth error={!!heroForm.formState.errors.ctaLink} helperText={heroForm.formState.errors.ctaLink?.message} />
+                      )}
+                    />
+                  </Stack>
+                  <Box>
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      disabled={isUpdatingHero}
+                      sx={{ bgcolor: '#000000', px: 4, py: 1.5, fontWeight: 700 }}
+                    >
+                      {isUpdatingHero ? <CircularProgress size={20} color="inherit" /> : 'Update Banner Content'}
+                    </Button>
+                  </Box>
+                </Stack>
+              </form>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} md={5}>
+            <Paper elevation={0} sx={{ p: 4, borderRadius: 4, border: '1px solid #e2e8f0', height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#f1f5f9' }}>
+              <Typography variant="h6" fontWeight={800} sx={{ mb: 1 }}>Banner Image</Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ mb: 3 }}>
+                Upload the main background image for the homepage hero section.
+              </Typography>
+              <Box 
+                sx={{ 
+                  flexGrow: 1,
+                  borderRadius: 4, 
+                  bgcolor: '#f8fafc', 
+                  border: '2px dashed #e2e8f0', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  overflow: 'hidden',
+                  mb: 3,
+                  minHeight: 200
+                }}
+              >
+                {heroPreview ? (
+                  <img src={heroPreview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <LucideUpload size={40} color="#94a3b8" />
+                )}
+              </Box>
+              <Button
+                component="label"
+                variant="outlined"
+                fullWidth
+                startIcon={<LucideUpload size={18} />}
+                sx={{ py: 1.5, borderRadius: 2 }}
+              >
+                Choose Image
+                <input type="file" hidden accept="image/*" onChange={(e) => handleFileChange(e, 'hero')} />
+              </Button>
+            </Paper>
+          </Grid>
+        </Grid>
+      </CustomTabPanel>
+
+      {/* Events Tab */}
+      <CustomTabPanel value={tabIndex} index={1}>
         <Stack direction="row" justifyContent="flex-end" sx={{ mb: 4 }}>
            <Button 
               variant="contained" 
@@ -272,7 +455,7 @@ export default function AdminContentPage() {
       </CustomTabPanel>
 
       {/* Notices Tab */}
-      <CustomTabPanel value={tabIndex} index={1}>
+      <CustomTabPanel value={tabIndex} index={2}>
         <Stack direction="row" justifyContent="flex-end" sx={{ mb: 4 }}>
            <Button 
               variant="contained" 

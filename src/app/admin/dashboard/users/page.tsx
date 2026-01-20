@@ -30,9 +30,11 @@ import {
   LucideUserCheck, 
   LucideUserX,
   LucideShieldAlert,
-  LucideRefreshCcw
+  LucideRefreshCcw,
+  LucideTrash2,
+  LucideShieldCheck
 } from 'lucide-react';
-import { useGetAllUsersQuery, useUpdateUserStatusMutation } from '@/features/user/userApi';
+import { useGetAllUsersQuery, useUpdateUserStatusMutation, useDeleteUserMutation } from '@/features/user/userApi';
 
 const STATUS_COLORS: Record<string, any> = {
   ACTIVE: 'success',
@@ -53,12 +55,23 @@ export default function UsersManagementPage() {
     status: activeTab === 0 ? 'PENDING' : undefined,
   });
   const [updateStatus, { isLoading: isUpdating }] = useUpdateUserStatusMutation();
+  const [deleteUser] = useDeleteUserMutation();
 
   const handleStatusUpdate = async (id: string, newStatus: string) => {
     try {
       await updateStatus({ id, status: newStatus }).unwrap();
     } catch (err) {
       console.error('Failed to update status:', err);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+      try {
+        await deleteUser(id).unwrap();
+      } catch (err) {
+        console.error('Failed to delete user:', err);
+      }
     }
   };
 
@@ -127,6 +140,7 @@ export default function UsersManagementPage() {
                   <TableCell sx={{ fontWeight: 800, bgcolor: '#f8fafc' }}>Role</TableCell>
                   <TableCell sx={{ fontWeight: 800, bgcolor: '#f8fafc' }}>Details</TableCell>
                   <TableCell sx={{ fontWeight: 800, bgcolor: '#f8fafc' }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 800, bgcolor: '#f8fafc' }}>Verified</TableCell>
                   <TableCell sx={{ fontWeight: 800, bgcolor: '#f8fafc', textAlign: 'right' }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
@@ -166,6 +180,25 @@ export default function UsersManagementPage() {
                         color={STATUS_COLORS[user.status] || 'default'} 
                         sx={{ fontWeight: 800 }}
                       />
+                    </TableCell>
+                    <TableCell>
+                      {user.isEmailVerified ? (
+                        <Chip 
+                          icon={<LucideShieldCheck size={14} />}
+                          label="Verified" 
+                          size="small" 
+                          color="success"
+                          sx={{ fontWeight: 700 }}
+                        />
+                      ) : (
+                        <Chip 
+                          label="Unverified" 
+                          size="small" 
+                          color="error"
+                          variant="outlined"
+                          sx={{ fontWeight: 700 }}
+                        />
+                      )}
                     </TableCell>
                     <TableCell align="right">
                       {user.status === 'PENDING' && (
@@ -212,6 +245,16 @@ export default function UsersManagementPage() {
                           Reactivate
                         </Button>
                       )}
+                      <Tooltip title="Delete User">
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() => handleDelete(user._id)}
+                          sx={{ ml: 1 }}
+                        >
+                          <LucideTrash2 size={18} />
+                        </IconButton>
+                      </Tooltip>
                     </TableCell>
                   </TableRow>
                 ))}

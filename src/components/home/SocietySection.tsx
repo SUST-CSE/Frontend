@@ -162,36 +162,38 @@ export default function SocietySection() {
                   }
                 }}
               >
-                <Avatar 
-                  src={member.image || member.user.profileImage} 
-                  alt={member.user.name}
-                  sx={{ 
-                    width: 120, 
-                    height: 120, 
-                    mb: 3, 
-                    border: '4px solid rgba(22, 163, 74, 0.2)',
-                    boxShadow: '0 0 20px rgba(22, 163, 74, 0.1)'
+                <Stack spacing={2} alignItems="center">
+                <Avatar
+                  src={member.image || member.user?.profileImage}
+                  alt={member.user?.name || 'Member'}
+                  sx={{
+                    width: 120,
+                    height: 120,
+                    border: '4px solid #2563eb',
+                    boxShadow: '0 8px 16px rgba(37,99,235,0.2)'
                   }}
                 />
-                
-                <Typography variant="h6" fontWeight={800} sx={{ mb: 0.5 }}>
-                  {member.user.name}
-                </Typography>
-                
+                <Box textAlign="center">
+                  <Typography variant="h6" fontWeight={800} color="#0f172a">
+                    {member.user?.name || 'Unknown Member'}
+                  </Typography>
+                </Box>
+                </Stack>
+
                 <Typography variant="body2" fontWeight={700} color="#16a34a" sx={{ mb: 1, textTransform: 'uppercase', letterSpacing: 1 }}>
                   {member.designation.replace(/_/g, ' ')}
                 </Typography>
 
                 <Box sx={{ mt: 'auto', pt: 2, width: '100%', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                   <Typography variant="caption" color="#94a3b8" fontWeight={600} sx={{ display: 'block' }}>
-                    {member.user.role === 'TEACHER' ? (
-                      member.user.designation || 'Faculty Member'
+                    {member.user?.role === 'TEACHER' ? (
+                      member.user?.designation || 'Faculty Member'
                     ) : (
                       `Session: ${member.session}`
                     )}
                   </Typography>
                   <Typography variant="caption" color="rgba(148, 163, 184, 0.5)" fontWeight={500}>
-                    {member.user.role === 'TEACHER' ? 'Teacher' : 'Student Member'}
+                    {member.user?.role === 'TEACHER' ? 'Teacher' : 'Student Member'}
                   </Typography>
                 </Box>
               </Paper>

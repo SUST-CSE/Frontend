@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { label: 'Notices', href: '/notices' },
   { label: 'Events', href: '/events' },
   { label: 'Societies', href: '/societies' },
+  { label: 'Alumni', href: '/alumni' },
   { label: 'Academic', href: '/academic' },
   { label: 'Payments', href: '/payments' },
   { label: 'Blogs', href: '/blogs' },

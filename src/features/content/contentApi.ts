@@ -33,6 +33,14 @@ export const contentApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Notice'],
     }),
+    updateHomepage: builder.mutation({
+      query: (data) => ({
+        url: '/content/homepage',
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['Notice'], // Invalidate to refresh homepage data
+    }),
   }),
 });
 
@@ -43,4 +51,5 @@ export const {
   useGetAchievementsQuery,
   useCreateNoticeMutation,
   useDeleteNoticeMutation,
+  useUpdateHomepageMutation,
 } = contentApi;

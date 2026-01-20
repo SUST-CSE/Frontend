@@ -25,20 +25,32 @@ import { useRegisterStudentMutation, useRegisterTeacherMutation } from '@/featur
 
 const studentSchema = z.object({
   name: z.string().min(2, 'Name is too short'),
-  email: z.string().email('Invalid email address'),
+  email: z.string().email('Invalid email address').refine(
+    (email) => email.endsWith('@student.sust.edu'),
+    'Students must use a @student.sust.edu email'
+  ),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   phone: z.string().regex(/^(?:\+88|88)?(01[3-9]\d{8})$/, 'Invalid Bangladesh phone number'),
-  studentId: z.string().min(5, 'Student ID is required'),
+  studentId: z.string().min(5, 'Student ID is required').refine(
+    (id) => id.includes('331'),
+    'Student ID must contain 331 (CSE students only)'
+  ),
   batch: z.string().min(1, 'Batch is required'),
   session: z.string().regex(/^\d{4}-\d{2}$/, 'Invalid session format (e.g., 2020-21)'),
   enrollmentYear: z.number({ invalid_type_error: 'Must be a number' }).int().min(2000),
-});
+}).refine(
+  (data) => data.email.split('@')[0] === data.studentId,
+  {
+    message: 'Email prefix must match your Student ID (e.g., 2021331001@student.sust.edu)',
+    path: ['email']
+  }
+);
 
 const teacherSchema = z.object({
   name: z.string().min(2, 'Name is too short'),
   email: z.string().email('Invalid email address').refine(
-    (email) => email.endsWith('@gmail.com'),
-    'Teachers must use a Gmail address'
+    (email) => email.endsWith('@sust.edu'),
+    'Teachers must use a @sust.edu email address'
   ),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   phone: z.string().regex(/^(?:\+88|88)?(01[3-9]\d{8})$/, 'Invalid Bangladesh phone number'),
@@ -71,14 +83,14 @@ export default function RegisterPage() {
   const onStudentSubmit = async (data: any) => {
     try {
       await registerStudent(data).unwrap();
-      setTimeout(() => router.push('/login'), 2000);
+      router.push(`/verify?email=${encodeURIComponent(data.email)}`);
     } catch (err) {}
   };
 
   const onTeacherSubmit = async (data: any) => {
     try {
       await registerTeacher(data).unwrap();
-      setTimeout(() => router.push('/login'), 2000);
+      router.push(`/verify?email=${encodeURIComponent(data.email)}`);
     } catch (err) {}
   };
 
@@ -87,7 +99,7 @@ export default function RegisterPage() {
       <Container maxWidth="sm" sx={{ py: 20, textAlign: 'center' }}>
         <LucideCheckCircle2 size={80} color="#10b981" style={{ marginBottom: 24 }} />
         <Typography variant="h4" fontWeight={800} gutterBottom>Registration Successful!</Typography>
-        <Typography color="text.secondary">Redirecting to login portal...</Typography>
+        <Typography color="text.secondary">Redirecting to email verification...</Typography>
       </Container>
     );
   }
@@ -156,7 +168,7 @@ export default function RegisterPage() {
                   <Grid item xs={12} md={6}><TextField fullWidth label="Designation" placeholder="e.g. Professor" {...teacherForm.register('designation')} error={!!teacherForm.formState.errors.designation} helperText={teacherForm.formState.errors.designation?.message as string}/></Grid>
                   <Grid item xs={12}>
                     <Alert severity="info" sx={{ borderRadius: 2 }}>
-                       Your registration will require **Admin Approval** before you can log in.
+                       After email verification, your registration will require **Admin Approval** before you can log in.
                     </Alert>
                   </Grid>
                   <Grid item xs={12}>

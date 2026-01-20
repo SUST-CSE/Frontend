@@ -9,7 +9,6 @@ import {
   ListItemIcon, 
   ListItemText, 
   Typography, 
-  Divider,
   Avatar,
   Stack
 } from '@mui/material';
@@ -20,7 +19,7 @@ import {
   LucideCalendar, 
   LucideLogOut, 
   LucideGlobe,
-  LucideSettings
+  LucideGraduationCap
 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
@@ -35,8 +34,9 @@ const MENU_ITEMS = [
   { label: 'Overview', icon: <LucideLayoutDashboard size={20} />, href: '/admin/dashboard' },
   { label: 'Blog Moderation', icon: <LucideFileText size={20} />, href: '/admin/dashboard/blogs' },
   { label: 'Societies', icon: <LucideGlobe size={20} />, href: '/admin/dashboard/societies' },
-  { label: 'Events & Notices', icon: <LucideCalendar size={20} />, href: '/admin/dashboard/content' },
+  { label: 'Home & Content', icon: <LucideCalendar size={20} />, href: '/admin/dashboard/content' },
   { label: 'User Management', icon: <LucideUsers size={20} />, href: '/admin/dashboard/users' },
+  { label: 'Alumni Management', icon: <LucideGraduationCap size={20} />, href: '/admin/dashboard/alumni' },
 ];
 
 export default function AdminDashboardLayout({ children }: { children: React.ReactNode }) {
