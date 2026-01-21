@@ -83,7 +83,7 @@ export default function BlogsPage() {
           <Button
             variant="contained"
             startIcon={<LucidePenTool size={18} />}
-            onClick={() => router.push(isAuthenticated ? '/blogs/create' : '/login')}
+            onClick={() => router.push('/blogs/create')}
             sx={{
               bgcolor: '#000000',
               color: '#ffffff',

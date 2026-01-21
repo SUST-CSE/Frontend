@@ -10,9 +10,14 @@ import {
   Stack, 
   IconButton,
   CircularProgress,
-  Alert
+  Alert,
+  Divider,
+  Checkbox,
+  FormControlLabel,
+  FormGroup,
+  Grid
 } from '@mui/material';
-import { LucideCamera, LucideSave, LucideUser, LucidePhone, LucideBriefcase } from 'lucide-react';
+import { LucideCamera, LucideSave, LucideUser, LucidePhone, LucideBriefcase, LucideBell } from 'lucide-react';
 import { useUpdateMyProfileMutation } from '@/features/user/userApi';
 
 interface ProfileSettingsProps {
@@ -26,6 +31,8 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
   const [preview, setPreview] = useState(user?.profileImage || '');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedNotices, setSelectedNotices] = useState<string[]>(user?.notificationPreferences?.notices || []);
+  const [selectedEvents, setSelectedEvents] = useState<string[]>(user?.notificationPreferences?.events || []);
 
   const [updateProfile, { isLoading, error, isSuccess }] = useUpdateMyProfileMutation();
 
@@ -41,6 +48,18 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
     }
   };
 
+  const handleNoticeChange = (category: string) => {
+    setSelectedNotices(prev => 
+      prev.includes(category) ? prev.filter(c => c !== category) : [...prev, category]
+    );
+  };
+
+  const handleEventChange = (category: string) => {
+    setSelectedEvents(prev => 
+      prev.includes(category) ? prev.filter(c => c !== category) : [...prev, category]
+    );
+  };
+
   const handleSave = async () => {
     const formData = new FormData();
     formData.append('name', name);
@@ -51,6 +70,12 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
     if (selectedFile) {
       formData.append('profileImage', selectedFile);
     }
+    
+    // Send as JSON string for multipart compatibility
+    formData.append('notificationPreferences', JSON.stringify({
+      notices: selectedNotices,
+      events: selectedEvents
+    }));
 
     try {
       await updateProfile(formData).unwrap();
@@ -58,6 +83,9 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
       console.error('Failed to update profile:', err);
     }
   };
+
+  const NOTICE_CATEGORIES = ['ACADEMIC', 'ADMINISTRATIVE', 'EVENT', 'GENERAL'];
+  const EVENT_CATEGORIES = ['WORKSHOP', 'SEMINAR', 'COMPETITION', 'SOCIAL', 'TECHNICAL'];
 
   return (
     <Box>
@@ -137,6 +165,62 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
               InputProps={{ startAdornment: <LucideBriefcase size={18} style={{ marginRight: 12, opacity: 0.5 }} /> }}
             />
           )}
+
+          <Divider sx={{ my: 2 }} />
+          
+          <Box>
+            <Typography variant="subtitle1" fontWeight={800} sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <LucideBell size={20} color="#002147" />
+              Get Notification
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              Select the categories you want to receive email notifications for.
+            </Typography>
+
+            <Grid container spacing={4}>
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle2" fontWeight={700} color="#64748b" sx={{ mb: 1, letterSpacing: 1 }}>NOTICES</Typography>
+                <FormGroup>
+                  {NOTICE_CATEGORIES.map((cat) => (
+                    <FormControlLabel
+                      key={cat}
+                      control={
+                        <Checkbox 
+                          size="small" 
+                          checked={selectedNotices.includes(cat)}
+                          onChange={() => handleNoticeChange(cat)}
+                          sx={{ '&.Mui-checked': { color: '#002147' } }}
+                        />
+                      }
+                      label={<Typography variant="body2" fontWeight={500}>{cat}</Typography>}
+                    />
+                  ))}
+                </FormGroup>
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle2" fontWeight={700} color="#64748b" sx={{ mb: 1, letterSpacing: 1 }}>EVENTS</Typography>
+                <FormGroup>
+                  {EVENT_CATEGORIES.map((cat) => (
+                    <FormControlLabel
+                      key={cat}
+                      control={
+                        <Checkbox 
+                          size="small" 
+                          checked={selectedEvents.includes(cat)}
+                          onChange={() => handleEventChange(cat)}
+                          sx={{ '&.Mui-checked': { color: '#002147' } }}
+                        />
+                      }
+                      label={<Typography variant="body2" fontWeight={500}>{cat}</Typography>}
+                    />
+                  ))}
+                </FormGroup>
+              </Grid>
+            </Grid>
+          </Box>
+
+          <Divider sx={{ my: 2 }} />
 
           <Button 
             variant="contained" 

@@ -23,6 +23,7 @@ export const blogApi = apiSlice.injectEndpoints({
         url: '/blogs',
         method: 'POST',
         body: data,
+        formData: data instanceof FormData,
       }),
       invalidatesTags: ['Post'],
     }),

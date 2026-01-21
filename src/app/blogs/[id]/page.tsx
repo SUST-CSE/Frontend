@@ -22,6 +22,14 @@ export default function BlogDetailsPage() {
 
   const blog = blogData?.data;
 
+  // Helper to decode HTML entities if content is double-escaped
+  const decodeHtml = (html: string) => {
+    if (typeof window === 'undefined') return html;
+    const txt = document.createElement("textarea");
+    txt.innerHTML = html;
+    return txt.value;
+  };
+
   if (isLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
@@ -69,7 +77,7 @@ export default function BlogDetailsPage() {
           {blog.title}
         </Typography>
 
-        <Box sx={{ mb: 6, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #e2e8f0', pb: 4 }}>
+        <Box sx={{ mb: 6, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Stack direction="row" spacing={2} alignItems="center">
             <Avatar 
               src={blog.author?.profileImage} 
@@ -113,14 +121,15 @@ export default function BlogDetailsPage() {
           />
         )}
 
-        <Paper elevation={0} sx={{ p: 0, bgcolor: 'transparent' }}>
+        <Paper elevation={0} sx={{ p: 0, bgcolor: 'transparent', border: 'none' }}>
           <Box 
             component="div"
-            dangerouslySetInnerHTML={{ __html: blog.content }}
+            dangerouslySetInnerHTML={{ __html: decodeHtml(blog.content) }}
             sx={{ 
               fontSize: '1.15rem', 
               lineHeight: 1.8, 
               color: '#334155',
+              '& b, & strong': { fontWeight: 700, color: '#0f172a' },
               '& b, & strong': { fontWeight: 700, color: '#0f172a' },
               '& i, & em': { fontStyle: 'italic' },
               '& u': { textDecoration: 'underline' },
@@ -128,7 +137,39 @@ export default function BlogDetailsPage() {
               '& li': { mb: 1 },
               '& p': { mb: 3 },
               '& h1, & h2, & h3': { color: '#0f172a', fontWeight: 800, mt: 4, mb: 2 },
-              '& a': { color: '#16a34a', textDecoration: 'underline' }
+              '& a': { color: '#16a34a', textDecoration: 'underline' },
+              '& pre': { 
+                bgcolor: '#1e293b', 
+                color: '#e2e8f0', 
+                p: 2, 
+                borderRadius: 2, 
+                overflow: 'auto',
+                mb: 3,
+                fontFamily: 'monospace'
+              },
+              '& code': { 
+                bgcolor: '#f1f5f9', 
+                color: '#0f172a', 
+                px: 1, 
+                py: 0.5, 
+                borderRadius: 1,
+                fontFamily: 'monospace',
+                fontSize: '0.9em'
+              },
+              '& pre code': {
+                bgcolor: 'transparent',
+                color: 'inherit',
+                p: 0
+              },
+              '& blockquote': {
+                borderLeft: '4px solid #16a34a',
+                pl: 3,
+                py: 1,
+                my: 3,
+                fontStyle: 'italic',
+                color: '#64748b',
+                bgcolor: '#f8fafc'
+              }
             }}
           />
         </Paper>
