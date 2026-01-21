@@ -10,13 +10,10 @@ import {
   Chip, 
   Button, 
   CircularProgress, 
-  Paper,
-  Divider,
-  Grid
+  Paper
 } from '@mui/material';
-import { LucideArrowLeft, LucideCalendar, LucideUser, LucideClock, LucideShare2 } from 'lucide-react';
+import { LucideArrowLeft, LucideCalendar, LucideClock, LucideShare2 } from 'lucide-react';
 import { useGetBlogByIdQuery } from '@/features/blog/blogApi';
-import Link from 'next/link';
 
 export default function BlogDetailsPage() {
   const { id } = useParams();
@@ -117,9 +114,23 @@ export default function BlogDetailsPage() {
         )}
 
         <Paper elevation={0} sx={{ p: 0, bgcolor: 'transparent' }}>
-          <Typography variant="body1" sx={{ fontSize: '1.25rem', lineHeight: 1.8, color: '#334155' }}>
-            {blog.content}
-          </Typography>
+          <Box 
+            component="div"
+            dangerouslySetInnerHTML={{ __html: blog.content }}
+            sx={{ 
+              fontSize: '1.15rem', 
+              lineHeight: 1.8, 
+              color: '#334155',
+              '& b, & strong': { fontWeight: 700, color: '#0f172a' },
+              '& i, & em': { fontStyle: 'italic' },
+              '& u': { textDecoration: 'underline' },
+              '& ul, & ol': { mb: 3, pl: 3 },
+              '& li': { mb: 1 },
+              '& p': { mb: 3 },
+              '& h1, & h2, & h3': { color: '#0f172a', fontWeight: 800, mt: 4, mb: 2 },
+              '& a': { color: '#16a34a', textDecoration: 'underline' }
+            }}
+          />
         </Paper>
 
       </Container>

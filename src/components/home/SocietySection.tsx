@@ -15,7 +15,7 @@ import { LucideArrowRight, LucideUsers, LucideAward } from 'lucide-react';
 import Link from 'next/link';
 import { useKeenSlider } from 'keen-slider/react';
 import 'keen-slider/keen-slider.min.css';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 
 interface ISocietyMember {
   _id: string;
@@ -32,11 +32,17 @@ interface ISocietyMember {
   image?: string;
 }
 
+interface ISociety {
+  _id: string;
+  name: string;
+  description: string;
+}
+
 export default function SocietySection() {
   const { data: societiesData, isLoading: isLoadingSocieties } = useGetSocietiesQuery({});
   
-  const societies = societiesData?.data || [];
-  const cseSociety = societies.find((s: any) => 
+  const societies: ISociety[] = societiesData?.data || [];
+  const cseSociety = societies.find((s) => 
     s.name.toUpperCase().includes('CSE SOCIETY') || 
     s.name.toUpperCase().includes('CSE SOCIET')
   ) || societies[0];
@@ -45,7 +51,7 @@ export default function SocietySection() {
     skip: !cseSociety?._id
   });
 
-  const members: ISocietyMember[] = membersData?.data || [];
+  const members: ISocietyMember[] = useMemo(() => membersData?.data || [], [membersData]);
   const [pause, setPause] = useState(false);
   const timer = 3000;
 
@@ -97,7 +103,7 @@ export default function SocietySection() {
   if (!cseSociety || members.length === 0) return null;
 
   return (
-    <Box sx={{ py: 12, bgcolor: '#0f172a', color: '#ffffff', overflow: 'hidden', position: 'relative' }}>
+    <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: '#0f172a', color: '#ffffff', overflow: 'hidden', position: 'relative' }}>
       {/* Background decoration */}
       <Box sx={{ 
         position: 'absolute', 
@@ -121,7 +127,7 @@ export default function SocietySection() {
               </Typography>
             </Stack>
             <Typography variant="h2" fontWeight={900} sx={{ lineHeight: 1.1 }}>
-              Meet Our <span style={{ color: '#16a34a' }}>Society</span>
+              <span style={{color: 'white'}}>Meet Our</span> <span style={{ color: '#16a34a' }}>Society</span>
             </Typography>
           </Box>
           <Button 
@@ -174,7 +180,7 @@ export default function SocietySection() {
                   }}
                 />
                 <Box textAlign="center">
-                  <Typography variant="h6" fontWeight={800} color="#0f172a">
+                  <Typography variant="h6" fontWeight={800} color="#ffffffff">
                     {member.user?.name || 'Unknown Member'}
                   </Typography>
                 </Box>

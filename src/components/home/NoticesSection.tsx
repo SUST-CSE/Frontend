@@ -75,7 +75,7 @@ export default function NoticesSection() {
   if (notices.length === 0) return null;
 
   return (
-    <Box sx={{ py: 10, bgcolor: '#ffffff' }}>
+    <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: '#ffffff' }}>
       <Container maxWidth="lg">
         <Stack direction="row" justifyContent="space-between" alignItems="flex-end" sx={{ mb: 6 }}>
           <Box>

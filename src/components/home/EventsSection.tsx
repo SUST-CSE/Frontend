@@ -78,7 +78,7 @@ export default function EventsSection() {
   }
 
   return (
-    <Box sx={{ py: 10, bgcolor: '#f8fafc' }}>
+    <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: '#f8fafc' }}>
       <Container maxWidth="lg">
         <Stack direction="row" justifyContent="space-between" alignItems="flex-end" sx={{ mb: 6 }}>
           <Box>

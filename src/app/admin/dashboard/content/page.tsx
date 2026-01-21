@@ -116,8 +116,8 @@ export default function AdminContentPage() {
   // Hero State
   const { data: heroData } = useGetHomepageQuery({});
   const [updateHomepage, { isLoading: isUpdatingHero }] = useUpdateHomepageMutation();
-  const [heroFile, setHeroFile] = useState<File | null>(null);
-  const [heroPreview, setHeroPreview] = useState<string>('');
+  const [heroFiles, setHeroFiles] = useState<File[]>([]);
+  const [heroPreviews, setHeroPreviews] = useState<string[]>([]);
 
   const events = eventData?.data || [];
   const notices = noticeData?.data || [];
@@ -172,17 +172,21 @@ export default function AdminContentPage() {
   }, [hero, heroForm]);
 
   useEffect(() => {
-    let url = '';
-    if (heroFile) {
-      url = URL.createObjectURL(heroFile);
-      setHeroPreview(url);
+    const urls: string[] = [];
+    if (heroFiles.length > 0) {
+      const newPreviews = heroFiles.map(file => {
+        const url = URL.createObjectURL(file);
+        urls.push(url);
+        return url;
+      });
+      setHeroPreviews(newPreviews);
     } else {
-      setHeroPreview(hero?.heroImage || '');
+      setHeroPreviews(hero?.heroImages || []);
     }
     return () => {
-      if (url) URL.revokeObjectURL(url);
+      urls.forEach(url => URL.revokeObjectURL(url));
     };
-  }, [heroFile, hero?.heroImage]);
+  }, [heroFiles, hero?.heroImages]);
 
   const onEventSubmit = async (data: EventFormData) => {
     try {
@@ -244,12 +248,13 @@ export default function AdminContentPage() {
       Object.entries(data).forEach(([key, value]) => {
         formData.append(key, String(value));
       });
-      if (heroFile) {
-        formData.append('heroImage', heroFile);
-      }
+      heroFiles.forEach(file => {
+        formData.append('heroImages', file);
+      });
 
       await updateHomepage(formData).unwrap();
-      alert("Homepage banner updated successfully!");
+      alert("Homepage slider updated successfully!");
+      setHeroFiles([]);
     } catch (error) {
       console.error("Failed to update homepage", error);
       alert("Failed to update homepage banner. Please try again.");
@@ -260,9 +265,8 @@ export default function AdminContentPage() {
     if (e.target.files && e.target.files[0]) {
       const newFiles = Array.from(e.target.files);
       if (type === 'hero') {
-        const file = e.target.files[0];
-        setHeroFile(file);
-        setHeroPreview(URL.createObjectURL(file));
+        const newFiles = Array.from(e.target.files);
+        setHeroFiles(prev => [...prev, ...newFiles]);
         return;
       }
       if (type === 'event') {
@@ -275,11 +279,13 @@ export default function AdminContentPage() {
     }
   };
 
-  const removeFile = (index: number, type: 'event' | 'notice') => {
+  const removeFile = (index: number, type: 'event' | 'notice' | 'event-attachment' | 'hero') => {
     if (type === 'event') {
       setEventFiles(prev => prev.filter((_, i) => i !== index));
     } else if (type === 'event-attachment') {
       setEventAttachments(prev => prev.filter((_, i) => i !== index));
+    } else if (type === 'hero') {
+      setHeroFiles(prev => prev.filter((_, i) => i !== index));
     } else {
       setNoticeFiles(prev => prev.filter((_, i) => i !== index));
     }
@@ -359,30 +365,62 @@ export default function AdminContentPage() {
           </Grid>
           <Grid item xs={12} md={5}>
             <Paper elevation={0} sx={{ p: 4, borderRadius: 4, border: '1px solid #e2e8f0', height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#f1f5f9' }}>
-              <Typography variant="h6" fontWeight={800} sx={{ mb: 1 }}>Banner Image</Typography>
+              <Typography variant="h6" fontWeight={800} sx={{ mb: 1 }}>Slider Images</Typography>
               <Typography variant="caption" color="text.secondary" sx={{ mb: 3 }}>
-                Upload the main background image for the homepage hero section.
+                Upload multiple images for the homepage hero slider. Existing images will be replaced if you upload new ones.
               </Typography>
-              <Box 
-                sx={{ 
-                  flexGrow: 1,
-                  borderRadius: 4, 
-                  bgcolor: '#f8fafc', 
-                  border: '2px dashed #e2e8f0', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  overflow: 'hidden',
-                  mb: 3,
-                  minHeight: 200
-                }}
-              >
-                {heroPreview ? (
-                  <img src={heroPreview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                  <LucideUpload size={40} color="#94a3b8" />
-                )}
+              
+              <Box sx={{ mb: 3, flexGrow: 1 }}>
+                <Grid container spacing={1}>
+                  {heroPreviews.length > 0 ? heroPreviews.map((url, idx) => (
+                    <Grid item xs={6} key={idx}>
+                      <Box 
+                        sx={{ 
+                          position: 'relative', 
+                          borderRadius: 2, 
+                          overflow: 'hidden', 
+                          height: 120,
+                          border: '1px solid #e2e8f0'
+                        }}
+                      >
+                        <img src={url} alt={`Preview ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        {heroFiles.length > 0 && (
+                          <IconButton 
+                            size="small" 
+                            sx={{ 
+                              position: 'absolute', 
+                              top: 4, 
+                              right: 4, 
+                              bgcolor: 'rgba(255,255,255,0.8)',
+                              '&:hover': { bgcolor: '#fff' }
+                            }}
+                            onClick={() => removeFile(idx, 'hero')}
+                          >
+                            <LucideTrash2 size={14} color="#ef4444" />
+                          </IconButton>
+                        )}
+                      </Box>
+                    </Grid>
+                  )) : (
+                    <Grid item xs={12}>
+                      <Box 
+                        sx={{ 
+                          height: 120, 
+                          borderRadius: 2, 
+                          border: '2px dashed #cbd5e1', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center',
+                          bgcolor: '#f8fafc'
+                        }}
+                      >
+                        <LucideUpload size={24} color="#94a3b8" />
+                      </Box>
+                    </Grid>
+                  )}
+                </Grid>
               </Box>
+
               <Button
                 component="label"
                 variant="outlined"
@@ -390,9 +428,19 @@ export default function AdminContentPage() {
                 startIcon={<LucideUpload size={18} />}
                 sx={{ py: 1.5, borderRadius: 2 }}
               >
-                Choose Image
-                <input type="file" hidden accept="image/*" onChange={(e) => handleFileChange(e, 'hero')} />
+                {heroFiles.length > 0 ? 'Add More Images' : 'Choose Slider Images'}
+                <input type="file" hidden multiple accept="image/*" onChange={(e) => handleFileChange(e, 'hero')} />
               </Button>
+              {heroFiles.length > 0 && (
+                <Button 
+                  size="small" 
+                  color="error" 
+                  sx={{ mt: 1 }} 
+                  onClick={() => setHeroFiles([])}
+                >
+                  Clear All Selection
+                </Button>
+              )}
             </Paper>
           </Grid>
         </Grid>

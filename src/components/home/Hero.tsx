@@ -1,127 +1,152 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { Box, Container, Typography, Button, Stack } from '@mui/material';
+import { useEffect, useRef, useState } from 'react';
+import { Box, Container, Typography, Button, Stack, IconButton } from '@mui/material';
+import Image from 'next/image';
 import gsap from 'gsap';
-import { LucideChevronRight, LucideTerminal } from 'lucide-react';
+import { LucideChevronRight, LucideTerminal, LucideChevronLeft, LucideChevronRight as LucideChevronRightIcon } from 'lucide-react';
 import { useGetHomepageQuery } from '@/features/content/contentApi';
+import { useKeenSlider } from 'keen-slider/react';
+import 'keen-slider/keen-slider.min.css';
 
 export default function Hero() {
-  const containerRef = useRef(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [loaded, setLoaded] = useState(false);
+  
   const titleRef = useRef(null);
   const descriptionRef = useRef(null);
   const buttonsRef = useRef(null);
 
   const { data: homepageData, isLoading } = useGetHomepageQuery({});
   const heroData = homepageData?.data;
+  const heroImages = heroData?.heroImages || ['/sust.png']; // Fallback
+
+  const [sliderRef, instanceRef] = useKeenSlider<HTMLDivElement>({
+    initial: 0,
+    slideChanged(slider) {
+      setCurrentSlide(slider.track.details.rel);
+    },
+    created() {
+      setLoaded(true);
+    },
+    loop: true,
+  }, [
+    (slider) => {
+      let timeout: ReturnType<typeof setTimeout>;
+      let mouseOver = false;
+      function clearNextTimeout() {
+        clearTimeout(timeout);
+      }
+      function nextTimeout() {
+        clearTimeout(timeout);
+        if (mouseOver) return;
+        timeout = setTimeout(() => {
+          slider.next();
+        }, 5000);
+      }
+      slider.on('created', () => {
+        slider.container.addEventListener('mouseover', () => {
+          mouseOver = true;
+          clearNextTimeout();
+        });
+        slider.container.addEventListener('mouseout', () => {
+          mouseOver = false;
+          nextTimeout();
+        });
+        nextTimeout();
+      });
+      slider.on('dragStarted', clearNextTimeout);
+      slider.on('animationEnded', nextTimeout);
+      slider.on('updated', nextTimeout);
+    },
+  ]);
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
+    if (loaded) {
       const tl = gsap.timeline({ defaults: { ease: 'power4.out', duration: 1.2 } });
+      tl.fromTo(titleRef.current, { y: 60, opacity: 0 }, { y: 0, opacity: 1, delay: 0.2 })
+        .fromTo(descriptionRef.current, { y: 40, opacity: 0 }, { y: 0, opacity: 1 }, '-=0.8')
+        .fromTo(buttonsRef.current, { y: 20, opacity: 0 }, { y: 0, opacity: 1 }, '-=0.6');
+    }
+  }, [loaded, currentSlide]);
 
-      tl.fromTo(
-        titleRef.current,
-        { y: 60, opacity: 0 },
-        { y: 0, opacity: 1, delay: 0.2 }
-      )
-      .fromTo(
-        descriptionRef.current,
-        { y: 40, opacity: 0 },
-        { y: 0, opacity: 1 },
-        '-=0.8'
-      )
-      .fromTo(
-        buttonsRef.current,
-        { y: 20, opacity: 0 },
-        { y: 0, opacity: 1 },
-        '-=0.6'
-      );
-    }, containerRef);
-
-    return () => ctx.revert();
-  }, []);
-
-  if (isLoading) return <Box sx={{ height: '80vh', bgcolor: '#002147' }} />;
+  if (isLoading) return <Box sx={{ height: '85vh', bgcolor: 'transparent' }} />;
 
   return (
-    <Box
-      ref={containerRef}
-      sx={{
-        bgcolor: '#001a33',
-        color: '#ffffff',
-        pt: { xs: 12, md: 20 },
-        pb: { xs: 15, md: 25 },
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-    >
-      {/* Background Layer with Academic Feel */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: 0,
-          '&::after': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'linear-gradient(90deg, #001a33 30%, rgba(0, 26, 51, 0.4) 100%)',
-            zIndex: 1,
-          }
-        }}
-      >
-        {heroData?.heroImage ? (
-          <img 
-            src={heroData.heroImage} 
-            alt="Campus" 
-            style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.5 }} 
-          />
-        ) : (
-          <Box sx={{ width: '100%', height: '100%', bgcolor: '#001a33' }} />
-        )}
+    <Box sx={{ position: 'relative', height: '85vh', overflow: 'hidden', bgcolor: '#000' }}>
+      {/* Slider Container */}
+      <Box ref={sliderRef} className="keen-slider" sx={{ height: '100%' }}>
+        {heroImages.map((src: string, idx: number) => (
+          <Box 
+            key={idx} 
+            className="keen-slider__slide" 
+            sx={{ 
+              position: 'relative', 
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <Image 
+              src={src} 
+              alt={`Slide ${idx + 1}`} 
+              fill
+              priority={idx === 0}
+              unoptimized={true}
+              style={{ 
+                objectFit: 'cover',
+                objectPosition: 'center',
+                opacity: 1.0
+              }}
+            />
+            {/* Left-aligned Overlay for Text Legibility while keeping image clear on the right */}
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'linear-gradient(to right, rgba(0,0,0,0.7) 10%, rgba(0,0,0,0) 70%)',
+                zIndex: 1,
+              }}
+            />
+          </Box>
+        ))}
       </Box>
 
-      {/* Decorative Grid/Technical Motifs */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: 0,
-          right: 0,
-          width: '50%',
-          height: '100%',
-          opacity: 0.1,
-          backgroundImage: `radial-gradient(#3b82f6 1px, transparent 1px)`,
-          backgroundSize: '40px 40px',
-          zIndex: 1,
+      {/* Content Layer (Fixed Position relative to Slider) */}
+      <Container 
+        maxWidth="lg" 
+        sx={{ 
+          position: 'absolute', 
+          top: '50%', 
+          left: '50%', 
+          transform: 'translate(-50%, -50%)',
+          zIndex: 10,
+          pointerEvents: 'none'
         }}
-      />
-
-      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2 }}>
-        <Box sx={{ maxWidth: 850 }}>
+      >
+        <Box sx={{ maxWidth: 850, pointerEvents: 'auto' }}>
           <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 4 }}>
             <Box 
               sx={{ 
                 p: 0.8, 
                 borderRadius: 1.5, 
-                bgcolor: 'rgba(59, 130, 246, 0.1)', 
+                bgcolor: 'rgba(255, 255, 255, 0.1)', 
                 display: 'flex',
-                border: '1px solid rgba(59, 130, 246, 0.2)'
+                border: '1px solid rgba(255, 255, 255, 0.2)'
               }}
             >
-              <LucideTerminal size={16} color="#3b82f6" />
+              <LucideTerminal size={16} color="#ffffff" />
             </Box>
             <Typography 
               variant="overline" 
               sx={{ 
                 fontWeight: 800, 
                 letterSpacing: 3, 
-                color: '#3b82f6',
+                color: '#ffffff',
                 fontSize: '0.85rem'
               }}
             >
@@ -138,18 +163,19 @@ export default function Hero() {
               lineHeight: 1.05,
               letterSpacing: '-0.04em',
               mb: 4,
-              textShadow: '0 2px 10px rgba(0,0,0,0.3)',
+              color: '#ffffff',
+              textShadow: '0 4px 30px rgba(0,0,0,0.6)',
               fontFamily: 'Inter, sans-serif'
             }}
           >
-            {heroData?.title?.split(' ').map((word, i) => (
+            {heroData?.title?.split(' ').map((word: string, i: number) => (
               <span key={i}>
-                {i === heroData.title.split(' ').length - 1 ? (
-                  <span style={{ color: '#3b82f6' }}>{word}</span>
+                {i === heroData?.title?.split(' ').length - 1 ? (
+                  <span style={{ color: '#ffffff', textDecoration: 'underline', textUnderlineOffset: '8px' }}>{word}</span>
                 ) : word + ' '}
               </span>
             )) || (
-              <>Empowering the Next Generation of <span style={{ color: '#3b82f6' }}>Engineers</span></>
+              <>Empowering the Next Generation of <span style={{ color: '#ffffff' }}>Engineers</span></>
             )}
           </Typography>
 
@@ -157,14 +183,15 @@ export default function Hero() {
             variant="h5"
             ref={descriptionRef}
             sx={{
-              color: '#cbd5e1',
+              color: '#ffffff',
               lineHeight: 1.7,
               mb: 7,
               fontWeight: 400,
               maxWidth: 650,
               fontSize: { xs: '1.1rem', md: '1.35rem' },
-              borderLeft: '4px solid #3b82f6',
+              borderLeft: '4px solid #ffffff',
               pl: 3,
+              textShadow: '0 2px 10px rgba(0,0,0,0.5)',
             }}
           >
             {heroData?.description || 'Join the Department of Computer Science and Engineering at SUST. Where academic rigor meets cutting-edge research and professional growth.'}
@@ -178,11 +205,12 @@ export default function Hero() {
               href={heroData?.ctaLink || '/academic'}
               endIcon={<LucideChevronRight size={18} />}
               sx={{
-                bgcolor: '#2563eb',
+                bgcolor: '#ffffff',
+                color: '#000000',
                 '&:hover': { 
-                  bgcolor: '#1d4ed8',
+                  bgcolor: '#f1f5f9',
                   transform: 'translateY(-2px)',
-                  boxShadow: '0 10px 20px -5px rgba(37, 99, 235, 0.4)'
+                  boxShadow: '0 10px 20px -5px rgba(255, 255, 255, 0.4)'
                 },
                 px: 5,
                 py: 2.2,
@@ -198,11 +226,11 @@ export default function Hero() {
               variant="outlined"
               size="large"
               sx={{
-                borderColor: 'rgba(255,255,255,0.25)',
+                borderColor: 'rgba(255,255,255,0.8)',
                 color: '#ffffff',
                 '&:hover': { 
                   borderColor: '#ffffff',
-                  bgcolor: 'rgba(255,255,255,0.08)',
+                  bgcolor: 'rgba(255,255,255,0.1)',
                   transform: 'translateY(-2px)'
                 },
                 px: 5,
@@ -218,6 +246,76 @@ export default function Hero() {
           </Stack>
         </Box>
       </Container>
+
+      {/* Slider Controls */}
+      {loaded && (
+        <>
+          <IconButton
+            onClick={(e: React.MouseEvent) => {
+              e.stopPropagation();
+              instanceRef.current?.prev();
+            }}
+            sx={{
+              position: 'absolute',
+              left: 20,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              zIndex: 11,
+              color: '#fff',
+              bgcolor: 'rgba(255,255,255,0.1)',
+              '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' }
+            }}
+          >
+            <LucideChevronLeft size={32} />
+          </IconButton>
+          <IconButton
+            onClick={(e: React.MouseEvent) => {
+              e.stopPropagation();
+              instanceRef.current?.next();
+            }}
+            sx={{
+              position: 'absolute',
+              right: 20,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              zIndex: 11,
+              color: '#fff',
+              bgcolor: 'rgba(255,255,255,0.1)',
+              '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' }
+            }}
+          >
+            <LucideChevronRightIcon size={32} />
+          </IconButton>
+
+          {/* Dots Pagination */}
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: 40,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              display: 'flex',
+              gap: 1.5,
+              zIndex: 11
+            }}
+          >
+            {heroImages.map((_: string, idx: number) => (
+              <Box
+                key={idx}
+                onClick={() => instanceRef.current?.moveToIdx(idx)}
+                sx={{
+                  width: 12,
+                  height: 12,
+                  borderRadius: '50%',
+                  bgcolor: currentSlide === idx ? '#ffffff' : 'rgba(255,255,255,0.3)',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease'
+                }}
+              />
+            ))}
+          </Box>
+        </>
+      )}
     </Box>
   );
 }

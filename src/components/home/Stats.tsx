@@ -22,7 +22,7 @@ export default function Stats() {
   }, []);
 
   return (
-    <Box sx={{ py: 12, bgcolor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+    <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
       <Container maxWidth="lg">
         <Grid container spacing={4}>
           {processedStats.map((stat, idx) => (

@@ -22,6 +22,19 @@ import { useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { useGetBlogsQuery } from '@/features/blog/blogApi';
 import { RootState } from '@/store';
+import { stripHtml } from '@/utils/string';
+
+interface IBlog {
+  _id: string;
+  title: string;
+  content: string;
+  category: string;
+  author: {
+    name: string;
+    profileImage?: string;
+  };
+  createdAt: string;
+}
 
 const CATEGORIES = ['ALL', 'TECHNOLOGY', 'RESEARCH', 'CAMPUS LIFE', 'ALUMNI', 'CAREER'];
 
@@ -38,7 +51,7 @@ export default function BlogsPage() {
   const blogsList = useMemo(() => data?.data || [], [data]);
 
   const filteredBlogs = useMemo(() => {
-    return blogsList.filter((blog: any) => {
+    return blogsList.filter((blog: IBlog) => {
       const matchesSearch = blog.title.toLowerCase().includes(search.toLowerCase());
       const matchesCategory = category === 'ALL' || blog.category === category;
       return matchesSearch && matchesCategory;
@@ -56,14 +69,14 @@ export default function BlogsPage() {
   }, [isLoading, filteredBlogs]);
 
   return (
-    <Box sx={{ py: 8, bgcolor: '#ffffff', minHeight: '100vh' }}>
+    <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: '#ffffff', minHeight: '100vh' }}>
       <Container maxWidth="lg">
         <Box sx={{ mb: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 2 }}>
           <Box>
-            <Typography variant="h3" fontWeight={900} color="#000000" gutterBottom>
+            <Typography variant="h3" fontWeight={900} color="#0f172a" gutterBottom>
               Community <span style={{ color: '#16a34a' }}>Blog</span>
             </Typography>
-            <Typography variant="h6" color="text.secondary">
+            <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 500 }}>
               Insights, stories, and research from SUST CSE students and faculty.
             </Typography>
           </Box>
@@ -123,7 +136,7 @@ export default function BlogsPage() {
           </Box>
         ) : (
           <Grid container spacing={4} ref={containerRef}>
-            {filteredBlogs.length > 0 ? filteredBlogs.map((blog: any) => (
+            {filteredBlogs.length > 0 ? filteredBlogs.map((blog: IBlog) => (
               <Grid size={{ xs: 12, md: 6, lg: 4 }} key={blog._id} className="blog-card">
                 <Paper
                   component={Link}
@@ -141,7 +154,7 @@ export default function BlogsPage() {
                     '&:hover': { 
                       transform: 'translateY(-5px)', 
                       borderColor: '#16a34a',
-                      boxShadow: '0 10px 40px -10px rgba(22, 163, 74, 0.1)'
+                      boxShadow: '0 20px 40px -20px rgba(22, 163, 74, 0.15)'
                     }
                   }}
                 >
@@ -160,7 +173,7 @@ export default function BlogsPage() {
                       />
                     </Stack>
                     
-                    <Typography variant="h5" fontWeight={800} color="#000000" sx={{ mb: 2, lineHeight: 1.3 }}>
+                    <Typography variant="h5" fontWeight={800} color="#0f172a" sx={{ mb: 2, lineHeight: 1.3 }}>
                       {blog.title}
                     </Typography>
                     
@@ -176,7 +189,7 @@ export default function BlogsPage() {
                         lineHeight: 1.6
                       }}
                     >
-                      {blog.content}
+                      {stripHtml(blog.content)}
                     </Typography>
                   </Box>
 
