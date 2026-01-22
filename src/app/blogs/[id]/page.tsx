@@ -64,7 +64,7 @@ export default function BlogDetailsPage() {
           <Chip 
             label={blog.category} 
             sx={{ 
-              fontWeight: 800, 
+              fontWeight: 800,                                                            
               bgcolor: '#dcfce7', 
               color: '#166534', 
               borderRadius: 1,
@@ -101,7 +101,24 @@ export default function BlogDetailsPage() {
             </Box>
           </Stack>
           
-          <Button startIcon={<LucideShare2 size={18} />} variant="outlined" sx={{ borderRadius: 4, textTransform: 'none', color: '#64748b', borderColor: '#e2e8f0' }}>
+          <Button 
+            startIcon={<LucideShare2 size={18} />} 
+            variant="outlined" 
+            onClick={() => {
+              const url = window.location.href;
+              if (navigator.share) {
+                navigator.share({
+                  title: blog.title,
+                  text: `Check out this blog: ${blog.title}`,
+                  url
+                }).catch(console.error);
+              } else {
+                navigator.clipboard.writeText(url);
+                window.alert('Link copied to clipboard!');
+              }
+            }}
+            sx={{ borderRadius: 4, textTransform: 'none', color: '#64748b', borderColor: '#e2e8f0' }}
+          >
             Share
           </Button>
         </Box>
@@ -130,7 +147,7 @@ export default function BlogDetailsPage() {
               lineHeight: 1.8, 
               color: '#334155',
               '& b, & strong': { fontWeight: 700, color: '#0f172a' },
-              '& b, & strong': { fontWeight: 700, color: '#0f172a' },
+              // '& b, & strong': { fontWeight: 700, color: '#0f172a' },
               '& i, & em': { fontStyle: 'italic' },
               '& u': { textDecoration: 'underline' },
               '& ul, & ol': { mb: 3, pl: 3 },

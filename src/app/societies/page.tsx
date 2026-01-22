@@ -38,11 +38,11 @@ export default function SocietiesPage() {
       <Container maxWidth="lg">
         <Box sx={{ mb: 8, textAlign: 'center' }}>
           <Typography variant="h3" fontWeight={900} color="#002147" gutterBottom>
-            Student Societies
+            CSE Society
           </Typography>
           <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 700, mx: 'auto' }}>
-            Explore the vibrant community of SUST CSE through our various student-led 
-            organizations, clubs, and interest groups.
+            Explore the heart of the SUST CSE community through our student-led 
+            organization.
           </Typography>
         </Box>
 

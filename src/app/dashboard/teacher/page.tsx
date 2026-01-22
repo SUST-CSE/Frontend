@@ -17,7 +17,6 @@ import {
 import { useGetMeQuery } from '@/features/auth/authApi';
 import { 
   LucideBriefcase, 
-  LucideMail, 
   LucidePhone, 
   LucideLayoutDashboard,
   LucideBookOpen,
@@ -28,9 +27,16 @@ import ProfileSettings from '@/components/dashboard/ProfileSettings';
 import MyBlogsList from '@/components/dashboard/MyBlogsList';
 import ComposeBlog from '@/components/dashboard/ComposeBlog';
 import { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { useRouter } from 'next/navigation';
+import { logout } from '@/features/auth/authSlice';
+import { Button } from '@mui/material';
+import { LucideLogOut } from 'lucide-react';
 
 export default function TeacherDashboard() {
   const [activeTab, setActiveTab] = useState(0);
+  const dispatch = useDispatch();
+  const router = useRouter();
   const { data: userData, isLoading, error } = useGetMeQuery(undefined);
   const user = userData?.data;
 
@@ -63,7 +69,21 @@ export default function TeacherDashboard() {
               Managing your professional profile and research contributions
             </Typography>
           </Box>
-          <Chip label="Faculty Member" color="secondary" sx={{ fontWeight: 800, borderRadius: 2 }} />
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Chip label="Faculty Member" color="secondary" sx={{ fontWeight: 800, borderRadius: 2 }} />
+            <Button
+              variant="outlined"
+              color="error"
+              startIcon={<LucideLogOut size={18} />}
+              onClick={() => {
+                dispatch(logout());
+                router.push('/login');
+              }}
+              sx={{ fontWeight: 700, borderRadius: 2, textTransform: 'none' }}
+            >
+              Logout
+            </Button>
+          </Stack>
         </Box>
 
         <Paper elevation={0} sx={{ borderRadius: 4, mb: 4, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.05)' }}>

@@ -8,9 +8,11 @@ import {
   Stack, 
   Paper, 
   Button, 
-  CircularProgress
+  CircularProgress,
+  Tooltip,
+  IconButton
 } from '@mui/material';
-import { Bell as LucideBell, ArrowRight as LucideArrowRight, Paperclip as LucidePaperclip, Calendar as LucideCalendar } from 'lucide-react';
+import { Bell as LucideBell, ArrowRight as LucideArrowRight, Paperclip as LucidePaperclip, Calendar as LucideCalendar, ExternalLink as LucideExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { useKeenSlider } from 'keen-slider/react';
 import 'keen-slider/keen-slider.min.css';
@@ -167,26 +169,17 @@ export default function NoticesSection() {
                       )}
                     </Stack>
 
-                    <Button 
-                      size="small" 
-                      variant="outlined"
-                      sx={{ 
-                        borderColor: '#16a34a', 
-                        color: '#16a34a',
-                        fontWeight: 700,
-                        textTransform: 'none',
-                        whiteSpace: 'nowrap',
-                        flexShrink: 0,
-                        px: 2,
-                        '&:hover': {
-                          bgcolor: '#f0fdf4',
-                          borderColor: '#15803d'
-                        }
-                      }}
-                    >
-                      View Details
-                    </Button>
-                  </Stack>
+                      <Tooltip title="View Details">
+                        <IconButton 
+                          size="small" 
+                          component={Link}
+                          href={`/notices/${notice._id}`}
+                          sx={{ color: '#16a34a', border: '1px solid #e2e8f0', '&:hover': { bgcolor: '#f0fdf4', borderColor: '#16a34a' } }}
+                        >
+                          <LucideExternalLink size={18} />
+                        </IconButton>
+                      </Tooltip>
+                    </Stack>
                 </Box>
               </Paper>
             </Box>

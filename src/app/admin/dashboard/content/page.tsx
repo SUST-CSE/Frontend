@@ -28,9 +28,10 @@ import {
   IconButton,
   Grid
 } from '@mui/material';
-import { LucidePlus, LucideTrash2, LucideEdit, LucideCalendar, LucideFileText, LucideUpload, LucideTrophy } from 'lucide-react';
+import { LucidePlus, LucideTrash2, LucideEdit, LucideCalendar, LucideFileText, LucideUpload, LucideTrophy, LucideExternalLink } from 'lucide-react';
 import NextImage from 'next/image';
 import { useState, useEffect } from 'react';
+import Hero from '@/components/home/Hero';
 import { useGetEventsQuery, useCreateEventMutation, useDeleteEventMutation } from '@/features/event/eventApi';
 import { 
   useGetNoticesQuery, 
@@ -42,6 +43,13 @@ import {
   useCreateAchievementMutation,
   useDeleteAchievementMutation
 } from '@/features/content/contentApi';
+import {
+  useGetProductsAdminQuery,
+  useCreateProductMutation,
+  useUpdateProductMutation,
+  useDeleteProductMutation,
+  useToggleProductStatusMutation
+} from '@/features/product/productApi';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -105,10 +113,19 @@ const achievementSchema = z.object({
   category: z.enum(['CP', 'HACKATHON', 'CTF', 'DL', 'ACADEMIC', 'OTHER']),
 });
 
+const productSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  description: z.string().optional(),
+  link: z.string().url('Invalid URL format'),
+  isActive: z.boolean().default(true),
+  order: z.number().int().min(0).default(0),
+});
+
 type EventFormData = z.infer<typeof eventSchema>;
 type NoticeFormData = z.infer<typeof noticeSchema>;
 type HeroFormData = z.infer<typeof heroSchema>;
 type AchievementFormData = z.infer<typeof achievementSchema>;
+type ProductFormData = z.infer<typeof productSchema>;
 
 interface HeroSlide {
   title: string;
@@ -139,7 +156,18 @@ interface AdminEvent {
 
 export default function AdminContentPage() {
   const [tabIndex, setTabIndex] = useState(0);
+  const [showPreview, setShowPreview] = useState(false);
   
+  // Product State
+  const [openProductDialog, setOpenProductDialog] = useState(false);
+  const [editProductId, setEditProductId] = useState<string | null>(null);
+  const [productIcon, setProductIcon] = useState<File | null>(null);
+  const { data: productData, isLoading: productsLoading } = useGetProductsAdminQuery({});
+  const [createProduct, { isLoading: isCreatingProduct }] = useCreateProductMutation();
+  const [updateProduct, { isLoading: isUpdatingProduct }] = useUpdateProductMutation();
+  const [deleteProduct] = useDeleteProductMutation();
+  const [toggleProductStatus] = useToggleProductStatusMutation();
+
   // Event State
   const [openEventDialog, setOpenEventDialog] = useState(false);
   const [eventFiles, setEventFiles] = useState<File[]>([]);
@@ -174,6 +202,18 @@ export default function AdminContentPage() {
   const notices = noticeData?.data || [];
   const achievements = achievementData?.data || [];
   const hero = heroData?.data || { heroSlides: [] };
+  const products = productData?.data || [];
+
+  const productForm = useForm<ProductFormData>({
+    resolver: zodResolver(productSchema),
+    defaultValues: {
+      name: '',
+      description: '',
+      link: '',
+      isActive: true,
+      order: 0,
+    }
+  });
 
   const eventForm = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
@@ -301,6 +341,7 @@ export default function AdminContentPage() {
         formData.append('heroImages', heroFiles[0]); // Only one image per slide update/add
       }
 
+
       await updateHomepage(formData).unwrap();
       alert(editSlideIndex !== null ? "Slide updated successfully!" : "New slide added successfully!");
       setOpenHeroDialog(false);
@@ -335,6 +376,37 @@ export default function AdminContentPage() {
     } catch (error) {
        console.error("Failed to create achievement", error);
        alert("Failed to create achievement. Please try again.");
+    }
+  };
+
+  const onProductSubmit = async (data: ProductFormData) => {
+    try {
+      const formData = new FormData();
+      formData.append('name', data.name);
+      if (data.description) formData.append('description', data.description);
+      formData.append('link', data.link);
+      formData.append('isActive', String(data.isActive));
+      formData.append('order', String(data.order));
+      
+      if (productIcon) {
+        formData.append('icon', productIcon);
+      }
+
+      if (editProductId) {
+        await updateProduct({ id: editProductId, data: formData }).unwrap();
+        alert("Product updated successfully!");
+      } else {
+        await createProduct(formData).unwrap();
+        alert("Product created successfully!");
+      }
+      
+      setOpenProductDialog(false);
+      setEditProductId(null);
+      setProductIcon(null);
+      productForm.reset();
+    } catch (error) {
+      console.error("Failed to save product", error);
+      alert("Failed to save product. Please try again.");
     }
   };
 
@@ -391,6 +463,7 @@ export default function AdminContentPage() {
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={tabIndex} onChange={(_, v) => setTabIndex(v)}>
           <Tab label="Homepage Banner" icon={<LucideFileText size={18} />} iconPosition="start" />
+          <Tab label="Student Projects" icon={<LucideFileText size={18} />} iconPosition="start" />
           <Tab label="Achievements" icon={<LucideTrophy size={18} />} iconPosition="start" />
           <Tab label="Events" icon={<LucideCalendar size={18} />} iconPosition="start" />
           <Tab label="Notices" icon={<LucideFileText size={18} />} iconPosition="start" />
@@ -399,64 +472,191 @@ export default function AdminContentPage() {
 
       {/* Hero Banner Tab */}
       <CustomTabPanel value={tabIndex} index={0}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 4 }}>
-          <Typography variant="h6" fontWeight={800}>Current Slides</Typography>
+        <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
           <Button 
-            variant="contained" 
-            startIcon={<LucidePlus size={18} />}
-            onClick={() => {
-              setEditSlideIndex(null);
-              heroForm.reset({ title: '', subtitle: '', description: '', ctaText: '', ctaLink: '' });
-              setOpenHeroDialog(true);
-            }}
-            sx={{ bgcolor: '#000000', fontWeight: 700 }}
+            variant={!showPreview ? "contained" : "outlined"}
+            onClick={() => setShowPreview(false)}
+            sx={{ fontWeight: 700, borderRadius: 3 }}
           >
-            Add New Slide
+            Management
+          </Button>
+          <Button 
+            variant={showPreview ? "contained" : "outlined"}
+            onClick={() => setShowPreview(true)}
+            sx={{ fontWeight: 700, borderRadius: 3 }}
+          >
+            Live Preview
           </Button>
         </Stack>
 
-        <Grid container spacing={3}>
-          {noticesLoading || heroLoading ? (
-            <Grid size={{ xs: 12 }}><Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress /></Box></Grid>
-          ) : (
-            <>
-              {hero.heroSlides.map((slide: HeroSlide, idx: number) => (
-                <Grid key={slide._id || idx} size={{ xs: 12, md: 6 }}>
-                  <Paper elevation={0} sx={{ p: 2, borderRadius: 3, border: '1px solid #e2e8f0', bgcolor: '#fff' }}>
-                    <Stack direction="row" spacing={2}>
-                      <Box sx={{ width: 120, height: 80, borderRadius: 2, overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
-                        <NextImage src={slide.image} alt={slide.title} fill style={{ objectFit: 'cover' }} unoptimized />
-                      </Box>
-                      <Box sx={{ flexGrow: 1 }}>
-                        <Typography variant="subtitle1" fontWeight={800}>{slide.title}</Typography>
-                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>{slide.subtitle}</Typography>
-                        <Stack direction="row" spacing={1}>
-                          <IconButton size="small" onClick={() => {
-                            setEditSlideIndex(idx);
-                            heroForm.reset(slide);
-                            setOpenHeroDialog(true);
-                          }}><LucideEdit size={16} /></IconButton>
-                          <IconButton size="small" color="error" onClick={() => handleDeleteHeroSlide(idx)}><LucideTrash2 size={16} /></IconButton>
+        {!showPreview ? (
+          <>
+            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 4 }}>
+              <Typography variant="h6" fontWeight={800}>Current Slides ({hero.heroSlides.length})</Typography>
+              <Button 
+                variant="contained" 
+                startIcon={<LucidePlus size={18} />}
+                onClick={() => {
+                  setEditSlideIndex(null);
+                  heroForm.reset({ title: '', subtitle: '', description: '', ctaText: '', ctaLink: '' });
+                  setOpenHeroDialog(true);
+                }}
+                sx={{ bgcolor: '#16a34a', fontWeight: 700, '&:hover': { bgcolor: '#15803d' } }}
+              >
+                Add New Slide
+              </Button>
+            </Stack>
+
+            <Grid container spacing={3}>
+              {heroLoading ? (
+                <Grid size={{ xs: 12 }}><Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress /></Box></Grid>
+              ) : (
+                <>
+                  {hero.heroSlides.map((slide: HeroSlide, idx: number) => (
+                    <Grid key={slide._id || idx} size={{ xs: 12, md: 6 }}>
+                      <Paper elevation={0} sx={{ p: 2.5, borderRadius: 4, border: '1px solid #e2e8f0', bgcolor: '#fff', transition: 'all 0.3s ease', '&:hover': { borderColor: '#16a34a', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' } }}>
+                        <Stack direction="row" spacing={2.5}>
+                          <Box sx={{ width: 140, height: 90, borderRadius: 3, overflow: 'hidden', flexShrink: 0, position: 'relative', border: '1px solid #f1f5f9' }}>
+                            <NextImage src={slide.image} alt={slide.title} fill style={{ objectFit: 'cover' }} unoptimized />
+                          </Box>
+                          <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                            <Typography variant="subtitle1" fontWeight={800} sx={{ lineHeight: 1.2, mb: 0.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{slide.title}</Typography>
+                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5, fontWeight: 600 }}>{slide.subtitle || 'No subtitle'}</Typography>
+                            <Stack direction="row" spacing={1}>
+                              <Button 
+                                size="small" 
+                                startIcon={<LucideEdit size={14} />} 
+                                onClick={() => {
+                                  setEditSlideIndex(idx);
+                                  heroForm.reset(slide);
+                                  setOpenHeroDialog(true);
+                                }}
+                                sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 2 }}
+                              >
+                                Edit
+                              </Button>
+                              <Button 
+                                size="small" 
+                                color="error" 
+                                startIcon={<LucideTrash2 size={14} />} 
+                                onClick={() => handleDeleteHeroSlide(idx)}
+                                sx={{ textTransform: 'none', fontWeight: 700, borderRadius: 2 }}
+                              >
+                                Delete
+                              </Button>
+                            </Stack>
+                          </Box>
                         </Stack>
+                      </Paper>
+                    </Grid>
+                  ))}
+                  {(!hero.heroSlides || hero.heroSlides.length === 0) && (
+                    <Grid size={{ xs: 12 }}>
+                      <Box sx={{ p: 10, textAlign: 'center', bgcolor: '#f8fafc', borderRadius: 6, border: '2px dashed #e2e8f0' }}>
+                        <LucideFileText size={48} color="#94a3b8" style={{ marginBottom: 16 }} />
+                        <Typography variant="h6" fontWeight={700} color="text.secondary">No hero slides active</Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>Add a slide to showcase it on the homepage banner.</Typography>
                       </Box>
-                    </Stack>
-                  </Paper>
-                </Grid>
-              ))}
-              {(!hero.heroSlides || hero.heroSlides.length === 0) && (
-                <Grid size={{ xs: 12 }}>
-                  <Box sx={{ p: 6, textAlign: 'center', bgcolor: '#f8fafc', borderRadius: 4, border: '1px dashed #cbd5e1' }}>
-                    <Typography color="text.secondary">No hero slides found. Add one to get started.</Typography>
-                  </Box>
-                </Grid>
+                    </Grid>
+                  )}
+                </>
               )}
-            </>
-          )}
-        </Grid>
+            </Grid>
+          </>
+        ) : (
+          <Box sx={{ borderRadius: 6, overflow: 'hidden', border: '1px solid #e2e8f0', bgcolor: '#000' }}>
+             <Box sx={{ p: 2, bgcolor: '#f8fafc', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Typography variant="caption" fontWeight={800} color="text.secondary">HOMEPAGE PREVIEW (DESKTOP VIEW)</Typography>
+                <Chip label="Live" size="small" color="error" sx={{ fontWeight: 900, height: 20, fontSize: '0.6rem' }} />
+             </Box>
+             <Box sx={{ height: 500, overflow: 'hidden', pointerEvents: 'none' }}>
+                <Hero />
+             </Box>
+          </Box>
+        )}
+      </CustomTabPanel>
+
+      {/* Products Tab */}
+      <CustomTabPanel value={tabIndex} index={1}>
+        <Stack direction="row" justifyContent="flex-end" sx={{ mb: 4 }}>
+           <Button 
+              variant="contained" 
+              startIcon={<LucidePlus size={18} />}
+              onClick={() => {
+                setEditProductId(null);
+                productForm.reset({ name: '', description: '', link: '', isActive: true, order: 0 });
+                setOpenProductDialog(true);
+              }}
+              sx={{ bgcolor: '#000000', fontWeight: 700 }}
+           >
+              Add Project
+           </Button>
+        </Stack>
+
+        <Paper elevation={0} sx={{ p: 0, borderRadius: 4, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+           {productsLoading ? <Box sx={{ p: 4, display: 'flex', justifyContent: 'center' }}><CircularProgress /></Box> : (
+             <TableContainer>
+               <Table>
+                 <TableHead sx={{ bgcolor: '#f8fafc' }}>
+                   <TableRow>
+                     <TableCell sx={{ fontWeight: 800 }}>Icon</TableCell>
+                     <TableCell sx={{ fontWeight: 800 }}>Project Name</TableCell>
+                     <TableCell sx={{ fontWeight: 800 }}>Project URL</TableCell>
+                     <TableCell sx={{ fontWeight: 800 }}>Status</TableCell>
+                     <TableCell sx={{ fontWeight: 800 }}>Order</TableCell>
+                     <TableCell sx={{ fontWeight: 800, textAlign: 'right' }}>Actions</TableCell>
+                   </TableRow>
+                 </TableHead>
+                 <TableBody>
+                   {products.map((product: any) => (
+                     <TableRow key={product._id} hover>
+                       <TableCell>
+                         {product.icon && (
+                           <Box sx={{ width: 32, height: 32, position: 'relative' }}>
+                             <NextImage src={product.icon} alt={product.name} fill style={{ objectFit: 'contain' }} unoptimized />
+                           </Box>
+                         )}
+                       </TableCell>
+                       <TableCell sx={{ fontWeight: 600 }}>{product.name}</TableCell>
+                       <TableCell sx={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{product.link}</TableCell>
+                       <TableCell>
+                          <Chip 
+                            label={product.isActive ? 'Active' : 'Inactive'} 
+                            size="small" 
+                            color={product.isActive ? 'success' : 'default'}
+                            onClick={() => toggleProductStatus(product._id)}
+                            sx={{ cursor: 'pointer' }}
+                          />
+                       </TableCell>
+                       <TableCell>{product.order}</TableCell>
+                       <TableCell align="right">
+                          <IconButton size="small" onClick={() => {
+                            setEditProductId(product._id);
+                            productForm.reset({
+                              name: product.name,
+                              description: product.description || '',
+                              link: product.link,
+                              isActive: product.isActive,
+                              order: product.order || 0
+                            });
+                            setOpenProductDialog(true);
+                          }}><LucideEdit size={16} /></IconButton>
+                          <IconButton component="a" href={`/projects/${product._id}`} target="_blank" size="small" color="primary">
+                            <LucideExternalLink size={16} />
+                          </IconButton>
+                          <IconButton size="small" color="error" onClick={() => { if(confirm("Delete product?")) deleteProduct(product._id) }}><LucideTrash2 size={16} /></IconButton>
+                       </TableCell>
+                     </TableRow>
+                   ))}
+                 </TableBody>
+               </Table>
+             </TableContainer>
+           )}
+        </Paper>
       </CustomTabPanel>
 
       {/* Achievements Tab */}
-      <CustomTabPanel value={tabIndex} index={1}>
+      <CustomTabPanel value={tabIndex} index={2}>
         <Stack direction="row" justifyContent="flex-end" sx={{ mb: 4 }}>
            <Button 
               variant="contained" 
@@ -500,7 +700,7 @@ export default function AdminContentPage() {
         </Paper>
       </CustomTabPanel>
 
-      <CustomTabPanel value={tabIndex} index={2}>
+      <CustomTabPanel value={tabIndex} index={3}>
         <Stack direction="row" justifyContent="flex-end" sx={{ mb: 4 }}>
            <Button 
               variant="contained" 
@@ -556,7 +756,7 @@ export default function AdminContentPage() {
       </CustomTabPanel>
 
       {/* Notices Tab */}
-      <CustomTabPanel value={tabIndex} index={3}>
+      <CustomTabPanel value={tabIndex} index={4}>
         <Stack direction="row" justifyContent="flex-end" sx={{ mb: 4 }}>
            <Button 
               variant="contained" 
@@ -1005,6 +1205,67 @@ export default function AdminContentPage() {
                </Button>
             </DialogActions>
          </form>
+      </Dialog>
+
+      {/* Product Dialog */}
+      <Dialog open={openProductDialog} onClose={() => setOpenProductDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle fontWeight={800}>{editProductId ? 'Edit Project' : 'Add New Project'}</DialogTitle>
+        <form onSubmit={productForm.handleSubmit(onProductSubmit)}>
+          <DialogContent>
+            <Stack spacing={3} sx={{ pt: 1 }}>
+              <Controller
+                name="name"
+                control={productForm.control}
+                render={({ field }) => (
+                  <TextField {...field} label="Project Name" fullWidth error={!!productForm.formState.errors.name} helperText={productForm.formState.errors.name?.message} />
+                )}
+              />
+              <Controller
+                name="link"
+                control={productForm.control}
+                render={({ field }) => (
+                  <TextField {...field} label="Project URL" fullWidth error={!!productForm.formState.errors.link} helperText={productForm.formState.errors.link?.message} />
+                )}
+              />
+              <Controller
+                name="order"
+                control={productForm.control}
+                render={({ field }) => (
+                  <TextField {...field} label="Display Order" type="number" fullWidth error={!!productForm.formState.errors.order} helperText={productForm.formState.errors.order?.message} />
+                )}
+              />
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <input 
+                  type="checkbox" 
+                  {...productForm.register('isActive')} 
+                  style={{ marginRight: 8, width: 18, height: 18 }} 
+                />
+                <Typography variant="body2" fontWeight={600}>Active (Show in Navbar)</Typography>
+              </Box>
+              <Box>
+                <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1 }}>Project Icon</Typography>
+                <Button variant="outlined" component="label" fullWidth startIcon={<LucideUpload size={18} />} sx={{ py: 1.5, borderStyle: 'dashed', borderRadius: 2 }}>
+                  {productIcon ? 'Change Icon' : 'Upload Icon'}
+                  <input type="file" hidden accept="image/*" onChange={(e) => { if (e.target.files && e.target.files[0]) setProductIcon(e.target.files[0]); }} />
+                </Button>
+                {productIcon && <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>{productIcon.name}</Typography>}
+              </Box>
+              <Controller
+                name="description"
+                control={productForm.control}
+                render={({ field }) => (
+                  <TextField {...field} label="Description" multiline rows={4} fullWidth />
+                )}
+              />
+            </Stack>
+          </DialogContent>
+          <DialogActions sx={{ p: 3 }}>
+            <Button onClick={() => setOpenProductDialog(false)} sx={{ color: '#64748b' }}>Cancel</Button>
+            <Button type="submit" variant="contained" disabled={isCreatingProduct || isUpdatingProduct} sx={{ bgcolor: '#000000', px: 4 }}>
+              {isCreatingProduct || isUpdatingProduct ? <CircularProgress size={20} /> : (editProductId ? 'Update Project' : 'Add Project')}
+            </Button>
+          </DialogActions>
+        </form>
       </Dialog>
     </Box>
   );

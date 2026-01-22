@@ -32,7 +32,7 @@ export default function BlogEditor({ value, onChange, placeholder }: BlogEditorP
   const formats = [
     'header',
     'bold', 'italic', 'underline', 'strike',
-    'list', 'bullet',
+    'list',
     'blockquote', 'code-block',
     'color', 'background',
     'link'

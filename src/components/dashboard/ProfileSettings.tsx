@@ -19,6 +19,7 @@ import {
 } from '@mui/material';
 import { LucideCamera, LucideSave, LucideUser, LucidePhone, LucideBriefcase, LucideBell } from 'lucide-react';
 import { useUpdateMyProfileMutation } from '@/features/user/userApi';
+import ChangePassword from './ChangePassword';
 
 interface ProfileSettingsProps {
   user: any;
@@ -99,7 +100,8 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
 
       <Stack spacing={4}>
         {/* Photo Upload */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        {/* Photo Upload */}
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: 'center', gap: 4, textAlign: { xs: 'center', sm: 'left' } }}>
           <Box sx={{ position: 'relative' }}>
             <Avatar 
               src={preview} 
@@ -131,7 +133,7 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
           </Box>
           <Box>
             <Typography variant="subtitle2" fontWeight={700}>Profile Photo</Typography>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', maxWidth: 300 }}>
               Update your photo. Allowed formats: JPG, PNG. Max size: 2MB.
             </Typography>
           </Box>
@@ -234,6 +236,9 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
           </Button>
         </Stack>
       </Stack>
+
+      <Divider sx={{ my: 6 }} />
+      <ChangePassword />
     </Box>
   );
 }

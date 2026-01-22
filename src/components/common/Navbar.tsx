@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import gsap from 'gsap';
 import { 
@@ -19,18 +19,39 @@ import {
   ListItem,
   ListItemButton,
   ListItemText,
+  Menu,
+  MenuItem,
+  Collapse,
+  Stack
 } from '@mui/material';
-import { User as UserIcon, LucideMenu, LucideX, LucideChevronRight } from 'lucide-react';
+import { 
+  User as UserIcon, 
+  LucideMenu, 
+  LucideX, 
+  LucideChevronRight, 
+  LucideChevronDown, 
+  LucideExternalLink 
+} from 'lucide-react';
 import { RootState } from '@/store';
+import { useGetProductsQuery } from '@/features/product/productApi';
+
+interface Product {
+  _id: string;
+  name: string;
+  link: string;
+  icon?: string;
+  isActive: boolean;
+  order: number;
+}
 
 const NAV_ITEMS = [
   { label: 'Home', href: '/' },
   { label: 'Notices', href: '/notices' },
   { label: 'Events', href: '/events' },
-  { label: 'Societies', href: '/societies' },
+  { label: 'Society', href: '/societies' },
   { label: 'Alumni', href: '/alumni' },
   { label: 'Academic', href: '/academic' },
-  { label: 'Payments', href: '/payments' },
+  { label: 'Products', href: '#', isDropdown: true },
   { label: 'Achievements', href: '/achievements' },
   { label: 'Blogs', href: '/blogs' },
 ];
@@ -38,8 +59,23 @@ const NAV_ITEMS = [
 export default function Navbar() {
   const navRef = useRef(null);
   const router = useRouter();
+  const pathname = usePathname();
   const { user, isAuthenticated } = useSelector((state: RootState) => state.auth);
   const [mobileOpen, setMobileOpen] = useState(false);
+  
+  // Products Dropdown State
+  const [productsAnchorEl, setProductsAnchorEl] = useState<null | HTMLElement>(null);
+  const [mobileProductsOpen, setMobileProductsOpen] = useState(false);
+  const { data: productsData } = useGetProductsQuery({});
+  const activeProducts = productsData?.data || [];
+
+  // Check if a route is active
+  const isActive = (href: string) => {
+    if (href === '#' || href === '') return false;
+    if (href === '/' && pathname === '/') return true;
+    if (href !== '/' && pathname.startsWith(href)) return true;
+    return false;
+  };
 
   useEffect(() => {
     gsap.fromTo(
@@ -55,10 +91,18 @@ export default function Navbar() {
 
   const handleUserClick = () => {
     if (isAuthenticated) {
-      router.push('/profile');
+      router.push('/dashboard');
     } else {
       router.push('/login');
     }
+  };
+
+  const handleProductsClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setProductsAnchorEl(event.currentTarget);
+  };
+
+  const handleProductsClose = () => {
+    setProductsAnchorEl(null);
   };
 
   const drawerContent = (
@@ -77,25 +121,76 @@ export default function Navbar() {
       </Box>
       
       <List sx={{ flexGrow: 1, px: 2, pt: 2 }}>
-        {NAV_ITEMS.map((item) => (
-          <ListItem key={item.label} disablePadding sx={{ mb: 1 }}>
-            <ListItemButton 
-              component={Link} 
-              href={item.href}
-              onClick={handleDrawerToggle}
-              sx={{ 
-                borderRadius: 2,
-                '&:hover': { bgcolor: '#f8fafc', color: '#16a34a' }
-              }}
-            >
-              <ListItemText 
-                primary={item.label} 
-                primaryTypographyProps={{ fontWeight: 600, fontSize: '0.95rem' }} 
-              />
-              <LucideChevronRight size={16} color="#cbd5e1" />
-            </ListItemButton>
-          </ListItem>
-        ))}
+        {NAV_ITEMS.map((item) => {
+          if (item.isDropdown && item.label === 'Products') {
+            return (
+              <Box key={item.label} sx={{ mb: 1 }}>
+                <ListItemButton 
+                  onClick={() => setMobileProductsOpen(!mobileProductsOpen)}
+                  sx={{ 
+                    borderRadius: 2,
+                    '&:hover': { bgcolor: '#f8fafc', color: '#16a34a' }
+                  }}
+                >
+                  <ListItemText 
+                    primary={item.label} 
+                    primaryTypographyProps={{ fontWeight: 600, fontSize: '0.95rem', color: '#64748b' }} 
+                  />
+                  {mobileProductsOpen ? <LucideChevronDown size={16} color="#cbd5e1" /> : <LucideChevronRight size={16} color="#cbd5e1" />}
+                </ListItemButton>
+                <Collapse in={mobileProductsOpen} timeout="auto" unmountOnExit>
+                  <List component="div" disablePadding sx={{ pl: 2 }}>
+                    {activeProducts.map((product: Product) => (
+                      <ListItemButton 
+                        key={product._id}
+                        component="a"
+                        href={product.link}
+                        target="_blank"
+                        sx={{ borderRadius: 2 }}
+                      >
+                        <ListItemText 
+                          primary={product.name} 
+                          primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: 500 }}
+                        />
+                        <LucideExternalLink size={14} color="#94a3b8" />
+                      </ListItemButton>
+                    ))}
+                    {activeProducts.length === 0 && (
+                      <Typography variant="caption" sx={{ pl: 2, py: 1, color: 'text.secondary', display: 'block' }}>No products available</Typography>
+                    )}
+                  </List>
+                </Collapse>
+              </Box>
+            );
+          }
+
+          const active = isActive(item.href);
+          return (
+            <ListItem key={item.label} disablePadding sx={{ mb: 1 }}>
+              <ListItemButton 
+                component={Link} 
+                href={item.href}
+                onClick={handleDrawerToggle}
+                sx={{ 
+                  borderRadius: 2,
+                  bgcolor: active ? '#f0fdf4' : 'transparent',
+                  borderLeft: active ? '4px solid #16a34a' : '4px solid transparent',
+                  '&:hover': { bgcolor: '#f8fafc', color: '#16a34a' }
+                }}
+              >
+                <ListItemText 
+                  primary={item.label} 
+                  primaryTypographyProps={{ 
+                    fontWeight: active ? 700 : 600, 
+                    fontSize: '0.95rem',
+                    color: active ? '#16a34a' : '#64748b'
+                  }} 
+                />
+                <LucideChevronRight size={16} color={active ? '#16a34a' : '#cbd5e1'} />
+              </ListItemButton>
+            </ListItem>
+          );
+        })}
       </List>
 
       <Box sx={{ p: 3, borderTop: '1px solid #f1f5f9' }}>
@@ -109,7 +204,7 @@ export default function Navbar() {
              }}
              startIcon={
                 <Avatar sx={{ width: 24, height: 24, bgcolor: '#16a34a', fontSize: '0.75rem' }}>
-                  {user.name.charAt(0).toUpperCase()}
+                   {user.name.charAt(0).toUpperCase()}
                 </Avatar>
              }
              sx={{ 
@@ -155,15 +250,18 @@ export default function Navbar() {
         borderBottom: '1px solid #e2e8f0' 
       }}
     >
-        <Toolbar disableGutters sx={{ height: 100, px: 3, justifyContent: 'space-between' }}>
+        <Toolbar disableGutters sx={{ height: 100, px: { xs: 1.5, sm: 3 }, justifyContent: 'space-between' }}>
           
           {/* Logo Section */}
           <Box 
             sx={{ 
               display: 'flex', 
               alignItems: 'center', 
-              gap: 2, 
-              cursor: 'pointer' 
+              gap: { xs: 1.5, sm: 2 }, 
+              cursor: 'pointer',
+              flex: 1, // Allow it to perform layout flexibility
+              mr: 2, // Force distance from the right side (menu icon)
+              overflow: 'hidden' // Prevent overflow
             }} 
             onClick={() => router.push('/')}
           >
@@ -181,7 +279,7 @@ export default function Navbar() {
                   fontWeight: 700, 
                   lineHeight: 1.1, 
                   color: '#0f172a',
-                  fontSize: { xs: '0.85rem', sm: '1.1rem', lg: '1.25rem' },
+                  fontSize: { xs: '0.9rem', sm: '1.1rem', lg: '1.25rem' }, // Slightly larger base for readability
                   letterSpacing: '-0.01em'
                 }}
               >
@@ -192,7 +290,10 @@ export default function Navbar() {
                 sx={{ 
                   fontWeight: 600, 
                   color: '#121a15ff',
-                  fontSize: { xs: '0.6rem', sm: '0.8rem', lg: '0.85rem' },
+                  fontSize: { xs: '0.65rem', sm: '0.8rem', lg: '0.85rem' },
+                  letterSpacing: '0.04em',
+                color: '#121a15ff',
+                  fontSize: { xs: '0.65rem', sm: '0.8rem', lg: '0.85rem' },
                   letterSpacing: '0.04em',
                   textTransform: 'uppercase',
                   mt: 0.5
@@ -205,25 +306,98 @@ export default function Navbar() {
 
           {/* Desktop Menu */}
           <Box sx={{ display: { xs: 'none', lg: 'flex' }, alignItems: 'center', gap: 1 }}>
-            {NAV_ITEMS.map((item) => (
-              <Button
-                key={item.label}
-                component={Link}
-                href={item.href}
-                sx={{
-                  color: '#64748b',
-                  px: 2,
-                  fontWeight: 600,
-                  fontSize: '0.95rem',
-                  '&:hover': {
-                    color: '#16a34a',
-                    bgcolor: '#f1f5f9',
-                  },
-                }}
-              >
-                {item.label}
-              </Button>
-            ))}
+            {NAV_ITEMS.map((item) => {
+              if (item.isDropdown && item.label === 'Products') {
+                return (
+                  <Box key={item.label}>
+                    <Button
+                      onClick={handleProductsClick}
+                      endIcon={<LucideChevronDown size={14} />}
+                      sx={{
+                        color: '#64748b',
+                        px: 2,
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        '&:hover': {
+                          color: '#16a34a',
+                          bgcolor: '#f1f5f9',
+                        },
+                      }}
+                    >
+                      {item.label}
+                    </Button>
+                    <Menu
+                      anchorEl={productsAnchorEl}
+                      open={Boolean(productsAnchorEl)}
+                      onClose={handleProductsClose}
+                      elevation={0}
+                      sx={{
+                        '& .MuiPaper-root': {
+                          mt: 1,
+                          minWidth: 200,
+                          borderRadius: 3,
+                          boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+                          border: '1px solid #f1f5f9'
+                        }
+                      }}
+                    >
+                      {activeProducts.map((product: Product) => (
+                        <MenuItem 
+                          key={product._id} 
+                          component="a" 
+                          href={product.link} 
+                          target="_blank"
+                          onClick={handleProductsClose}
+                          sx={{ 
+                            py: 1.5,
+                            px: 2,
+                            fontWeight: 600,
+                            borderRadius: 2,
+                            mx: 1,
+                            my: 0.5,
+                            '&:hover': { bgcolor: '#f0fdf4', color: '#16a34a' }
+                          }}
+                        >
+                          <Stack direction="row" spacing={1.5} alignItems="center">
+                            {product.icon && <Box sx={{ width: 20, height: 20, position: 'relative' }}><Image src={product.icon} alt={product.name} fill style={{ objectFit: 'contain' }} unoptimized /></Box>}
+                            <ListItemText primary={product.name} primaryTypographyProps={{ fontSize: '0.95rem', fontWeight: 600 }} />
+                            <LucideExternalLink size={14} color="#cbd5e1" />
+                          </Stack>
+                        </MenuItem>
+                      ))}
+                      {activeProducts.length === 0 && (
+                        <MenuItem disabled sx={{ py: 2, textAlign: 'center' }}>
+                          <Typography variant="body2" color="text.secondary">No products available</Typography>
+                        </MenuItem>
+                      )}
+                    </Menu>
+                  </Box>
+                );
+              }
+
+              const active = isActive(item.href);
+              return (
+                <Button
+                  key={item.label}
+                  component={Link}
+                  href={item.href}
+                  sx={{
+                    color: active ? '#16a34a' : '#64748b',
+                    px: 2,
+                    fontWeight: active ? 700 : 600,
+                    fontSize: '0.95rem',
+                    borderBottom: active ? '2px solid #16a34a' : '2px solid transparent',
+                    borderRadius: 0,
+                    '&:hover': {
+                      color: '#16a34a',
+                      bgcolor: '#f1f5f9',
+                    },
+                  }}
+                >
+                  {item.label}
+                </Button>
+              );
+            })}
             
             <IconButton 
               onClick={handleUserClick}

@@ -18,6 +18,10 @@ export const contentApi = apiSlice.injectEndpoints({
       query: () => '/content/achievements',
       providesTags: ['Achievement'],
     }),
+    getAchievementById: builder.query({
+      query: (id) => `/content/achievements/${id}`,
+      providesTags: (result, error, id) => [{ type: 'Achievement', id }],
+    }),
     createNotice: builder.mutation({
       query: (data) => ({
         url: '/content/notices',
@@ -64,6 +68,7 @@ export const {
   useGetNoticesQuery,
   useGetNoticeByIdQuery,
   useGetAchievementsQuery,
+  useGetAchievementByIdQuery,
   useCreateNoticeMutation,
   useDeleteNoticeMutation,
   useUpdateHomepageMutation,

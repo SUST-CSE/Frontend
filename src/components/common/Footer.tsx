@@ -30,18 +30,23 @@ export default function Footer() {
 
           <Grid item xs={6} md={2}>
             <Typography variant="subtitle1" sx={{ color: '#ffffff', fontWeight: 700, mb: 2 }}>
-              Quick Links
+              Explore
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              {['Admission', 'Current Students', 'Faculty', 'Research', 'Alumni'].map((item) => (
+              {[
+                { label: 'Home', href: '/' },
+                { label: 'Notices', href: '/notices' },
+                { label: 'Events', href: '/events' },
+                { label: 'Latest Blogs', href: '/blogs' },
+              ].map((item) => (
                 <MuiLink 
-                  key={item} 
+                  key={item.label} 
                   component={Link} 
-                  href="#" 
+                  href={item.href} 
                   underline="none" 
                   sx={{ color: '#94a3b8', fontSize: '0.875rem', '&:hover': { color: '#ffffff' } }}
                 >
-                  {item}
+                  {item.label}
                 </MuiLink>
               ))}
             </Box>
@@ -49,18 +54,23 @@ export default function Footer() {
 
           <Grid item xs={6} md={2}>
             <Typography variant="subtitle1" sx={{ color: '#ffffff', fontWeight: 700, mb: 2 }}>
-              Resources
+              Department
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              {['Course Catalog', 'Academic Calendar', 'Library', 'Forms', 'IT Support'].map((item) => (
+              {[
+                { label: 'Academic', href: '/academic' },
+                { label: 'Societies', href: '/societies' },
+                { label: 'Alumni', href: '/alumni' },
+                { label: 'Achievements', href: '/achievements' },
+              ].map((item) => (
                 <MuiLink 
-                  key={item} 
+                  key={item.label} 
                   component={Link} 
-                  href="#" 
+                  href={item.href} 
                   underline="none" 
                   sx={{ color: '#94a3b8', fontSize: '0.875rem', '&:hover': { color: '#ffffff' } }}
                 >
-                  {item}
+                  {item.label}
                 </MuiLink>
               ))}
             </Box>

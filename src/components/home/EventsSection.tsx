@@ -12,9 +12,10 @@ import {
   Button, 
   CircularProgress,
   Chip,
-  IconButton
+  IconButton,
+  Tooltip
 } from '@mui/material';
-import { Calendar as LucideCalendar, MapPin as LucideMapPin, ArrowRight as LucideArrowRight, ChevronLeft as LucideChevronLeft, ChevronRight as LucideChevronRight, Paperclip as LucidePaperclip } from 'lucide-react';
+import { Calendar as LucideCalendar, MapPin as LucideMapPin, ArrowRight as LucideArrowRight, ChevronLeft as LucideChevronLeft, ChevronRight as LucideChevronRight, Paperclip as LucidePaperclip, ExternalLink as LucideExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { useKeenSlider } from 'keen-slider/react';
 import 'keen-slider/keen-slider.min.css';
@@ -219,25 +220,16 @@ export default function EventsSection() {
                         )}
                       </Stack>
 
-                      <Button 
-                        size="small" 
-                        variant="outlined"
-                        sx={{ 
-                          borderColor: '#2563eb', 
-                          color: '#2563eb',
-                          fontWeight: 700,
-                          textTransform: 'none',
-                          whiteSpace: 'nowrap',
-                          flexShrink: 0,
-                          px: 2,
-                          '&:hover': {
-                            bgcolor: '#eff6ff',
-                            borderColor: '#1d4ed8'
-                          }
-                        }}
-                      >
-                        View Details
-                      </Button>
+                      <Tooltip title="View Details">
+                        <IconButton 
+                          size="small" 
+                          component={Link}
+                          href={`/events/${event._id}`}
+                          sx={{ color: '#2563eb', border: '1px solid #e2e8f0', '&:hover': { bgcolor: '#eff6ff', borderColor: '#2563eb' } }}
+                        >
+                          <LucideExternalLink size={18} />
+                        </IconButton>
+                      </Tooltip>
                     </Stack>
                   </CardContent>
                 </Card>

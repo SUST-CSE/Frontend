@@ -104,7 +104,7 @@ export default function Hero() {
   if (isLoading) return <Box sx={{ height: '85vh', bgcolor: 'transparent' }} />;
 
   return (
-    <Box sx={{ position: 'relative', height: { xs: 'auto', md: '75vh', lg: '85vh' }, minHeight: { xs: '600px', md: 'auto' }, overflow: 'hidden', bgcolor: '#000' }}>
+    <Box sx={{ position: 'relative', height: { xs: '70vh', sm: '75vh', md: '75vh', lg: '85vh' }, minHeight: { xs: '500px', sm: 'auto' }, overflow: 'hidden', bgcolor: '#000' }}>
       {/* Slider Container */}
       <Box ref={sliderRef} className="keen-slider" sx={{ height: '100%' }}>
         {slidesToRender.map((slide: HeroSlide, idx: number) => {

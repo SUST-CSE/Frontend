@@ -12,7 +12,7 @@ import {
   Avatar,
   Chip
 } from '@mui/material';
-import { BookOpen as LucideBookOpen, ArrowRight as LucideArrowRight } from 'lucide-react';
+import { BookOpen as LucideBookOpen, ArrowRight as LucideArrowRight, ExternalLink as LucideExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { useKeenSlider } from 'keen-slider/react';
 import 'keen-slider/keen-slider.min.css';
@@ -180,6 +180,9 @@ export default function BlogSection() {
                     <Typography variant="caption" color="text.secondary">
                       {new Date(blog.createdAt).toLocaleDateString()}
                     </Typography>
+                  </Box>
+                  <Box sx={{ ml: 'auto' }}>
+                    <LucideExternalLink size={18} color="#94a3b8" />
                   </Box>
                 </Stack>
               </Paper>

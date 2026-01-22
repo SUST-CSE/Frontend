@@ -10,8 +10,10 @@ import {
   Stack, 
   Avatar, 
   IconButton,
-  Tooltip
+  Tooltip,
+  Divider
 } from '@mui/material';
+import Link from 'next/link';
 import { 
   LucideTrophy, 
   LucideUsers, 
@@ -69,6 +71,9 @@ export default function AchievementsSection() {
                   border: '1px solid #e2e8f0',
                   bgcolor: '#ffffff',
                   transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                  cursor: 'pointer',
+                  textDecoration: 'none',
+                  display: 'block',
                   '&:hover': {
                     transform: 'translateY(-10px)',
                     boxShadow: '0 30px 60px -12px rgba(15, 23, 42, 0.12)',
@@ -154,7 +159,12 @@ export default function AchievementsSection() {
                       </Typography>
                     </Stack>
                     <Tooltip title="View Details">
-                      <IconButton size="small" sx={{ color: '#0f172a', '&:hover': { bgcolor: '#f8fafc' } }}>
+                      <IconButton 
+                        size="small" 
+                        component={Link}
+                        href={`/achievements/${achievement._id}`}
+                        sx={{ color: '#0f172a', '&:hover': { bgcolor: '#f8fafc' } }}
+                      >
                         <LucideExternalLink size={18} />
                       </IconButton>
                     </Tooltip>
@@ -169,4 +179,3 @@ export default function AchievementsSection() {
   );
 }
 
-import { Divider } from '@mui/material';
