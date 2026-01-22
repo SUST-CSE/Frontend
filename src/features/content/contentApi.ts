@@ -4,7 +4,7 @@ export const contentApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getHomepage: builder.query({
       query: () => '/content/homepage',
-      providesTags: ['Notice'], // Re-using tags for simplicity or defining specific ones
+      providesTags: ['Homepage'], 
     }),
     getNotices: builder.query({
       query: () => '/content/notices',
@@ -39,7 +39,22 @@ export const contentApi = apiSlice.injectEndpoints({
         method: 'PUT',
         body: data,
       }),
-      invalidatesTags: ['Notice'], // Invalidate to refresh homepage data
+      invalidatesTags: ['Homepage'], // Invalidate to refresh homepage data
+    }),
+    createAchievement: builder.mutation({
+      query: (data) => ({
+        url: '/content/achievements',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Achievement'],
+    }),
+    deleteAchievement: builder.mutation({
+      query: (id) => ({
+        url: `/content/achievements/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Achievement'],
     }),
   }),
 });
@@ -52,4 +67,6 @@ export const {
   useCreateNoticeMutation,
   useDeleteNoticeMutation,
   useUpdateHomepageMutation,
+  useCreateAchievementMutation,
+  useDeleteAchievementMutation,
 } = contentApi;

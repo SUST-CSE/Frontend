@@ -21,6 +21,7 @@ import {
   LucideGlobe,
   LucideGraduationCap
 } from 'lucide-react';
+import NextImage from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store';
@@ -81,7 +82,8 @@ export default function AdminDashboardLayout({ children }: { children: React.Rea
           },
         }}
       >
-        <Box sx={{ p: 4 }}>
+        <Box sx={{ p: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
+          <NextImage src="/sust.png" alt="SUST Logo" width={40} height={40} />
           <Typography variant="h5" fontWeight={900} sx={{ letterSpacing: -0.5 }}>
             SUST <span style={{ color: '#16a34a' }}>Admin</span>
           </Typography>

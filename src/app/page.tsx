@@ -6,6 +6,7 @@ import NoticesSection from "@/components/home/NoticesSection";
 import EventsSection from "@/components/home/EventsSection";
 import BlogSection from "@/components/home/BlogSection";
 import SocietySection from "@/components/home/SocietySection";
+import AchievementsSection from "@/components/home/AchievementsSection";
 import { Box } from "@mui/material";
 
 export default function Home() {
@@ -17,6 +18,7 @@ export default function Home() {
       <ResearchAreas />
       <NoticesSection />
       <EventsSection />
+      <AchievementsSection />
       <BlogSection />
       <SocietySection />
     </Box>

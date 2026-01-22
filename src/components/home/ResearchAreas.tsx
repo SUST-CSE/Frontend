@@ -135,7 +135,7 @@ export default function ResearchAreas() {
                 fontWeight: 900, 
                 color: '#1e293b', 
                 mb: 3,
-                fontSize: { xs: '2.5rem', md: '3.5rem' },
+                fontSize: { xs: '2rem', sm: '2.8rem', md: '3.5rem' },
                 letterSpacing: '-0.02em',
                 lineHeight: 1.1
               }}
@@ -164,7 +164,7 @@ export default function ResearchAreas() {
                 borderRadius: 1.5,
                 fontWeight: 700,
                 textTransform: 'none',
-                fontSize: '1rem',
+                fontSize: { xs: '0.9rem', sm: '1rem' },
                 '&:hover': {
                   bgcolor: '#7f1d1d'
                 }
@@ -208,7 +208,7 @@ export default function ResearchAreas() {
                                 fontWeight: 800, 
                                 color: '#1e293b', 
                                 mb: 2,
-                                fontSize: '1.4rem'
+                                fontSize: { xs: '1.2rem', sm: '1.4rem' }
                               }}
                             >
                               {area.title}

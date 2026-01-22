@@ -30,7 +30,7 @@ export default function Stats() {
               <Paper
                 elevation={0}
                 sx={{
-                  p: 4,
+                  p: { xs: 3, sm: 4 },
                   textAlign: 'center',
                   bgcolor: '#ffffff',
                   borderRadius: 4,
@@ -55,7 +55,7 @@ export default function Stats() {
                 >
                   <stat.icon size={28} />
                 </Box>
-                <Typography variant="h3" sx={{ fontWeight: 800, mb: 0.5, color: '#0f172a' }}>
+                <Typography variant="h3" sx={{ fontWeight: 800, mb: 0.5, color: '#0f172a', fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' } }}>
                   {stat.displayValue}
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#64748b', fontWeight: 600, letterSpacing: 0.5 }}>

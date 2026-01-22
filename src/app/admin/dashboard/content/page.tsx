@@ -28,7 +28,8 @@ import {
   IconButton,
   Grid
 } from '@mui/material';
-import { LucidePlus, LucideTrash2, LucideEdit, LucideCalendar, LucideFileText, LucideUpload } from 'lucide-react';
+import { LucidePlus, LucideTrash2, LucideEdit, LucideCalendar, LucideFileText, LucideUpload, LucideTrophy } from 'lucide-react';
+import NextImage from 'next/image';
 import { useState, useEffect } from 'react';
 import { useGetEventsQuery, useCreateEventMutation, useDeleteEventMutation } from '@/features/event/eventApi';
 import { 
@@ -36,7 +37,10 @@ import {
   useCreateNoticeMutation, 
   useDeleteNoticeMutation,
   useGetHomepageQuery,
-  useUpdateHomepageMutation 
+  useUpdateHomepageMutation,
+  useGetAchievementsQuery,
+  useCreateAchievementMutation,
+  useDeleteAchievementMutation
 } from '@/features/content/contentApi';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
@@ -87,13 +91,51 @@ const heroSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   subtitle: z.string().min(1, 'Subtitle is required'),
   description: z.string().min(1, 'Description is required'),
-  ctaText: z.string().min(1, 'CTA Text is required'),
-  ctaLink: z.string().min(1, 'CTA Link is required'),
+  ctaText: z.string().optional(),
+  ctaLink: z.string().optional(),
+});
+
+const achievementSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  description: z.string().min(1, 'Description is required'),
+  teamName: z.string().optional(),
+  competitionName: z.string().min(1, 'Competition name is required'),
+  position: z.string().min(1, 'Position is required'),
+  date: z.string().min(1, 'Date is required'),
+  category: z.enum(['CP', 'HACKATHON', 'CTF', 'DL', 'ACADEMIC', 'OTHER']),
 });
 
 type EventFormData = z.infer<typeof eventSchema>;
 type NoticeFormData = z.infer<typeof noticeSchema>;
 type HeroFormData = z.infer<typeof heroSchema>;
+type AchievementFormData = z.infer<typeof achievementSchema>;
+
+interface HeroSlide {
+  title: string;
+  subtitle: string;
+  description: string;
+  ctaText?: string;
+  ctaLink?: string;
+  image: string;
+}
+
+interface Achievement {
+  _id: string;
+  title: string;
+  description: string;
+  competitionName: string;
+  position: string;
+  category: string;
+  date: string;
+}
+
+interface AdminEvent {
+  _id: string;
+  title: string;
+  startDate: string;
+  organizer: string;
+  status: string;
+}
 
 export default function AdminContentPage() {
   const [tabIndex, setTabIndex] = useState(0);
@@ -114,14 +156,24 @@ export default function AdminContentPage() {
   const [deleteNotice] = useDeleteNoticeMutation();
 
   // Hero State
-  const { data: heroData } = useGetHomepageQuery({});
+  const { data: heroData, isLoading: heroLoading } = useGetHomepageQuery({});
   const [updateHomepage, { isLoading: isUpdatingHero }] = useUpdateHomepageMutation();
+  const [editSlideIndex, setEditSlideIndex] = useState<number | null>(null);
   const [heroFiles, setHeroFiles] = useState<File[]>([]);
   const [heroPreviews, setHeroPreviews] = useState<string[]>([]);
 
+  // Achievement State
+  const [openAchievementDialog, setOpenAchievementDialog] = useState(false);
+  const [achievementFiles, setAchievementFiles] = useState<File[]>([]);
+  const { data: achievementData, isLoading: achievementsLoading } = useGetAchievementsQuery({});
+  const [createAchievement, { isLoading: isCreatingAchievement }] = useCreateAchievementMutation();
+  const [deleteAchievement] = useDeleteAchievementMutation();
+  const [openHeroDialog, setOpenHeroDialog] = useState(false);
+
   const events = eventData?.data || [];
   const notices = noticeData?.data || [];
-  const hero = heroData?.data;
+  const achievements = achievementData?.data || [];
+  const hero = heroData?.data || { heroSlides: [] };
 
   const eventForm = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
@@ -159,34 +211,26 @@ export default function AdminContentPage() {
     }
   });
 
-  useEffect(() => {
-    if (hero) {
-      heroForm.reset({
-        title: hero.title || '',
-        subtitle: hero.subtitle || '',
-        description: hero.description || '',
-        ctaText: hero.ctaText || '',
-        ctaLink: hero.ctaLink || '',
-      });
+  const achievementForm = useForm<AchievementFormData>({
+    resolver: zodResolver(achievementSchema),
+    defaultValues: {
+      title: '',
+      description: '',
+      teamName: '',
+      competitionName: '',
+      position: '',
+      date: '',
+      category: 'CP',
     }
-  }, [hero, heroForm]);
+  });
 
+  // No-op useEffect to handle cleanup only, previews are set in handleFileChange
   useEffect(() => {
     const urls: string[] = [];
-    if (heroFiles.length > 0) {
-      const newPreviews = heroFiles.map(file => {
-        const url = URL.createObjectURL(file);
-        urls.push(url);
-        return url;
-      });
-      setHeroPreviews(newPreviews);
-    } else {
-      setHeroPreviews(hero?.heroImages || []);
-    }
     return () => {
       urls.forEach(url => URL.revokeObjectURL(url));
     };
-  }, [heroFiles, hero?.heroImages]);
+  }, []);
 
   const onEventSubmit = async (data: EventFormData) => {
     try {
@@ -248,16 +292,61 @@ export default function AdminContentPage() {
       Object.entries(data).forEach(([key, value]) => {
         formData.append(key, String(value));
       });
-      heroFiles.forEach(file => {
-        formData.append('heroImages', file);
-      });
+      
+      if (editSlideIndex !== null) {
+        formData.append('editSlideIndex', String(editSlideIndex));
+      }
+
+      if (heroFiles.length > 0) {
+        formData.append('heroImages', heroFiles[0]); // Only one image per slide update/add
+      }
 
       await updateHomepage(formData).unwrap();
-      alert("Homepage slider updated successfully!");
+      alert(editSlideIndex !== null ? "Slide updated successfully!" : "New slide added successfully!");
+      setOpenHeroDialog(false);
       setHeroFiles([]);
+      setHeroPreviews([]);
+      setEditSlideIndex(null);
+      heroForm.reset({ title: '', subtitle: '', description: '', ctaText: '', ctaLink: '' });
+    } catch (err: unknown) {
+      console.error("Failed to update homepage", err);
+      const error = err as { data?: { message?: string }; message?: string };
+      const msg = error?.data?.message || error?.message || "Unknown error";
+      alert(`Failed to update homepage banner: ${msg}`);
+    }
+  };
+
+  const onAchievementSubmit = async (data: AchievementFormData) => {
+    try {
+      const formData = new FormData();
+      Object.entries(data).forEach(([key, value]) => {
+        formData.append(key, String(value));
+      });
+      
+      achievementFiles.forEach(file => {
+        formData.append('images', file);
+      });
+
+      await createAchievement(formData).unwrap();
+      setOpenAchievementDialog(false);
+      achievementForm.reset();
+      setAchievementFiles([]);
+      alert("Achievement created successfully!");
     } catch (error) {
-      console.error("Failed to update homepage", error);
-      alert("Failed to update homepage banner. Please try again.");
+       console.error("Failed to create achievement", error);
+       alert("Failed to create achievement. Please try again.");
+    }
+  };
+
+  const handleDeleteHeroSlide = async (index: number) => {
+    if (!confirm("Are you sure you want to delete this slide?")) return;
+    try {
+      const formData = new FormData();
+      formData.append('deleteSlideIndex', String(index));
+      await updateHomepage(formData).unwrap();
+      alert("Slide deleted successfully!");
+    } catch (error) {
+      console.error("Failed to delete slide", error);
     }
   };
 
@@ -266,7 +355,9 @@ export default function AdminContentPage() {
       const newFiles = Array.from(e.target.files);
       if (type === 'hero') {
         const newFiles = Array.from(e.target.files);
-        setHeroFiles(prev => [...prev, ...newFiles]);
+        setHeroFiles(newFiles);
+        const newPreviews = newFiles.map(file => URL.createObjectURL(file));
+        setHeroPreviews(newPreviews);
         return;
       }
       if (type === 'event') {
@@ -300,6 +391,7 @@ export default function AdminContentPage() {
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={tabIndex} onChange={(_, v) => setTabIndex(v)}>
           <Tab label="Homepage Banner" icon={<LucideFileText size={18} />} iconPosition="start" />
+          <Tab label="Achievements" icon={<LucideTrophy size={18} />} iconPosition="start" />
           <Tab label="Events" icon={<LucideCalendar size={18} />} iconPosition="start" />
           <Tab label="Notices" icon={<LucideFileText size={18} />} iconPosition="start" />
         </Tabs>
@@ -307,147 +399,108 @@ export default function AdminContentPage() {
 
       {/* Hero Banner Tab */}
       <CustomTabPanel value={tabIndex} index={0}>
-        <Grid container spacing={4}>
-          <Grid item xs={12} md={7}>
-            <Paper elevation={0} sx={{ p: 4, borderRadius: 4, border: '1px solid #e2e8f0' }}>
-              <form onSubmit={heroForm.handleSubmit(onHeroSubmit)}>
-                <Stack spacing={3}>
-                  <Controller
-                    name="subtitle"
-                    control={heroForm.control}
-                    render={({ field }) => (
-                      <TextField {...field} label="Subtitle (Accent Text)" fullWidth error={!!heroForm.formState.errors.subtitle} helperText={heroForm.formState.errors.subtitle?.message} />
-                    )}
-                  />
-                  <Controller
-                    name="title"
-                    control={heroForm.control}
-                    render={({ field }) => (
-                      <TextField {...field} label="Main Title" fullWidth multiline rows={2} error={!!heroForm.formState.errors.title} helperText={heroForm.formState.errors.title?.message} />
-                    )}
-                  />
-                  <Controller
-                    name="description"
-                    control={heroForm.control}
-                    render={({ field }) => (
-                      <TextField {...field} label="Hero Description" fullWidth multiline rows={4} error={!!heroForm.formState.errors.description} helperText={heroForm.formState.errors.description?.message} />
-                    )}
-                  />
-                  <Stack direction="row" spacing={2}>
-                    <Controller
-                      name="ctaText"
-                      control={heroForm.control}
-                      render={({ field }) => (
-                        <TextField {...field} label="Button Text" fullWidth error={!!heroForm.formState.errors.ctaText} helperText={heroForm.formState.errors.ctaText?.message} />
-                      )}
-                    />
-                    <Controller
-                      name="ctaLink"
-                      control={heroForm.control}
-                      render={({ field }) => (
-                        <TextField {...field} label="Button Link" fullWidth error={!!heroForm.formState.errors.ctaLink} helperText={heroForm.formState.errors.ctaLink?.message} />
-                      )}
-                    />
-                  </Stack>
-                  <Box>
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      disabled={isUpdatingHero}
-                      sx={{ bgcolor: '#000000', px: 4, py: 1.5, fontWeight: 700 }}
-                    >
-                      {isUpdatingHero ? <CircularProgress size={20} color="inherit" /> : 'Update Banner Content'}
-                    </Button>
-                  </Box>
-                </Stack>
-              </form>
-            </Paper>
-          </Grid>
-          <Grid item xs={12} md={5}>
-            <Paper elevation={0} sx={{ p: 4, borderRadius: 4, border: '1px solid #e2e8f0', height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#f1f5f9' }}>
-              <Typography variant="h6" fontWeight={800} sx={{ mb: 1 }}>Slider Images</Typography>
-              <Typography variant="caption" color="text.secondary" sx={{ mb: 3 }}>
-                Upload multiple images for the homepage hero slider. Existing images will be replaced if you upload new ones.
-              </Typography>
-              
-              <Box sx={{ mb: 3, flexGrow: 1 }}>
-                <Grid container spacing={1}>
-                  {heroPreviews.length > 0 ? heroPreviews.map((url, idx) => (
-                    <Grid item xs={6} key={idx}>
-                      <Box 
-                        sx={{ 
-                          position: 'relative', 
-                          borderRadius: 2, 
-                          overflow: 'hidden', 
-                          height: 120,
-                          border: '1px solid #e2e8f0'
-                        }}
-                      >
-                        <img src={url} alt={`Preview ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        {heroFiles.length > 0 && (
-                          <IconButton 
-                            size="small" 
-                            sx={{ 
-                              position: 'absolute', 
-                              top: 4, 
-                              right: 4, 
-                              bgcolor: 'rgba(255,255,255,0.8)',
-                              '&:hover': { bgcolor: '#fff' }
-                            }}
-                            onClick={() => removeFile(idx, 'hero')}
-                          >
-                            <LucideTrash2 size={14} color="#ef4444" />
-                          </IconButton>
-                        )}
-                      </Box>
-                    </Grid>
-                  )) : (
-                    <Grid item xs={12}>
-                      <Box 
-                        sx={{ 
-                          height: 120, 
-                          borderRadius: 2, 
-                          border: '2px dashed #cbd5e1', 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'center',
-                          bgcolor: '#f8fafc'
-                        }}
-                      >
-                        <LucideUpload size={24} color="#94a3b8" />
-                      </Box>
-                    </Grid>
-                  )}
-                </Grid>
-              </Box>
+        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 4 }}>
+          <Typography variant="h6" fontWeight={800}>Current Slides</Typography>
+          <Button 
+            variant="contained" 
+            startIcon={<LucidePlus size={18} />}
+            onClick={() => {
+              setEditSlideIndex(null);
+              heroForm.reset({ title: '', subtitle: '', description: '', ctaText: '', ctaLink: '' });
+              setOpenHeroDialog(true);
+            }}
+            sx={{ bgcolor: '#000000', fontWeight: 700 }}
+          >
+            Add New Slide
+          </Button>
+        </Stack>
 
-              <Button
-                component="label"
-                variant="outlined"
-                fullWidth
-                startIcon={<LucideUpload size={18} />}
-                sx={{ py: 1.5, borderRadius: 2 }}
-              >
-                {heroFiles.length > 0 ? 'Add More Images' : 'Choose Slider Images'}
-                <input type="file" hidden multiple accept="image/*" onChange={(e) => handleFileChange(e, 'hero')} />
-              </Button>
-              {heroFiles.length > 0 && (
-                <Button 
-                  size="small" 
-                  color="error" 
-                  sx={{ mt: 1 }} 
-                  onClick={() => setHeroFiles([])}
-                >
-                  Clear All Selection
-                </Button>
+        <Grid container spacing={3}>
+          {noticesLoading || heroLoading ? (
+            <Grid size={{ xs: 12 }}><Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress /></Box></Grid>
+          ) : (
+            <>
+              {hero.heroSlides.map((slide: HeroSlide, idx: number) => (
+                <Grid key={slide._id || idx} size={{ xs: 12, md: 6 }}>
+                  <Paper elevation={0} sx={{ p: 2, borderRadius: 3, border: '1px solid #e2e8f0', bgcolor: '#fff' }}>
+                    <Stack direction="row" spacing={2}>
+                      <Box sx={{ width: 120, height: 80, borderRadius: 2, overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                        <NextImage src={slide.image} alt={slide.title} fill style={{ objectFit: 'cover' }} unoptimized />
+                      </Box>
+                      <Box sx={{ flexGrow: 1 }}>
+                        <Typography variant="subtitle1" fontWeight={800}>{slide.title}</Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>{slide.subtitle}</Typography>
+                        <Stack direction="row" spacing={1}>
+                          <IconButton size="small" onClick={() => {
+                            setEditSlideIndex(idx);
+                            heroForm.reset(slide);
+                            setOpenHeroDialog(true);
+                          }}><LucideEdit size={16} /></IconButton>
+                          <IconButton size="small" color="error" onClick={() => handleDeleteHeroSlide(idx)}><LucideTrash2 size={16} /></IconButton>
+                        </Stack>
+                      </Box>
+                    </Stack>
+                  </Paper>
+                </Grid>
+              ))}
+              {(!hero.heroSlides || hero.heroSlides.length === 0) && (
+                <Grid size={{ xs: 12 }}>
+                  <Box sx={{ p: 6, textAlign: 'center', bgcolor: '#f8fafc', borderRadius: 4, border: '1px dashed #cbd5e1' }}>
+                    <Typography color="text.secondary">No hero slides found. Add one to get started.</Typography>
+                  </Box>
+                </Grid>
               )}
-            </Paper>
-          </Grid>
+            </>
+          )}
         </Grid>
       </CustomTabPanel>
 
-      {/* Events Tab */}
+      {/* Achievements Tab */}
       <CustomTabPanel value={tabIndex} index={1}>
+        <Stack direction="row" justifyContent="flex-end" sx={{ mb: 4 }}>
+           <Button 
+              variant="contained" 
+              startIcon={<LucidePlus size={18} />}
+              onClick={() => setOpenAchievementDialog(true)}
+              sx={{ bgcolor: '#000000', fontWeight: 700 }}
+           >
+              Add Achievement
+           </Button>
+        </Stack>
+
+        <Paper elevation={0} sx={{ p: 0, borderRadius: 4, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+           {achievementsLoading ? <Box sx={{ p: 4, display: 'flex', justifyContent: 'center' }}><CircularProgress /></Box> : (
+             <TableContainer>
+               <Table>
+                 <TableHead sx={{ bgcolor: '#f8fafc' }}>
+                   <TableRow>
+                     <TableCell sx={{ fontWeight: 800 }}>Title</TableCell>
+                     <TableCell sx={{ fontWeight: 800 }}>Competition</TableCell>
+                     <TableCell sx={{ fontWeight: 800 }}>Position</TableCell>
+                     <TableCell sx={{ fontWeight: 800 }}>Category</TableCell>
+                     <TableCell sx={{ fontWeight: 800, textAlign: 'right' }}>Actions</TableCell>
+                   </TableRow>
+                 </TableHead>
+                 <TableBody>
+                   {achievements.map((achievement: Achievement) => (
+                     <TableRow key={achievement._id} hover>
+                       <TableCell sx={{ fontWeight: 600 }}>{achievement.title}</TableCell>
+                       <TableCell>{achievement.competitionName}</TableCell>
+                       <TableCell>{achievement.position}</TableCell>
+                       <TableCell><Chip label={achievement.category} size="small" /></TableCell>
+                       <TableCell align="right">
+                          <IconButton size="small" color="error" onClick={() => { if(confirm("Delete achievement?")) deleteAchievement(achievement._id) }}><LucideTrash2 size={16} /></IconButton>
+                       </TableCell>
+                     </TableRow>
+                   ))}
+                 </TableBody>
+               </Table>
+             </TableContainer>
+           )}
+        </Paper>
+      </CustomTabPanel>
+
+      <CustomTabPanel value={tabIndex} index={2}>
         <Stack direction="row" justifyContent="flex-end" sx={{ mb: 4 }}>
            <Button 
               variant="contained" 
@@ -473,7 +526,7 @@ export default function AdminContentPage() {
                    </TableRow>
                  </TableHead>
                  <TableBody>
-                   {events.map((event: { _id: string; title: string; startDate: string; organizer: string; status: string }) => (
+                   {events.map((event: AdminEvent) => (
                      <TableRow key={event._id} hover>
                        <TableCell sx={{ fontWeight: 600 }}>{event.title}</TableCell>
                        <TableCell>{new Date(event.startDate).toLocaleDateString()}</TableCell>
@@ -503,7 +556,7 @@ export default function AdminContentPage() {
       </CustomTabPanel>
 
       {/* Notices Tab */}
-      <CustomTabPanel value={tabIndex} index={2}>
+      <CustomTabPanel value={tabIndex} index={3}>
         <Stack direction="row" justifyContent="flex-end" sx={{ mb: 4 }}>
            <Button 
               variant="contained" 
@@ -705,6 +758,174 @@ export default function AdminContentPage() {
                </Button>
             </DialogActions>
          </form>
+      </Dialog>
+
+      {/* Hero Slide Dialog */}
+      <Dialog open={openHeroDialog} onClose={() => setOpenHeroDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle fontWeight={800}>{editSlideIndex !== null ? 'Edit Hero Slide' : 'Add New Hero Slide'}</DialogTitle>
+        <form onSubmit={heroForm.handleSubmit(onHeroSubmit)}>
+          <DialogContent>
+            <Stack spacing={3} sx={{ pt: 1 }}>
+              <Controller
+                name="subtitle"
+                control={heroForm.control}
+                render={({ field }) => (
+                  <TextField {...field} label="Subtitle (Accent Text)" fullWidth error={!!heroForm.formState.errors.subtitle} helperText={heroForm.formState.errors.subtitle?.message} />
+                )}
+              />
+              <Controller
+                name="title"
+                control={heroForm.control}
+                render={({ field }) => (
+                  <TextField {...field} label="Main Title" fullWidth multiline rows={2} error={!!heroForm.formState.errors.title} helperText={heroForm.formState.errors.title?.message} />
+                )}
+              />
+              <Controller
+                name="description"
+                control={heroForm.control}
+                render={({ field }) => (
+                  <TextField {...field} label="Hero Description" fullWidth multiline rows={4} error={!!heroForm.formState.errors.description} helperText={heroForm.formState.errors.description?.message} />
+                )}
+              />
+              <Stack direction="row" spacing={2}>
+                <Controller
+                  name="ctaText"
+                  control={heroForm.control}
+                  render={({ field }) => (
+                    <TextField {...field} label="Button Text" fullWidth error={!!heroForm.formState.errors.ctaText} helperText={heroForm.formState.errors.ctaText?.message} />
+                  )}
+                />
+                <Controller
+                  name="ctaLink"
+                  control={heroForm.control}
+                  render={({ field }) => (
+                    <TextField {...field} label="Button Link" fullWidth error={!!heroForm.formState.errors.ctaLink} helperText={heroForm.formState.errors.ctaLink?.message} />
+                  )}
+                />
+              </Stack>
+              <Box>
+                <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1 }}>Slide Image</Typography>
+                <Button
+                  variant="outlined"
+                  component="label"
+                  fullWidth
+                  startIcon={<LucideUpload size={18} />}
+                  sx={{ py: 1.5, borderStyle: 'dashed', borderRadius: 2 }}
+                >
+                  {heroFiles.length > 0 ? 'Change Image' : 'Upload Image'}
+                  <input type="file" hidden accept="image/*" onChange={(e) => handleFileChange(e, 'hero')} />
+                </Button>
+                {heroPreviews.length > 0 && (
+                  <Box sx={{ mt: 2, height: 150, borderRadius: 2, overflow: 'hidden', border: '1px solid #e2e8f0', position: 'relative' }}>
+                    <NextImage src={heroPreviews[0]} alt="Preview" fill style={{ objectFit: 'cover' }} unoptimized />
+                  </Box>
+                )}
+              </Box>
+            </Stack>
+          </DialogContent>
+          <DialogActions sx={{ p: 3 }}>
+            <Button onClick={() => setOpenHeroDialog(false)} sx={{ color: '#64748b' }}>Cancel</Button>
+            <Button type="submit" variant="contained" disabled={isUpdatingHero} sx={{ bgcolor: '#000000', px: 4 }}>
+              {isUpdatingHero ? <CircularProgress size={20} /> : (editSlideIndex !== null ? 'Save Changes' : 'Add Slide')}
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+
+      {/* Achievement Dialog */}
+      <Dialog open={openAchievementDialog} onClose={() => setOpenAchievementDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle fontWeight={800}>Add New Achievement</DialogTitle>
+        <form onSubmit={achievementForm.handleSubmit(onAchievementSubmit)}>
+          <DialogContent>
+            <Stack spacing={3} sx={{ pt: 1 }}>
+              <Controller
+                name="title"
+                control={achievementForm.control}
+                render={({ field }) => (
+                  <TextField {...field} label="Achievement Title" fullWidth error={!!achievementForm.formState.errors.title} helperText={achievementForm.formState.errors.title?.message} />
+                )}
+              />
+              <Controller
+                name="competitionName"
+                control={achievementForm.control}
+                render={({ field }) => (
+                  <TextField {...field} label="Competition Name" fullWidth error={!!achievementForm.formState.errors.competitionName} helperText={achievementForm.formState.errors.competitionName?.message} />
+                )}
+              />
+              <Stack direction="row" spacing={2}>
+                <Controller
+                  name="position"
+                  control={achievementForm.control}
+                  render={({ field }) => (
+                    <TextField {...field} label="Position/Rank" fullWidth error={!!achievementForm.formState.errors.position} helperText={achievementForm.formState.errors.position?.message} />
+                  )}
+                />
+                <Controller
+                  name="date"
+                  control={achievementForm.control}
+                  render={({ field }) => (
+                    <TextField {...field} label="Date" type="date" fullWidth InputLabelProps={{ shrink: true }} error={!!achievementForm.formState.errors.date} helperText={achievementForm.formState.errors.date?.message} />
+                  )}
+                />
+              </Stack>
+              <Controller
+                name="category"
+                control={achievementForm.control}
+                render={({ field }) => (
+                  <FormControl fullWidth error={!!achievementForm.formState.errors.category}>
+                    <InputLabel>Category</InputLabel>
+                    <Select {...field} label="Category">
+                      <MenuItem value="CP">Competitive Programming</MenuItem>
+                      <MenuItem value="HACKATHON">Hackathon</MenuItem>
+                      <MenuItem value="CTF">CTF</MenuItem>
+                      <MenuItem value="DL">Digital Logistics/Design</MenuItem>
+                      <MenuItem value="ACADEMIC">Academic</MenuItem>
+                      <MenuItem value="OTHER">Other</MenuItem>
+                    </Select>
+                  </FormControl>
+                )}
+              />
+              <Controller
+                name="teamName"
+                control={achievementForm.control}
+                render={({ field }) => (
+                  <TextField {...field} label="Team Name (Optional)" fullWidth />
+                )}
+              />
+              <Box>
+                <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1 }}>Achievement Image</Typography>
+                <Button
+                  variant="outlined"
+                  component="label"
+                  fullWidth
+                  startIcon={<LucideUpload size={18} />}
+                  sx={{ py: 1.5, borderStyle: 'dashed', borderRadius: 2 }}
+                >
+                  Upload Image
+                  <input type="file" hidden accept="image/*" onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setAchievementFiles([e.target.files[0]]);
+                    }
+                  }} />
+                </Button>
+                {achievementFiles.length > 0 && <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>{achievementFiles[0].name}</Typography>}
+              </Box>
+              <Controller
+                name="description"
+                control={achievementForm.control}
+                render={({ field }) => (
+                  <TextField {...field} label="Description" multiline rows={4} fullWidth error={!!achievementForm.formState.errors.description} helperText={achievementForm.formState.errors.description?.message} />
+                )}
+              />
+            </Stack>
+          </DialogContent>
+          <DialogActions sx={{ p: 3 }}>
+            <Button onClick={() => setOpenAchievementDialog(false)} sx={{ color: '#64748b' }}>Cancel</Button>
+            <Button type="submit" variant="contained" disabled={isCreatingAchievement} sx={{ bgcolor: '#000000', px: 4 }}>
+              {isCreatingAchievement ? <CircularProgress size={20} /> : 'Add Achievement'}
+            </Button>
+          </DialogActions>
+        </form>
       </Dialog>
 
       {/* Notice Dialog */}

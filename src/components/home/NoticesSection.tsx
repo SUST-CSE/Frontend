@@ -37,10 +37,10 @@ export default function NoticesSection() {
       spacing: 20,
     },
     breakpoints: {
-      '(min-width: 640px)': {
+      '(min-width: 768px)': {
         slides: { perView: 2, spacing: 20 },
       },
-      '(min-width: 1024px)': {
+      '(min-width: 1200px)': {
         slides: { perView: 3, spacing: 24 },
       },
     },
@@ -85,7 +85,7 @@ export default function NoticesSection() {
                 Stay Updated
               </Typography>
             </Stack>
-            <Typography variant="h3" fontWeight={900} color="#0f172a">
+            <Typography variant="h3" fontWeight={900} color="#0f172a" sx={{ fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' } }}>
               Latest <span style={{ color: '#16a34a' }}>Notices</span>
             </Typography>
           </Box>

@@ -88,7 +88,7 @@ export default function AboutSection() {
                   color: '#0f172a',
                   lineHeight: 1.1,
                   mb: 4,
-                  fontSize: { xs: '2.8rem', md: '4.2rem' },
+                  fontSize: { xs: '2.2rem', sm: '3.2rem', md: '4.2rem' },
                   letterSpacing: '-0.03em',
                   fontFamily: 'Inter, sans-serif'
                 }}
@@ -119,7 +119,7 @@ export default function AboutSection() {
                   variant="body1" 
                   sx={{ 
                     color: '#334155', 
-                    fontSize: '1.25rem', 
+                    fontSize: { xs: '1rem', sm: '1.15rem', md: '1.25rem' }, 
                     lineHeight: 1.8,
                     fontWeight: 400,
                     textAlign: 'justify'
@@ -131,7 +131,7 @@ export default function AboutSection() {
                   variant="body1" 
                   sx={{ 
                     color: '#64748b', 
-                    fontSize: '1.1rem', 
+                    fontSize: { xs: '0.95rem', sm: '1.05rem', md: '1.1rem' }, 
                     lineHeight: 1.8,
                     fontWeight: 400,
                     textAlign: 'justify',
@@ -150,9 +150,9 @@ export default function AboutSection() {
                 sx={{ 
                   bgcolor: '#0f172a',
                   color: '#ffffff',
-                  px: 6,
-                  py: 2.2,
-                  fontSize: '1.1rem',
+                  px: { xs: 4, sm: 6 },
+                  py: { xs: 1.8, sm: 2.2 },
+                  fontSize: { xs: '1rem', sm: '1.1rem' },
                   fontWeight: 800,
                   borderRadius: 2,
                   boxShadow: '0 20px 40px -10px rgba(15, 23, 42, 0.3)',
