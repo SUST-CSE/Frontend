@@ -60,6 +60,13 @@ export const contentApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Achievement'],
     }),
+    sendMessage: builder.mutation({
+      query: (data) => ({
+        url: '/content/send-message',
+        method: 'POST',
+        body: data,
+      }),
+    }),
   }),
 });
 
@@ -74,4 +81,5 @@ export const {
   useUpdateHomepageMutation,
   useCreateAchievementMutation,
   useDeleteAchievementMutation,
+  useSendMessageMutation,
 } = contentApi;

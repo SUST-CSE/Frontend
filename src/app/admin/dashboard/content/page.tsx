@@ -39,9 +39,9 @@ import {
   useDeleteNoticeMutation,
   useGetHomepageQuery,
   useUpdateHomepageMutation,
-  useGetAchievementsQuery,
-  useCreateAchievementMutation,
-  useDeleteAchievementMutation
+  useCreateAchievementMutation, 
+  useDeleteAchievementMutation,
+  useSendMessageMutation
 } from '@/features/content/contentApi';
 import {
   useGetProductsAdminQuery,
