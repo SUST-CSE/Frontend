@@ -169,7 +169,7 @@ export default function AlumniDetailPage() {
       <Container maxWidth="lg" sx={{ py: 10 }}>
         <Grid container spacing={8}>
           {/* Left Column: About & Quote */}
-          <Grid item xs={12} md={7}>
+          <Grid size={{ xs: 12, md: 7 }}>
             <Box sx={{ mb: 8 }}>
               <Typography 
                 variant="h4" 
@@ -238,7 +238,7 @@ export default function AlumniDetailPage() {
           </Grid>
 
           {/* Right Column: Experience & Details */}
-          <Grid item xs={12} md={5}>
+          <Grid size={{ xs: 12, md: 5 }}>
             <Stack spacing={4}>
               <Box>
                 <Typography variant="h6" fontWeight={900} color="#0f172a" sx={{ mb: 3 }}>

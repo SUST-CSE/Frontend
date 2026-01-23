@@ -50,6 +50,7 @@ export default function AdminAlumniPage() {
     linkedIn: '',
     facebook: '',
     instagram: '',
+    website: '',
     email: '',
   });
   const [session, setSession] = useState('');
@@ -84,6 +85,7 @@ export default function AdminAlumniPage() {
         linkedIn: alumniData.linkedIn || '',
         facebook: alumniData.facebook || '',
         instagram: alumniData.instagram || '',
+        website: alumniData.website || '',
         email: alumniData.email || '',
       });
     } else {
@@ -99,6 +101,7 @@ export default function AdminAlumniPage() {
         linkedIn: '',
         facebook: '',
         instagram: '',
+        website: '',
         email: '',
       });
     }
@@ -134,6 +137,7 @@ export default function AdminAlumniPage() {
     if (formData.linkedIn) submitData.append('linkedIn', formData.linkedIn);
     if (formData.facebook) submitData.append('facebook', formData.facebook);
     if (formData.instagram) submitData.append('instagram', formData.instagram);
+    if (formData.website) submitData.append('website', formData.website);
     if (formData.email) submitData.append('email', formData.email);
     if (imageFile) submitData.append('profileImage', imageFile);
 
@@ -327,6 +331,12 @@ export default function AdminAlumniPage() {
                   fullWidth
                   value={formData.instagram}
                   onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
+                />
+                <TextField
+                  label="Website URL"
+                  fullWidth
+                  value={formData.website}
+                  onChange={(e) => setFormData({ ...formData, website: e.target.value })}
                 />
               </Stack>
 

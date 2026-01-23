@@ -214,13 +214,13 @@ export default function SocietyDetailsPage() {
           </Typography>
           
           <Grid container spacing={4} sx={{ mt: 4 }}>
-             <Grid item xs={12} md={6}>
+             <Grid size={{ xs: 12, md: 6 }}>
                 <Paper elevation={0} sx={{ p: 4, bgcolor: '#f8fafc', borderRadius: 4 }}>
                    <Typography variant="h6" fontWeight={800} gutterBottom>Founded</Typography>
                    <Typography variant="h4" color="#16a34a" fontWeight={900}>{new Date(society.foundedDate).getFullYear()}</Typography>
                 </Paper>
              </Grid>
-             <Grid item xs={12} md={6}>
+             <Grid size={{ xs: 12, md: 6 }}>
                 <Paper elevation={0} sx={{ p: 4, bgcolor: '#f8fafc', borderRadius: 4 }}>
                    <Typography variant="h6" fontWeight={800} gutterBottom>Total Members</Typography>
                    <Typography variant="h4" color="#000000" fontWeight={900}>{currentMembers.length + formerMembers.length}+</Typography>
@@ -331,7 +331,7 @@ export default function SocietyDetailsPage() {
            {pastEvents.length > 0 ? (
               <Grid container spacing={3}>
                  {pastEvents.map((event: any) => (
-                    <Grid item xs={12} md={4} key={event._id}>
+                    <Grid size={{ xs: 12, md: 4 }} key={event._id}>
                        <Card elevation={0} sx={{ border: '1px solid #e2e8f0', borderRadius: 4, height: '100%' }}>
                           {event.image && (
                              <CardMedia component="img" height="180" image={event.image} alt={event.title} />
@@ -366,7 +366,7 @@ export default function SocietyDetailsPage() {
            {upcomingEvents.length > 0 ? (
               <Grid container spacing={3}>
                  {upcomingEvents.map((event: any) => (
-                    <Grid item xs={12} key={event._id}>
+                    <Grid size={{ xs: 12 }} key={event._id}>
                        <Paper elevation={0} sx={{ p: 4, border: '1px solid #e2e8f0', borderRadius: 4, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
                           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: { xs: '100%', md: 100 }, height: 100, bgcolor: '#e0f2fe', borderRadius: 3, color: '#0284c7' }}>
                              <Typography variant="h4" fontWeight={900}>{new Date(event.startDate).getDate()}</Typography>

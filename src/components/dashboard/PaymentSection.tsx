@@ -60,7 +60,7 @@ export default function PaymentSection() {
 
       <Grid container spacing={4}>
         {/* Payment Initiation */}
-        <Grid item xs={12} lg={4}>
+        <Grid size={{ xs: 12, lg: 4 }}>
           <Paper elevation={0} sx={{ p: 4, borderRadius: 4, border: '1px solid #e2e8f0', bgcolor: '#fff' }}>
             <Stack spacing={4}>
               <Stack direction="row" spacing={2} alignItems="center">
@@ -123,7 +123,7 @@ export default function PaymentSection() {
         </Grid>
 
         {/* History */}
-        <Grid item xs={12} lg={8}>
+        <Grid size={{ xs: 12, lg: 8 }}>
           <Paper elevation={0} sx={{ p: 4, borderRadius: 4, border: '1px solid #e2e8f0', bgcolor: '#fff' }}>
             <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems="center" spacing={2} sx={{ mb: 4 }}>
               <Typography variant="h6" fontWeight={800}>Transaction History</Typography>

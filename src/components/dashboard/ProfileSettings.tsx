@@ -39,6 +39,7 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
     facebook: user?.socialLinks?.facebook || '',
     linkedin: user?.socialLinks?.linkedin || '',
     instagram: user?.socialLinks?.instagram || '',
+    website: user?.socialLinks?.website || '',
   });
 
   const [projectLinks, setProjectLinks] = useState({
@@ -190,7 +191,7 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
             Social Profiles
           </Typography>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField 
                 fullWidth 
                 label="LinkedIn" 
@@ -199,7 +200,7 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
                 InputProps={{ startAdornment: <LucideLinkedin size={18} style={{ marginRight: 12, opacity: 0.5 }} /> }}
               />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField 
                 fullWidth 
                 label="Facebook" 
@@ -208,13 +209,22 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
                 InputProps={{ startAdornment: <LucideFacebook size={18} style={{ marginRight: 12, opacity: 0.5 }} /> }}
               />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField 
                 fullWidth 
                 label="Instagram" 
                 value={socialLinks.instagram} 
                 onChange={(e) => setSocialLinks({ ...socialLinks, instagram: e.target.value })}
                 InputProps={{ startAdornment: <LucideInstagram size={18} style={{ marginRight: 12, opacity: 0.5 }} /> }}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <TextField 
+                fullWidth 
+                label="Personal Website" 
+                value={socialLinks.website} 
+                onChange={(e) => setSocialLinks({ ...socialLinks, website: e.target.value })}
+                InputProps={{ startAdornment: <LucideGlobe size={18} style={{ marginRight: 12, opacity: 0.5 }} /> }}
               />
             </Grid>
           </Grid>
@@ -226,7 +236,7 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
                 Project Showcases
               </Typography>
               <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField 
                     fullWidth 
                     label="GitHub Profile/Link" 
@@ -235,7 +245,7 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
                     InputProps={{ startAdornment: <LucideGithub size={18} style={{ marginRight: 12, opacity: 0.5 }} /> }}
                   />
                 </Grid>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField 
                     fullWidth 
                     label="Live Portfolio/Link" 
@@ -260,7 +270,7 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
             </Typography>
 
             <Grid container spacing={4}>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Typography variant="subtitle2" fontWeight={700} color="#64748b" sx={{ mb: 1, letterSpacing: 1 }}>NOTICES</Typography>
                 <FormGroup>
                   {NOTICE_CATEGORIES.map((cat) => (
@@ -280,7 +290,7 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
                 </FormGroup>
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Typography variant="subtitle2" fontWeight={700} color="#64748b" sx={{ mb: 1, letterSpacing: 1 }}>EVENTS</Typography>
                 <FormGroup>
                   {EVENT_CATEGORIES.map((cat) => (

@@ -81,8 +81,10 @@ export default function MyBlogsList() {
                   <TableCell>
                     <Chip label={blog.category} size="small" variant="outlined" sx={{ fontWeight: 600 }} />
                   </TableCell>
-                  <TableCell variant="caption" sx={{ color: 'text.secondary' }}>
-                    {format(new Date(blog.createdAt), 'MMM dd, yyyy')}
+                  <TableCell sx={{ color: 'text.secondary' }}>
+                    <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                      {format(new Date(blog.createdAt), 'MMM dd, yyyy')}
+                    </Typography>
                   </TableCell>
                   <TableCell>
                     <Chip 

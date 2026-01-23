@@ -82,7 +82,7 @@ export default function AchievementsPage() {
             </Breadcrumbs>
 
             <Grid container spacing={4} alignItems="center">
-              <Grid item xs={12} md={8}>
+              <Grid size={{ xs: 12, md: 8 }}>
                  <Typography variant="h2" fontWeight={900} sx={{ mb: 2, letterSpacing: -1 }}>
                     <span style={{ color: '#ffffffff' }}>Hall of</span> <span style={{ color: '#facc15' }}>Fame</span>
                  </Typography>
@@ -90,7 +90,7 @@ export default function AchievementsPage() {
                     Celebrating the remarkable victories and innovative breakthroughs of our students and faculty on the global stage.
                  </Typography>
               </Grid>
-              <Grid item xs={12} md={4} sx={{ display: 'flex', justifyContent: { xs: 'flex-start', md: 'flex-end' } }}>
+              <Grid size={{ xs: 12, md: 4 }} sx={{ display: 'flex', justifyContent: { xs: 'flex-start', md: 'flex-end' } }}>
                  <Box sx={{ position: 'relative' }}>
                     <LucideTrophy size={120} color="#facc15" style={{ opacity: 0.2 }} />
                     <LucideStar size={40} color="#ffffff" style={{ position: 'absolute', top: 0, right: 0, opacity: 0.4 }} />
@@ -175,7 +175,7 @@ export default function AchievementsPage() {
          ) : (
             <Grid container spacing={4}>
                {filteredAchievements.map((item: any, idx: number) => (
-                 <Grid item xs={12} md={6} key={item._id}>
+                 <Grid size={{ xs: 12, md: 6 }} key={item._id}>
                     <Grow in timeout={300 + (idx * 100)}>
                       <Paper 
                          component={Link}

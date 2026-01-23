@@ -106,7 +106,7 @@ export default function AdminSocietiesPage() {
       {isLoading ? <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress /></Box> : (
         <Grid container spacing={4}>
            {societies.map((society: any) => (
-              <Grid item xs={12} md={6} lg={4} key={society._id}>
+              <Grid size={{ xs: 12, md: 6, lg: 4 }} key={society._id}>
                  <Card elevation={0} sx={{ borderRadius: 4, border: '1px solid #e2e8f0', height: '100%', display: 'flex', flexDirection: 'column' }}>
                     <CardContent sx={{ flexGrow: 1, p: 3 }}>
                        <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>

@@ -283,7 +283,7 @@ export default function RegisterPage() {
                     />
 
                     <Grid container spacing={2}>
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                         <TextField 
                         fullWidth 
                         label="Password" 
@@ -303,7 +303,7 @@ export default function RegisterPage() {
                         }}
                         />
                     </Grid>
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                         <TextField 
                         fullWidth 
                         label="Confirm Password" 
@@ -388,7 +388,7 @@ export default function RegisterPage() {
                     />
 
                     <Grid container spacing={2}>
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                         <TextField 
                         fullWidth 
                         label="Password" 
@@ -408,7 +408,7 @@ export default function RegisterPage() {
                         }}
                         />
                     </Grid>
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                         <TextField 
                         fullWidth 
                         label="Confirm Password" 

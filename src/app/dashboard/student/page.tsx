@@ -113,7 +113,7 @@ export default function StudentDashboard() {
             {activeTab === 0 && (
               <Grid container spacing={3}>
                 {/* Profile Card Summary */}
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <Paper elevation={0} sx={{ p: 3, borderRadius: 4, textAlign: 'center', border: '1px solid rgba(0,0,0,0.05)', bgcolor: '#f1f5f9' }}>
                     <Avatar 
                       src={user.profileImage} 
@@ -139,7 +139,7 @@ export default function StudentDashboard() {
                 </Grid>
 
                 {/* Academic Details Detail */}
-                <Grid item xs={12} md={8}>
+                <Grid size={{ xs: 12, md: 8 }}>
                   <Typography variant="h6" fontWeight={800} sx={{ mb: 2 }}>Academic Profile</Typography>
                   <Grid container spacing={2}>
                     {[
@@ -149,7 +149,7 @@ export default function StudentDashboard() {
                       { label: 'Enrollment Year', value: user.enrollmentYear },
                       { label: 'Role', value: user.role }
                     ].map((detail) => (
-                      <Grid item xs={12} sm={6} key={detail.label}>
+                      <Grid size={{ xs: 12, sm: 6 }} key={detail.label}>
                         <Paper elevation={0} sx={{ p: 2, borderRadius: 3, border: '1px solid #e2e8f0' }}>
                           <Typography variant="caption" color="text.secondary" fontWeight={800}>{detail.label.toUpperCase()}</Typography>
                           <Typography variant="body1" fontWeight={600} color="#002147">{detail.value}</Typography>

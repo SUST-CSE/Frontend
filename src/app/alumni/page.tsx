@@ -137,7 +137,7 @@ export default function AlumniPage() {
           </Box>
         ) : (
           <Grid container spacing={2}>
-            {alumni.map((person) => (
+            {alumni.map((person: Alumni) => (
               <Grid size={{ xs: 12, sm: 6, md: 3 }} key={person._id} sx={{ display: 'flex', minWidth: 0, width: '100%', maxWidth: { md: '25%', sm: '50%', xs: '100%' } }}>
                 <Card 
                   component={Link}

@@ -102,7 +102,7 @@ export default function LoginPage() {
         <Grid container justifyContent="center" alignItems="center" sx={{ minHeight: '80vh' }}>
           
           {/* Left Side: Visual / Brand (Desktop Only) */}
-          <Grid item xs={12} md={6} sx={{ display: { xs: 'none', md: 'block' }, pr: 8 }}>
+          <Grid size={{ xs: 12, md: 6 }} sx={{ display: { xs: 'none', md: 'block' }, pr: 8 }}>
              <Box sx={{ mb: 4 }}>
                 <Box sx={{ 
                   display: 'inline-flex', 
@@ -124,7 +124,7 @@ export default function LoginPage() {
           </Grid>
 
           {/* Right Side: Login Form */}
-          <Grid item xs={12} md={5}>
+          <Grid size={{ xs: 12, md: 5 }}>
             <Paper
               ref={cardRef}
               elevation={0}

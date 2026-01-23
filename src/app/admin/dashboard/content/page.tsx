@@ -85,17 +85,17 @@ const eventSchema = z.object({
   organizer: z.string().min(1, 'Organizer is required'),
   category: z.enum(['WORKSHOP', 'SEMINAR', 'COMPETITION', 'SOCIAL', 'TECHNICAL']),
   registrationLink: z.string().optional(),
-  isFeatured: z.boolean().default(false),
+  isFeatured: z.boolean(),
 });
 
 const noticeSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().min(1, 'Description is required'),
   category: z.enum(['ACADEMIC', 'ADMINISTRATIVE', 'EVENT', 'GENERAL']),
-  isPinned: z.boolean().default(false),
-  isImportant: z.boolean().default(false),
-  targetAudience: z.enum(['STUDENT', 'TEACHER', 'BOTH']).default('BOTH'),
-  shouldSendEmail: z.boolean().default(true),
+  isPinned: z.boolean(),
+  isImportant: z.boolean(),
+  targetAudience: z.enum(['STUDENT', 'TEACHER', 'BOTH']),
+  shouldSendEmail: z.boolean(),
 });
 
 const heroSchema = z.object({
@@ -120,8 +120,8 @@ const productSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   description: z.string().optional(),
   link: z.string().url('Invalid URL format'),
-  isActive: z.boolean().default(true),
-  order: z.number().int().min(0).default(0),
+  isActive: z.boolean(),
+  order: z.number().int().min(0),
 });
 
 type EventFormData = z.infer<typeof eventSchema>;
@@ -521,7 +521,7 @@ export default function AdminContentPage() {
               ) : (
                 <>
                   {hero.heroSlides.map((slide: HeroSlide, idx: number) => (
-                    <Grid key={slide._id || idx} size={{ xs: 12, md: 6 }}>
+                    <Grid key={idx} size={{ xs: 12, md: 6 }}>
                       <Paper elevation={0} sx={{ p: 2.5, borderRadius: 4, border: '1px solid #e2e8f0', bgcolor: '#fff', transition: 'all 0.3s ease', '&:hover': { borderColor: '#16a34a', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' } }}>
                         <Stack direction="row" spacing={2.5}>
                           <Box sx={{ width: 140, height: 90, borderRadius: 3, overflow: 'hidden', flexShrink: 0, position: 'relative', border: '1px solid #f1f5f9' }}>

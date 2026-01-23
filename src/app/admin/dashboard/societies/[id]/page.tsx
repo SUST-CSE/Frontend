@@ -33,7 +33,7 @@ import { useGetAllUsersQuery } from '@/features/user/userApi';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { MemberDesignation } from '@/types'; // Assuming types are available, or I'll define locally
+
 
 // Placeholder for Designation Enum if not imported
 const Designations = [

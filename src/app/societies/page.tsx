@@ -53,7 +53,7 @@ export default function SocietiesPage() {
         ) : (
           <Grid container spacing={4} ref={containerRef}>
             {societies.map((society: any) => (
-              <Grid item xs={12} md={6} key={society._id} className="soc-card">
+              <Grid size={{ xs: 12, md: 6 }} key={society._id} className="soc-card">
                 <Paper
                   elevation={0}
                   sx={{

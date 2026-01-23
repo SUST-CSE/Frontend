@@ -27,7 +27,7 @@ export default function AdminDashboardPage() {
 
       <Grid container spacing={4}>
         {STATS.map((stat) => (
-          <Grid item xs={12} sm={6} md={3} key={stat.label}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }} key={stat.label}>
             <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid #e2e8f0' }}>
                <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 2 }}>
                   <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: `${stat.color}15`, color: stat.color }}>

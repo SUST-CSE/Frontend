@@ -9,7 +9,7 @@ export default function Footer() {
     <Box sx={{ bgcolor: '#0f172a', color: '#94a3b8', pt: 8, pb: 4, mt: 'auto' }}>
       <Container maxWidth="lg">
         <Grid container spacing={4} sx={{ mb: 6 }}>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Typography variant="h6" sx={{ color: '#ffffff', fontWeight: 800, mb: 2 }}>
               SUST <span style={{ color: '#3b82f6' }}>CSE</span>
             </Typography>
@@ -28,7 +28,7 @@ export default function Footer() {
             </Box>
           </Grid>
 
-          <Grid item xs={6} md={2}>
+          <Grid size={{ xs: 6, md: 2 }}>
             <Typography variant="subtitle1" sx={{ color: '#ffffff', fontWeight: 700, mb: 2 }}>
               Explore
             </Typography>
@@ -52,7 +52,7 @@ export default function Footer() {
             </Box>
           </Grid>
 
-          <Grid item xs={6} md={2}>
+          <Grid size={{ xs: 6, md: 2 }}>
             <Typography variant="subtitle1" sx={{ color: '#ffffff', fontWeight: 700, mb: 2 }}>
               Department
             </Typography>
@@ -76,7 +76,7 @@ export default function Footer() {
             </Box>
           </Grid>
 
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Typography variant="subtitle1" sx={{ color: '#ffffff', fontWeight: 700, mb: 2 }}>
               Contact Us
             </Typography>

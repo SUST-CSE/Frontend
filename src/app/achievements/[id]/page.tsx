@@ -129,7 +129,7 @@ export default function AchievementDetailsPage() {
            </Box>
 
            <Grid container>
-              <Grid item xs={12} md={8} sx={{ p: { xs: 3, md: 6 }, borderRight: { md: '1px solid #e2e8f0' } }}>
+              <Grid size={{ xs: 12, md: 8 }} sx={{ p: { xs: 3, md: 6 }, borderRight: { md: '1px solid #e2e8f0' } }}>
                  <Typography variant="h6" fontWeight={800} sx={{ mb: 3 }}>About the Achievement</Typography>
                  <Typography variant="body1" sx={{ lineHeight: 1.8, color: '#334155', whiteSpace: 'pre-wrap' }}>
                     {achievement.description || 'No description provided.'}
@@ -147,7 +147,7 @@ export default function AchievementDetailsPage() {
                  </Button>
               </Grid>
 
-              <Grid item xs={12} md={4} sx={{ p: { xs: 3, md: 6 }, bgcolor: '#f8fafc' }}>
+              <Grid size={{ xs: 12, md: 4 }} sx={{ p: { xs: 3, md: 6 }, bgcolor: '#f8fafc' }}>
                  <Typography variant="subtitle1" fontWeight={800} sx={{ mb: 3 }}>Details</Typography>
                  
                  <Stack spacing={3}>

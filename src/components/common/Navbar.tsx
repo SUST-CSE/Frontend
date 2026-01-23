@@ -292,9 +292,6 @@ export default function Navbar() {
                   color: '#121a15ff',
                   fontSize: { xs: '0.65rem', sm: '0.8rem', lg: '0.85rem' },
                   letterSpacing: '0.04em',
-                color: '#121a15ff',
-                  fontSize: { xs: '0.65rem', sm: '0.8rem', lg: '0.85rem' },
-                  letterSpacing: '0.04em',
                   textTransform: 'uppercase',
                   mt: 0.5
                 }}

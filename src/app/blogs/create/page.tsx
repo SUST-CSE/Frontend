@@ -149,7 +149,7 @@ export default function CreateBlogPage() {
                 <Typography variant="body2" color="text.secondary" component="div" sx={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
                   <strong>Bold</strong>: Select text → Click <strong>B</strong> or Ctrl+B<br/>
                   <em>Italic</em>: Select text → Click <em>I</em> or Ctrl+I<br/>
-                  <code style={{ bgcolor: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>Code</code>: Select text → Click code block icon<br/>
+                  <code style={{ backgroundColor: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>Code</code>: Select text → Click code block icon<br/>
                   Lists: Click bullet/number icon<br/>
                   Blockquote: Click quote icon for emphasis
                 </Typography>

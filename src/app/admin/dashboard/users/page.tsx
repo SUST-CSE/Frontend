@@ -113,7 +113,6 @@ export default function UsersManagementPage() {
           <Button 
             startIcon={<LucideUserPlus size={18} />} 
             variant="contained" 
-            bgcolor="#16a34a"
             onClick={() => setOpenBulkDialog(true)}
             sx={{ bgcolor: '#16a34a', '&:hover': { bgcolor: '#15803d' } }}
           >

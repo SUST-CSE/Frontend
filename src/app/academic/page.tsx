@@ -112,7 +112,7 @@ export default function AcademicPage() {
                 {achLoading ? <CircularProgress /> : (
                   <Grid container spacing={4}>
                     {achievements.map((ach: any) => (
-                      <Grid item xs={12} key={ach._id}>
+                      <Grid size={{ xs: 12 }} key={ach._id}>
                         <Paper sx={{ p: 4, borderRadius: 3, border: '1px solid #f1f5f9' }}>
                           <Stack direction="row" spacing={3}>
                             <Box sx={{ p: 2, bgcolor: '#dcfce7', borderRadius: 2, display: 'flex', alignItems: 'center' }}>
@@ -143,7 +143,7 @@ export default function AcademicPage() {
                       { label: 'Avg CGPA', value: '3.65', color: '#f59e0b' },
                       { label: 'Alumni Network', value: '5000+', color: '#6366f1' },
                     ].map((stat, idx) => (
-                      <Grid item xs={6} md={3} key={idx}>
+                      <Grid size={{ xs: 6, md: 3 }} key={idx}>
                         <Paper sx={{ p: 4, textAlign: 'center', bgcolor: '#f8fafc', borderRadius: 4 }}>
                           <Typography variant="h4" fontWeight={900} color={stat.color}>{stat.value}</Typography>
                           <Typography variant="body2" fontWeight={700} color="text.secondary">{stat.label}</Typography>
