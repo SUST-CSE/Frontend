@@ -6,7 +6,11 @@ import {
   useCreateAlumniMutation,
   useUpdateAlumniMutation,
   useDeleteAlumniMutation,
+  useAddAlumniFromUserMutation,
+  useGraduateSessionMutation,
 } from '@/features/alumni/alumniApi';
+import { useGetAllUsersQuery } from '@/features/user/userApi';
+import { LucideGraduationCap, LucideUserPlus } from 'lucide-react';
 import {
   Box,
   Container,
@@ -26,7 +30,6 @@ import {
   DialogActions,
   TextField,
   CircularProgress,
-  Alert,
   Stack,
   Avatar,
   Chip,
@@ -45,14 +48,25 @@ export default function AdminAlumniPage() {
     description: '',
     quotes: '',
     linkedIn: '',
+    facebook: '',
+    instagram: '',
     email: '',
   });
+  const [session, setSession] = useState('');
+  const [userId, setUserId] = useState('');
+  const [openUserDialog, setOpenUserDialog] = useState(false);
+  const [openSessionDialog, setOpenSessionDialog] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
 
   const { data, isLoading } = useGetAllAlumniQuery({});
   const [createAlumni, { isLoading: isCreating }] = useCreateAlumniMutation();
   const [updateAlumni, { isLoading: isUpdating }] = useUpdateAlumniMutation();
   const [deleteAlumni] = useDeleteAlumniMutation();
+  const [addAlumniFromUser, { isLoading: isAddingFromUser }] = useAddAlumniFromUserMutation();
+  const [graduateSession, { isLoading: isGraduating }] = useGraduateSessionMutation();
+
+  const { data: usersData } = useGetAllUsersQuery({ role: 'STUDENT' });
+  const students = usersData?.data || [];
 
   const alumni = data?.data?.alumni || [];
 
@@ -68,6 +82,8 @@ export default function AdminAlumniPage() {
         description: alumniData.description,
         quotes: alumniData.quotes,
         linkedIn: alumniData.linkedIn || '',
+        facebook: alumniData.facebook || '',
+        instagram: alumniData.instagram || '',
         email: alumniData.email || '',
       });
     } else {
@@ -81,6 +97,8 @@ export default function AdminAlumniPage() {
         description: '',
         quotes: '',
         linkedIn: '',
+        facebook: '',
+        instagram: '',
         email: '',
       });
     }
@@ -114,6 +132,8 @@ export default function AdminAlumniPage() {
     }
 
     if (formData.linkedIn) submitData.append('linkedIn', formData.linkedIn);
+    if (formData.facebook) submitData.append('facebook', formData.facebook);
+    if (formData.instagram) submitData.append('instagram', formData.instagram);
     if (formData.email) submitData.append('email', formData.email);
     if (imageFile) submitData.append('profileImage', imageFile);
 
@@ -154,14 +174,32 @@ export default function AdminAlumniPage() {
         <Typography variant="h4" fontWeight={800}>
           Alumni Management
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<LucidePlus size={20} />}
-          onClick={() => handleOpen()}
-          sx={{ bgcolor: '#16a34a', '&:hover': { bgcolor: '#15803d' } }}
-        >
-          Add Alumni
-        </Button>
+        <Stack direction="row" spacing={2}>
+          <Button
+            variant="outlined"
+            startIcon={<LucideUserPlus size={20} />}
+            onClick={() => setOpenUserDialog(true)}
+            sx={{ borderColor: '#16a34a', color: '#16a34a' }}
+          >
+            Add from User
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<LucideGraduationCap size={20} />}
+            onClick={() => setOpenSessionDialog(true)}
+            sx={{ borderColor: '#2563eb', color: '#2563eb' }}
+          >
+            Graduate Session
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<LucidePlus size={20} />}
+            onClick={() => handleOpen()}
+            sx={{ bgcolor: '#16a34a', '&:hover': { bgcolor: '#15803d' } }}
+          >
+            Add Alumni
+          </Button>
+        </Stack>
       </Stack>
 
       <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #e2e8f0' }}>
@@ -271,12 +309,26 @@ export default function AdminAlumniPage() {
                 helperText="Enter company names separated by commas"
               />
 
-              <TextField
-                label="LinkedIn Profile URL"
-                fullWidth
-                value={formData.linkedIn}
-                onChange={(e) => setFormData({ ...formData, linkedIn: e.target.value })}
-              />
+              <Stack direction="row" spacing={2}>
+                <TextField
+                  label="LinkedIn URL"
+                  fullWidth
+                  value={formData.linkedIn}
+                  onChange={(e) => setFormData({ ...formData, linkedIn: e.target.value })}
+                />
+                <TextField
+                  label="Facebook URL"
+                  fullWidth
+                  value={formData.facebook}
+                  onChange={(e) => setFormData({ ...formData, facebook: e.target.value })}
+                />
+                <TextField
+                  label="Instagram URL"
+                  fullWidth
+                  value={formData.instagram}
+                  onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
+                />
+              </Stack>
 
               <TextField
                 label="Description"
@@ -330,6 +382,78 @@ export default function AdminAlumniPage() {
             </Button>
           </DialogActions>
         </form>
+      </Dialog>
+
+      {/* Add from User Dialog */}
+      <Dialog open={openUserDialog} onClose={() => setOpenUserDialog(false)}>
+        <DialogTitle sx={{ fontWeight: 800 }}>Add Alumni from Existing User</DialogTitle>
+        <DialogContent>
+          <Typography sx={{ mb: 2 }}>Select a student to convert them to alumni. This will create an alumni record and mark their account as alumni.</Typography>
+          <TextField
+            select
+            fullWidth
+            label="Select Student"
+            value={userId}
+            onChange={(e) => setUserId(e.target.value)}
+            SelectProps={{ native: true }}
+          >
+            <option value=""></option>
+            {students.map((s: any) => (
+              <option key={s._id} value={s._id}>{s.name} ({s.studentId})</option>
+            ))}
+          </TextField>
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button onClick={() => setOpenUserDialog(false)}>Cancel</Button>
+          <Button 
+            variant="contained" 
+            disabled={!userId || isAddingFromUser}
+            onClick={async () => {
+              try {
+                await addAlumniFromUser({ userId }).unwrap();
+                setOpenUserDialog(false);
+                setUserId('');
+              } catch (err) { console.error(err); }
+            }}
+          >
+            {isAddingFromUser ? 'Adding...' : 'Add as Alumni'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Graduate Session Dialog */}
+      <Dialog open={openSessionDialog} onClose={() => setOpenSessionDialog(false)}>
+        <DialogTitle sx={{ fontWeight: 800 }}>Graduate Multiple Sessions</DialogTitle>
+        <DialogContent>
+          <Typography sx={{ mb: 2 }}>
+            Enter the target session. This will mark all students of <b>this session and all previous sessions</b> as alumni.
+          </Typography>
+          <TextField
+            fullWidth
+            label="Session"
+            placeholder="e.g., 2021-22"
+            value={session}
+            onChange={(e) => setSession(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button onClick={() => setOpenSessionDialog(false)}>Cancel</Button>
+          <Button 
+            variant="contained" 
+            color="primary"
+            disabled={!session || isGraduating}
+            onClick={async () => {
+              try {
+                await graduateSession({ session }).unwrap();
+                alert(`All students from session ${session} have been marked as alumni.`);
+                setOpenSessionDialog(false);
+                setSession('');
+              } catch (err) { console.error(err); }
+            }}
+          >
+            {isGraduating ? 'Processing...' : 'Mark as Alumni'}
+          </Button>
+        </DialogActions>
       </Dialog>
     </Container>
   );

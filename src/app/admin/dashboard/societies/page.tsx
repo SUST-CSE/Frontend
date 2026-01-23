@@ -4,7 +4,6 @@ import {
   Box, 
   Typography, 
   Grid, 
-  Paper, 
   Button, 
   Stack,
   Avatar,
@@ -74,10 +73,10 @@ export default function AdminSocietiesPage() {
 
       if (isEditMode && selectedSocietyId) {
          await updateSociety({ id: selectedSocietyId, data: formData }).unwrap();
-         alert("Society updated successfully");
+         alert("Organization updated successfully");
       } else {
          await createSociety(formData).unwrap();
-         alert("Society created successfully");
+         alert("Organization created successfully");
       }
       setOpenDialog(false);
       reset();
@@ -91,19 +90,17 @@ export default function AdminSocietiesPage() {
     <Box>
        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 6 }}>
           <Typography variant="h4" fontWeight={900} color="#0f172a">
-            Society <span style={{ color: '#16a34a' }}>Management</span>
+            Organization <span style={{ color: '#16a34a' }}>Management</span>
           </Typography>
           {/* Hide Create Button if society exists to enforce single society rule, or keep for flexibility */}
-          {societies.length === 0 && (
              <Button 
                variant="contained" 
                startIcon={<LucidePlus size={18} />}
                onClick={handleCreateOpen}
                sx={{ bgcolor: '#000000', fontWeight: 700, '&:hover': { bgcolor: '#16a34a' } }}
              >
-               Create Society
+               Create Organization
              </Button>
-          )}
        </Stack>
 
       {isLoading ? <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress /></Box> : (
@@ -156,7 +153,7 @@ export default function AdminSocietiesPage() {
 
       {/* Create/Edit Society Dialog */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
-         <DialogTitle fontWeight={800}>{isEditMode ? 'Edit Society Details' : 'Create New Society'}</DialogTitle>
+         <DialogTitle fontWeight={800}>{isEditMode ? 'Edit Organization Details' : 'Create New Organization'}</DialogTitle>
          <form onSubmit={handleSubmit(onSubmit)}>
             <DialogContent>
                <Stack spacing={3} sx={{ pt: 1 }}>
@@ -165,7 +162,7 @@ export default function AdminSocietiesPage() {
                      control={control}
                      rules={{ required: 'Name is required' }}
                      render={({ field }) => (
-                        <TextField {...field} label="Society Name" fullWidth error={!!errors.name} helperText={errors.name?.message as string} />
+                        <TextField {...field} label="Organization Name" fullWidth error={!!errors.name} helperText={errors.name?.message as string} />
                      )}
                   />
                   
@@ -224,7 +221,7 @@ export default function AdminSocietiesPage() {
             <DialogActions>
                <Button onClick={() => setOpenDialog(false)} sx={{ color: '#64748b' }}>Cancel</Button>
                <Button type="submit" variant="contained" disabled={isCreating || isUpdating} sx={{ bgcolor: '#000000' }}>
-                  {isCreating || isUpdating ? 'Saving...' : (isEditMode ? 'Update Society' : 'Create Society')}
+                  {isCreating || isUpdating ? 'Saving...' : (isEditMode ? 'Update Organization' : 'Create Organization')}
                </Button>
             </DialogActions>
          </form>

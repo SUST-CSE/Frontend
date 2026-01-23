@@ -84,7 +84,7 @@ export default function AchievementsPage() {
             <Grid container spacing={4} alignItems="center">
               <Grid item xs={12} md={8}>
                  <Typography variant="h2" fontWeight={900} sx={{ mb: 2, letterSpacing: -1 }}>
-                    Hall of <span style={{ color: '#facc15' }}>Fame</span>
+                    <span style={{ color: '#ffffffff' }}>Hall of</span> <span style={{ color: '#facc15' }}>Fame</span>
                  </Typography>
                  <Typography variant="h6" color="rgba(255,255,255,0.7)" fontWeight={400} sx={{ maxWidth: 600 }}>
                     Celebrating the remarkable victories and innovative breakthroughs of our students and faculty on the global stage.

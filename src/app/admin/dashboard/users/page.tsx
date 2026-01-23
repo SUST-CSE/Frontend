@@ -20,13 +20,22 @@ import {
   CircularProgress,
   IconButton,
   Tooltip,
-  Alert
+  Alert,
+  Stack,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  TextField
 } from '@mui/material';
 import { 
   LucideUsers, 
   LucideClock, 
   LucideCheckCircle, 
-  LucideXCircle, 
   LucideUserCheck, 
   LucideUserX,
   LucideShieldAlert,
@@ -34,7 +43,13 @@ import {
   LucideTrash2,
   LucideShieldCheck
 } from 'lucide-react';
-import { useGetAllUsersQuery, useUpdateUserStatusMutation, useDeleteUserMutation } from '@/features/user/userApi';
+import { 
+  useGetAllUsersQuery, 
+  useUpdateUserStatusMutation, 
+  useDeleteUserMutation,
+  useBulkCreateUsersMutation
+} from '@/features/user/userApi';
+import { LucideUserPlus } from 'lucide-react';
 
 const STATUS_COLORS: Record<string, any> = {
   ACTIVE: 'success',
@@ -56,6 +71,11 @@ export default function UsersManagementPage() {
   });
   const [updateStatus, { isLoading: isUpdating }] = useUpdateUserStatusMutation();
   const [deleteUser] = useDeleteUserMutation();
+  const [bulkCreate, { isLoading: isBulkCreating }] = useBulkCreateUsersMutation();
+
+  const [openBulkDialog, setOpenBulkDialog] = useState(false);
+  const [bulkData, setBulkData] = useState('');
+  const [bulkRole, setBulkRole] = useState('STUDENT');
 
   const handleStatusUpdate = async (id: string, newStatus: string) => {
     try {
@@ -89,13 +109,24 @@ export default function UsersManagementPage() {
             Manage registrations, permissions, and account statuses
           </Typography>
         </Box>
-        <Button 
-          startIcon={<LucideRefreshCcw size={18} />} 
-          variant="outlined" 
-          onClick={() => refetch()}
-        >
-          Refresh
-        </Button>
+        <Stack direction="row" spacing={2}>
+          <Button 
+            startIcon={<LucideUserPlus size={18} />} 
+            variant="contained" 
+            bgcolor="#16a34a"
+            onClick={() => setOpenBulkDialog(true)}
+            sx={{ bgcolor: '#16a34a', '&:hover': { bgcolor: '#15803d' } }}
+          >
+            Bulk Create Users
+          </Button>
+          <Button 
+            startIcon={<LucideRefreshCcw size={18} />} 
+            variant="outlined" 
+            onClick={() => refetch()}
+          >
+            Refresh
+          </Button>
+        </Stack>
       </Box>
 
       <Paper elevation={0} sx={{ borderRadius: 4, border: '1px solid rgba(0,0,0,0.05)', overflow: 'hidden' }}>
@@ -269,6 +300,59 @@ export default function UsersManagementPage() {
           Review the profiles below and click the green checkmark to authorize their access to the department portal.
         </Alert>
       )}
+
+      {/* Bulk Create Dialog */}
+      <Dialog open={openBulkDialog} onClose={() => setOpenBulkDialog(false)} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ fontWeight: 800 }}>Bulk Create Users</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            Paste a list of <b>student emails</b> (one per line).
+            The system will automatically extract Student ID, Session, and Batch from the email (e.g., 2021331002@student.sust.edu).
+            Passwords will be generated and emailed to them.
+          </Typography>
+          <FormControl fullWidth sx={{ mb: 3 }}>
+            <InputLabel>Role for these users</InputLabel>
+            <Select value={bulkRole} onChange={(e) => setBulkRole(e.target.value)} label="Role for these users">
+              <MenuItem value="STUDENT">Students</MenuItem>
+              <MenuItem value="TEACHER">Teachers</MenuItem>
+            </Select>
+          </FormControl>
+          <TextField
+            multiline
+            rows={10}
+            fullWidth
+            placeholder="2021331001@student.sust.edu&#10;2021331002@student.sust.edu"
+            value={bulkData}
+            onChange={(e) => setBulkData(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button onClick={() => setOpenBulkDialog(false)}>Cancel</Button>
+          <Button 
+            variant="contained" 
+            sx={{ bgcolor: '#16a34a' }}
+            disabled={!bulkData || isBulkCreating}
+            onClick={async () => {
+              const emails = bulkData.trim().split('\n').map(e => e.trim()).filter(Boolean);
+
+              try {
+                const response = await bulkCreate({ users: emails, role: bulkRole }).unwrap();
+                const results = response.data || [];
+                const successCount = (results as any[]).filter(r => r.success).length;
+                alert(`Successfully created ${successCount} users.`);
+                setOpenBulkDialog(false);
+                setBulkData('');
+                refetch();
+              } catch (err) {
+                console.error(err);
+                alert('Bulk creation failed. Check console for details.');
+              }
+            }}
+          >
+            {isBulkCreating ? 'Creating...' : 'Create Users'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }

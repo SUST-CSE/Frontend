@@ -25,7 +25,7 @@ import {
   Switch,
   FormControlLabel
 } from '@mui/material';
-import { LucidePlus, LucideTrash2, LucideUser, LucideArrowLeft } from 'lucide-react';
+import { LucidePlus, LucideTrash2, LucideArrowLeft } from 'lucide-react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGetSocietyMembersQuery, useGetFormerSocietyMembersQuery, useAddMemberMutation, useRemoveMemberMutation, useGetSocietyByIdQuery } from '@/features/society/societyApi';
@@ -122,13 +122,13 @@ export default function AdminSocietyMembersPage() {
         onClick={() => router.back()} 
         sx={{ mb: 4, color: '#64748b' }}
       >
-        Back to Societies
+        Back to Organizations
       </Button>
 
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 6 }}>
         <Box>
            <Typography variant="h4" fontWeight={900} color="#0f172a">
-            {societyData?.data?.name || "Society"} <span style={{ color: '#16a34a' }}>Members</span>
+            {societyData?.data?.name || "Organization"} <span style={{ color: '#16a34a' }}>Members</span>
           </Typography>
           <Typography variant="body1" color="text.secondary">Manage current and former executive members</Typography>
         </Box>
@@ -219,7 +219,7 @@ export default function AdminSocietyMembersPage() {
 
       {/* Add Member Dialog */}
       <Dialog open={openAddDialog} onClose={() => setOpenAddDialog(false)} maxWidth="sm" fullWidth>
-         <DialogTitle fontWeight={800}>Add Society Member</DialogTitle>
+         <DialogTitle fontWeight={800}>Add Organization Member</DialogTitle>
          <form onSubmit={handleSubmit(onSubmit)}>
             <DialogContent>
                <Stack spacing={3} sx={{ pt: 1 }}>

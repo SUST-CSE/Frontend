@@ -93,6 +93,9 @@ const noticeSchema = z.object({
   description: z.string().min(1, 'Description is required'),
   category: z.enum(['ACADEMIC', 'ADMINISTRATIVE', 'EVENT', 'GENERAL']),
   isPinned: z.boolean().default(false),
+  isImportant: z.boolean().default(false),
+  targetAudience: z.enum(['STUDENT', 'TEACHER', 'BOTH']).default('BOTH'),
+  shouldSendEmail: z.boolean().default(true),
 });
 
 const heroSchema = z.object({
@@ -236,7 +239,10 @@ export default function AdminContentPage() {
       title: '',
       description: '',
       category: 'GENERAL',
-      isPinned: false
+      isPinned: false,
+      isImportant: false,
+      targetAudience: 'BOTH',
+      shouldSendEmail: true,
     }
   });
 
@@ -311,6 +317,9 @@ export default function AdminContentPage() {
       formData.append('description', data.description);
       formData.append('category', data.category);
       formData.append('isPinned', String(data.isPinned));
+      formData.append('isImportant', String(data.isImportant));
+      formData.append('targetAudience', data.targetAudience);
+      formData.append('shouldSendEmail', String(data.shouldSendEmail));
       
       noticeFiles.forEach(file => {
         formData.append('attachments', file);
@@ -383,10 +392,9 @@ export default function AdminContentPage() {
     try {
       const formData = new FormData();
       formData.append('name', data.name);
-      if (data.description) formData.append('description', data.description);
       formData.append('link', data.link);
-      formData.append('isActive', String(data.isActive));
-      formData.append('order', String(data.order));
+      formData.append('isActive', 'true');
+      formData.append('order', '0');
       
       if (productIcon) {
         formData.append('icon', productIcon);
@@ -1156,14 +1164,47 @@ export default function AdminContentPage() {
                         </FormControl>
                      )}
                   />
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                     <input 
-                        type="checkbox" 
-                        {...noticeForm.register('isPinned')} 
-                        style={{ marginRight: 8, width: 18, height: 18 }} 
-                     />
-                     <Typography variant="body2" fontWeight={600}>Pin this notice to top</Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <input 
+                          type="checkbox" 
+                          {...noticeForm.register('isPinned')} 
+                          style={{ marginRight: 8, width: 18, height: 18 }} 
+                      />
+                      <Typography variant="body2" fontWeight={600}>Pin to Top</Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <input 
+                          type="checkbox" 
+                          {...noticeForm.register('isImportant')} 
+                          style={{ marginRight: 8, width: 18, height: 18 }} 
+                      />
+                      <Typography variant="body2" fontWeight={600} color="error">Important</Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <input 
+                          type="checkbox" 
+                          {...noticeForm.register('shouldSendEmail')} 
+                          style={{ marginRight: 8, width: 18, height: 18 }} 
+                      />
+                      <Typography variant="body2" fontWeight={600} color="primary">Send Email Notification</Typography>
+                    </Box>
                   </Box>
+
+                  <Controller
+                     name="targetAudience"
+                     control={noticeForm.control}
+                     render={({ field }) => (
+                        <FormControl fullWidth error={!!noticeForm.formState.errors.targetAudience}>
+                           <InputLabel>Target Audience</InputLabel>
+                           <Select {...field} label="Target Audience">
+                              <MenuItem value="BOTH">Both Student & Teacher</MenuItem>
+                              <MenuItem value="STUDENT">Students Only</MenuItem>
+                              <MenuItem value="TEACHER">Teachers Only</MenuItem>
+                           </Select>
+                        </FormControl>
+                     )}
+                  />
                   
                   <Box>
                     <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1 }}>Attachments</Typography>
@@ -1224,37 +1265,7 @@ export default function AdminContentPage() {
                 name="link"
                 control={productForm.control}
                 render={({ field }) => (
-                  <TextField {...field} label="Project URL" fullWidth error={!!productForm.formState.errors.link} helperText={productForm.formState.errors.link?.message} />
-                )}
-              />
-              <Controller
-                name="order"
-                control={productForm.control}
-                render={({ field }) => (
-                  <TextField {...field} label="Display Order" type="number" fullWidth error={!!productForm.formState.errors.order} helperText={productForm.formState.errors.order?.message} />
-                )}
-              />
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <input 
-                  type="checkbox" 
-                  {...productForm.register('isActive')} 
-                  style={{ marginRight: 8, width: 18, height: 18 }} 
-                />
-                <Typography variant="body2" fontWeight={600}>Active (Show in Navbar)</Typography>
-              </Box>
-              <Box>
-                <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1 }}>Project Icon</Typography>
-                <Button variant="outlined" component="label" fullWidth startIcon={<LucideUpload size={18} />} sx={{ py: 1.5, borderStyle: 'dashed', borderRadius: 2 }}>
-                  {productIcon ? 'Change Icon' : 'Upload Icon'}
-                  <input type="file" hidden accept="image/*" onChange={(e) => { if (e.target.files && e.target.files[0]) setProductIcon(e.target.files[0]); }} />
-                </Button>
-                {productIcon && <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>{productIcon.name}</Typography>}
-              </Box>
-              <Controller
-                name="description"
-                control={productForm.control}
-                render={({ field }) => (
-                  <TextField {...field} label="Description" multiline rows={4} fullWidth />
+                  <TextField {...field} label="Project URL" fullWidth placeholder="https://..." error={!!productForm.formState.errors.link} helperText={productForm.formState.errors.link?.message} />
                 )}
               />
             </Stack>

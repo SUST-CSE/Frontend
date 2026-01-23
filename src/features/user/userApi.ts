@@ -32,6 +32,14 @@ export const userApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['User'],
     }),
+    bulkCreateUsers: builder.mutation({
+      query: (data) => ({
+        url: '/users/bulk-create',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['User'],
+    }),
   }),
 });
 
@@ -40,4 +48,5 @@ export const {
   useUpdateUserStatusMutation,
   useUpdateMyProfileMutation,
   useDeleteUserMutation,
+  useBulkCreateUsersMutation,
 } = userApi;

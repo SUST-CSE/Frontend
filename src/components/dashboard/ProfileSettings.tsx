@@ -17,7 +17,7 @@ import {
   FormGroup,
   Grid
 } from '@mui/material';
-import { LucideCamera, LucideSave, LucideUser, LucidePhone, LucideBriefcase, LucideBell } from 'lucide-react';
+import { LucideCamera, LucideSave, LucideUser, LucidePhone, LucideBriefcase, LucideBell, LucideGlobe, LucideGithub, LucideFacebook, LucideLinkedin, LucideInstagram } from 'lucide-react';
 import { useUpdateMyProfileMutation } from '@/features/user/userApi';
 import ChangePassword from './ChangePassword';
 
@@ -34,6 +34,17 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedNotices, setSelectedNotices] = useState<string[]>(user?.notificationPreferences?.notices || []);
   const [selectedEvents, setSelectedEvents] = useState<string[]>(user?.notificationPreferences?.events || []);
+  
+  const [socialLinks, setSocialLinks] = useState({
+    facebook: user?.socialLinks?.facebook || '',
+    linkedin: user?.socialLinks?.linkedin || '',
+    instagram: user?.socialLinks?.instagram || '',
+  });
+
+  const [projectLinks, setProjectLinks] = useState({
+    github: user?.projectLinks?.github || '',
+    liveLink: user?.projectLinks?.liveLink || '',
+  });
 
   const [updateProfile, { isLoading, error, isSuccess }] = useUpdateMyProfileMutation();
 
@@ -77,6 +88,11 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
       notices: selectedNotices,
       events: selectedEvents
     }));
+
+    formData.append('socialLinks', JSON.stringify(socialLinks));
+    if (user.role === 'STUDENT') {
+      formData.append('projectLinks', JSON.stringify(projectLinks));
+    }
 
     try {
       await updateProfile(formData).unwrap();
@@ -156,7 +172,6 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
             placeholder="017XXXXXXXX"
             InputProps={{ startAdornment: <LucidePhone size={18} style={{ marginRight: 12, opacity: 0.5 }} /> }}
           />
-
           {user.role === 'TEACHER' && (
             <TextField 
               fullWidth 
@@ -166,6 +181,71 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
               placeholder="e.g. Associate Professor"
               InputProps={{ startAdornment: <LucideBriefcase size={18} style={{ marginRight: 12, opacity: 0.5 }} /> }}
             />
+          )}
+
+          <Divider sx={{ my: 2 }} />
+          
+          <Typography variant="subtitle1" fontWeight={800} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <LucideGlobe size={20} color="#002147" />
+            Social Profiles
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={4}>
+              <TextField 
+                fullWidth 
+                label="LinkedIn" 
+                value={socialLinks.linkedin} 
+                onChange={(e) => setSocialLinks({ ...socialLinks, linkedin: e.target.value })}
+                InputProps={{ startAdornment: <LucideLinkedin size={18} style={{ marginRight: 12, opacity: 0.5 }} /> }}
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <TextField 
+                fullWidth 
+                label="Facebook" 
+                value={socialLinks.facebook} 
+                onChange={(e) => setSocialLinks({ ...socialLinks, facebook: e.target.value })}
+                InputProps={{ startAdornment: <LucideFacebook size={18} style={{ marginRight: 12, opacity: 0.5 }} /> }}
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <TextField 
+                fullWidth 
+                label="Instagram" 
+                value={socialLinks.instagram} 
+                onChange={(e) => setSocialLinks({ ...socialLinks, instagram: e.target.value })}
+                InputProps={{ startAdornment: <LucideInstagram size={18} style={{ marginRight: 12, opacity: 0.5 }} /> }}
+              />
+            </Grid>
+          </Grid>
+
+          {user.role === 'STUDENT' && (
+            <>
+              <Typography variant="subtitle1" fontWeight={800} sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <LucideBriefcase size={20} color="#002147" />
+                Project Showcases
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={6}>
+                  <TextField 
+                    fullWidth 
+                    label="GitHub Profile/Link" 
+                    value={projectLinks.github} 
+                    onChange={(e) => setProjectLinks({ ...projectLinks, github: e.target.value })}
+                    InputProps={{ startAdornment: <LucideGithub size={18} style={{ marginRight: 12, opacity: 0.5 }} /> }}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <TextField 
+                    fullWidth 
+                    label="Live Portfolio/Link" 
+                    value={projectLinks.liveLink} 
+                    onChange={(e) => setProjectLinks({ ...projectLinks, liveLink: e.target.value })}
+                    InputProps={{ startAdornment: <LucideGlobe size={18} style={{ marginRight: 12, opacity: 0.5 }} /> }}
+                  />
+                </Grid>
+              </Grid>
+            </>
           )}
 
           <Divider sx={{ my: 2 }} />

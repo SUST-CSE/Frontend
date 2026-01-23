@@ -27,7 +27,7 @@ import {
   CardContent,
   CardMedia
 } from '@mui/material';
-import { LucideGlobe, LucideTwitter, LucideLinkedin, LucideCalendar, LucideMapPin, LucideClock } from 'lucide-react';
+import { LucideGlobe, LucideLinkedin, LucideCalendar, LucideMapPin, LucideClock, LucideFacebook } from 'lucide-react';
 import Link from 'next/link';
 import gsap from 'gsap';
 import { useEffect, useRef, useState } from 'react';
@@ -135,7 +135,7 @@ export default function SocietyDetailsPage() {
     <Box sx={{ py: 6, bgcolor: '#ffffff', minHeight: '100vh' }} ref={contentRef}>
       <Container maxWidth="lg">
         <Breadcrumbs sx={{ mb: 4 }}>
-          <MuiLink component={Link} href="/societies" underline="hover" color="inherit">Societies</MuiLink>
+          <MuiLink component={Link} href="/societies" underline="hover" color="inherit">Organizations</MuiLink>
           <Typography color="text.primary" fontWeight={700}>{society.name}</Typography>
         </Breadcrumbs>
 
@@ -162,14 +162,14 @@ export default function SocietyDetailsPage() {
           </Box>
           <Box>
              <Typography variant="overline" sx={{ color: '#16a34a', fontWeight: 800, letterSpacing: 2, fontSize: '0.9rem' }}>
-              {society.category} Society
+              {society.category}
             </Typography>
             <Typography variant="h2" fontWeight={900} color="#000000" sx={{ mb: 2, lineHeight: 1.1 }}>
               {society.name}
             </Typography>
              <Stack direction="row" spacing={1}>
                 {society.socialLinks?.website && <IconButton href={society.socialLinks.website} target="_blank" sx={{ color: '#000000', bgcolor: '#f1f5f9', '&:hover': { bgcolor: '#16a34a', color: '#fff' } }}><LucideGlobe size={20} /></IconButton>}
-                {society.socialLinks?.facebook && <IconButton href={society.socialLinks.facebook} target="_blank" sx={{ color: '#1877F2', bgcolor: '#eff6ff', '&:hover': { bgcolor: '#16a34a', color: '#fff' } }}><LucideGlobe size={20} /></IconButton>} 
+                {society.socialLinks?.facebook && <IconButton href={society.socialLinks.facebook} target="_blank" sx={{ color: '#1877F2', bgcolor: '#eff6ff', '&:hover': { bgcolor: '#16a34a', color: '#fff' } }}><LucideFacebook size={20} /></IconButton>} 
                 {society.socialLinks?.linkedin && <IconButton href={society.socialLinks.linkedin} target="_blank" sx={{ color: '#0A66C2', bgcolor: '#eff6ff', '&:hover': { bgcolor: '#16a34a', color: '#fff' } }}><LucideLinkedin size={20} /></IconButton>}
              </Stack>
           </Box>

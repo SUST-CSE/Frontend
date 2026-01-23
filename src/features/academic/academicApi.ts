@@ -7,7 +7,7 @@ export const academicApi = apiSlice.injectEndpoints({
       providesTags: ['Course'],
     }),
     getAcademicStats: builder.query({
-      query: () => '/academic/statistics',
+      query: () => '/academic/stats',
       providesTags: ['Course'],
     }),
     getAcademicAchievements: builder.query({

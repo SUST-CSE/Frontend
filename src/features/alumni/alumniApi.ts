@@ -36,6 +36,22 @@ export const alumniApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Alumni'],
     }),
+    addAlumniFromUser: builder.mutation({
+      query: (data) => ({
+        url: '/alumni/add-from-user',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Alumni'],
+    }),
+    graduateSession: builder.mutation({
+      query: (data) => ({
+        url: '/alumni/graduate-session',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Alumni'],
+    }),
   }),
 });
 
@@ -45,4 +61,6 @@ export const {
   useCreateAlumniMutation,
   useUpdateAlumniMutation,
   useDeleteAlumniMutation,
+  useAddAlumniFromUserMutation,
+  useGraduateSessionMutation,
 } = alumniApi;
