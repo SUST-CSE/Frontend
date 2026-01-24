@@ -28,7 +28,7 @@ import NextImage from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { logout } from '@/features/auth/authSlice';
 import { useLogoutUserMutation } from '@/features/auth/authApi';
 import { IconButton, useMediaQuery, useTheme } from '@mui/material';

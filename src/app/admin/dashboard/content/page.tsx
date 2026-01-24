@@ -39,6 +39,7 @@ import {
   useDeleteNoticeMutation,
   useGetHomepageQuery,
   useUpdateHomepageMutation,
+  useGetAchievementsQuery,
   useCreateAchievementMutation, 
   useDeleteAchievementMutation,
   useSendMessageMutation
