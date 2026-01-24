@@ -16,7 +16,7 @@ export default function AboutPage() {
       {/* Hero Header */}
       <Box sx={{ bgcolor: '#0f172a', py: { xs: 8, md: 12 }, color: 'white' }}>
         <Container maxWidth="lg">
-          <Typography variant="h2" sx={{ fontWeight: 800, mb: 2 }}>About Us</Typography>
+          <Typography variant="h2" sx={{ fontWeight: 800, mb: 2, color:'white' }}>About Us</Typography>
           <Typography variant="h5" sx={{ color: '#94a3b8', maxWidth: '800px', lineHeight: 1.6 }}>
             Department of Computer Science and Engineering, SUST
           </Typography>

@@ -19,7 +19,7 @@ export default function ResearchPage() {
     <Box sx={{ pb: 12 }}>
       <Box sx={{ bgcolor: '#0f172a', py: { xs: 8, md: 12 }, color: 'white' }}>
         <Container maxWidth="lg">
-          <Typography variant="h2" sx={{ fontWeight: 800, mb: 2 }}>Research</Typography>
+          <Typography variant="h2" sx={{ fontWeight: 800, mb: 2, color:'white' }}>Research</Typography>
           <Typography variant="h5" sx={{ color: '#94a3b8', maxWidth: '800px', lineHeight: 1.6 }}>
             Exploration and discovery at the cutting edge of computer science.
           </Typography>
