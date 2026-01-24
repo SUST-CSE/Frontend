@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Box, Container, Grid, Typography, Button, Stack, Paper } from '@mui/material';
+import Link from 'next/link'; // Added import
 import { useKeenSlider } from 'keen-slider/react';
 import 'keen-slider/keen-slider.min.css';
 import { 
@@ -155,6 +156,8 @@ export default function ResearchAreas() {
               From developing cyber security solutions to recommending potential medicine through AI, our researchers solve problems that impact the world. Our expertise spans multiple disciplines, including Algorithms and Theory, AI and Machine Learning, Bioinformatics, Cyber Security, Database and Data Science, Natural Language Processing, Software Engineering, and Systems and Networking.
             </Typography>
             <Button 
+              component={Link} // Link added
+              href="/research" // Href added
               variant="contained" 
               sx={{ 
                 bgcolor: '#991b1b', // Dark red as in image

@@ -2,6 +2,7 @@
 
 import { Box, Container, Grid, Typography, Button, Stack } from '@mui/material';
 import Image from 'next/image';
+import Link from 'next/link'; // Added import
 import { LucideArrowRight, LucideInfo } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
@@ -144,6 +145,8 @@ export default function AboutSection() {
               </Stack>
 
               <Button 
+                component={Link} // Link added
+                href="/about"    // Href added
                 variant="contained" 
                 size="large"
                 endIcon={<LucideArrowRight size={20} />}

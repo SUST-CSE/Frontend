@@ -9,19 +9,19 @@ const services = [
     title: 'Consultancy',
     description: 'The Department of Computer Science and Engineering, SUST enjoys the presence of a world class pool of experts from different specialized fields.',
     image: '/IICT1.jpg',
-    link: '#'
+    link: '/services'
   },
   {
     title: 'Training',
     description: 'Enhancing expertise in the latest technological advancements through training programs for professionals in IT solutions.',
     image: '/IICT2.jpg',
-    link: '#'
+    link: '/services'
   },
   {
     title: 'Social Outreach',
     description: 'Extending our expertise to the community to promoting technology literacy and support local development initiatives.',
     image: '/about3.jpg', 
-    link: '#'
+    link: '/services'
   }
 ];
 
