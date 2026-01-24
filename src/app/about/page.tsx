@@ -26,7 +26,7 @@ export default function AboutPage() {
       {/* Mission & Vision */}
       <Container maxWidth="lg" sx={{ mt: 8 }}>
         <Grid container spacing={6}>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
              <Stack spacing={2}>
                <Stack direction="row" spacing={2} alignItems="center">
                  <Box sx={{ p: 1.5, bgcolor: '#eff6ff', borderRadius: 2 }}><LucideTarget color="#2563eb" /></Box>
@@ -37,7 +37,7 @@ export default function AboutPage() {
                </Typography>
              </Stack>
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
              <Stack spacing={2}>
                <Stack direction="row" spacing={2} alignItems="center">
                  <Box sx={{ p: 1.5, bgcolor: '#f0fdf4', borderRadius: 2 }}><LucideEye color="#16a34a" /></Box>
@@ -59,7 +59,7 @@ export default function AboutPage() {
           
           <Grid container spacing={4}>
             {CORE_VALUES.map((value, idx) => (
-              <Grid item xs={12} sm={6} md={3} key={idx}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }} key={idx}>
                 <Paper 
                   elevation={0}
                   sx={{ 

@@ -29,7 +29,7 @@ export default function ResearchPage() {
       <Container maxWidth="lg" sx={{ mt: 8 }}>
         <Grid container spacing={4}>
             {RESEARCH_AREAS.map((area, idx) => (
-                <Grid item xs={12} md={6} lg={4} key={idx}>
+                <Grid size={{ xs: 12, md: 6, lg: 4 }} key={idx}>
                     <Paper sx={{ p: 4, height: '100%', borderRadius: 3, border: '1px solid #e2e8f0' }} elevation={0}>
                         <Box sx={{ color: '#991b1b', mb: 2 }}><area.icon size={32} /></Box>
                         <Typography variant="h5" fontWeight={700} gutterBottom>{area.title}</Typography>

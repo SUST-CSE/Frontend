@@ -35,7 +35,7 @@ export default function ServicesPage() {
       <Container maxWidth="lg" sx={{ mt: 8 }}>
         <Grid container spacing={6}>
             {SERVICES.map((service, idx) => (
-                <Grid item xs={12} key={idx}>
+                <Grid size={{ xs: 12 }} key={idx}>
                     <Paper sx={{ p: 5, borderRadius: 4 }} elevation={0} variant="outlined">
                         <Typography variant="h4" fontWeight={800} gutterBottom color="#0f172a">{service.title}</Typography>
                         <Typography variant="body1" sx={{ fontSize: '1.1rem', color: '#475569', mb: 3 }}>{service.content}</Typography>
@@ -44,7 +44,7 @@ export default function ServicesPage() {
                         
                         <Grid container spacing={2}>
                             {service.details.map((detail, dIdx) => (
-                                <Grid item xs={12} sm={4} key={dIdx}>
+                                <Grid size={{ xs: 12, sm: 4 }} key={dIdx}>
                                     <Box sx={{ p: 2, bgcolor: '#f8fafc', borderRadius: 2, border: '1px solid #e2e8f0', textAlign: 'center' }}>
                                         <Typography fontWeight={600} color="#334155">{detail}</Typography>
                                     </Box>
