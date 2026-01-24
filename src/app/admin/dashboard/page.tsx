@@ -3,9 +3,11 @@
 import { Box, Typography, Grid, Paper, Stack, Button } from '@mui/material';
 import { LucideFileText, LucideUsers, LucideActivity } from 'lucide-react';
 import { useGetBlogsQuery, useGetPendingBlogsQuery } from '@/features/blog/blogApi';
+import { useRouter } from 'next/navigation';
 // import { useGetStatsQuery } from '@/features/admin/adminApi'; // Placeholder
 
 export default function AdminDashboardPage() {
+  const router = useRouter();
   const { data: pendingData } = useGetPendingBlogsQuery({});
   const { data: allBlogs } = useGetBlogsQuery({});
   
@@ -74,15 +76,27 @@ export default function AdminDashboardPage() {
          <Grid size={{ xs: 12, md: 4 }}>
             <Paper elevation={0} sx={{ p: 4, bgcolor: '#111', color: '#fff', borderRadius: 6, border: '1px solid #333' }}>
                <Typography variant="h6" fontWeight={800} sx={{ mb: 3 }}>Quick Actions</Typography>
-               <Stack spacing={2}>
-                  <Button variant="contained" sx={{ bgcolor: '#16a34a', '&:hover': { bgcolor: '#15803d' }, py: 1.5 }}>
+                <Stack spacing={2}>
+                  <Button 
+                    variant="contained" 
+                    sx={{ bgcolor: '#16a34a', '&:hover': { bgcolor: '#15803d' }, py: 1.5 }}
+                    onClick={() => router.push('/admin/dashboard/content')}
+                  >
                      Compose Notice
                   </Button>
-                  <Button variant="outlined" sx={{ borderColor: '#333', color: '#fff', '&:hover': { borderColor: '#fff' }, py: 1.5 }}>
+                  <Button 
+                    variant="outlined" 
+                    sx={{ borderColor: '#333', color: '#fff', '&:hover': { borderColor: '#fff' }, py: 1.5 }}
+                    onClick={() => router.push('/admin/dashboard/messenger')}
+                  >
                      Send Direct Message
                   </Button>
-                  <Button variant="outlined" sx={{ borderColor: '#333', color: '#fff', '&:hover': { borderColor: '#fff' }, py: 1.5 }}>
-                     Export User Data
+                  <Button 
+                    variant="outlined" 
+                    sx={{ borderColor: '#333', color: '#fff', '&:hover': { borderColor: '#fff' }, py: 1.5 }}
+                    onClick={() => router.push('/admin/dashboard/users')}
+                  >
+                     Manage Users
                   </Button>
                </Stack>
             </Paper>
