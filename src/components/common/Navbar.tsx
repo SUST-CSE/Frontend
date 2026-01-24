@@ -48,7 +48,7 @@ const NAV_ITEMS = [
   { label: 'Home', href: '/' },
   { label: 'Notices', href: '/notices' },
   { label: 'Events', href: '/events' },
-  { label: 'Organizations', href: '/societies' },
+  { label: 'Society', href: '/societies/697345563d0368295f290589' },
   { label: 'Alumni', href: '/alumni' },
   { label: 'Academic', href: '/academic' },
   { label: 'Products', href: '#', isDropdown: true },
