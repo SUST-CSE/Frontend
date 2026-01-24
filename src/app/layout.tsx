@@ -7,6 +7,7 @@ import Navbar from "@/components/common/Navbar";
 import Footer from "@/components/common/Footer";
 import AuthPersist from "@/components/common/AuthPersist";
 import { Box } from "@mui/material";
+import { Toaster } from "react-hot-toast";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -36,6 +37,7 @@ export default function RootLayout({
                 </Box>
                 <Footer />
               </Box>
+              <Toaster position="top-center" reverseOrder={false} />
             </AuthPersist>
           </AppThemeProvider>
         </StoreProvider>

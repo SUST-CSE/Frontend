@@ -10,7 +10,6 @@ import {
   Stack, 
   IconButton,
   CircularProgress,
-  Alert,
   Divider,
   Checkbox,
   FormControlLabel,
@@ -20,6 +19,7 @@ import {
 import { LucideCamera, LucideSave, LucideUser, LucidePhone, LucideBriefcase, LucideBell, LucideGlobe, LucideGithub, LucideFacebook, LucideLinkedin, LucideInstagram } from 'lucide-react';
 import { useUpdateMyProfileMutation } from '@/features/user/userApi';
 import ChangePassword from './ChangePassword';
+import toast from 'react-hot-toast';
 
 interface ProfileSettingsProps {
   user: any;
@@ -47,7 +47,7 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
     liveLink: user?.projectLinks?.liveLink || '',
   });
 
-  const [updateProfile, { isLoading, error, isSuccess }] = useUpdateMyProfileMutation();
+  const [updateProfile, { isLoading }] = useUpdateMyProfileMutation();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -97,8 +97,10 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
 
     try {
       await updateProfile(formData).unwrap();
+      toast.success('Profile updated successfully!');
     } catch (err) {
       console.error('Failed to update profile:', err);
+      toast.error('Failed to update profile. Please try again.');
     }
   };
 
@@ -112,8 +114,7 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
         Profile Information
       </Typography>
 
-      {isSuccess && <Alert severity="success" sx={{ mb: 3, borderRadius: 2 }}>Profile updated successfully!</Alert>}
-      {error && <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>Failed to update profile. Please try again.</Alert>}
+
 
       <Stack spacing={4}>
         {/* Photo Upload */}

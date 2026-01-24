@@ -393,6 +393,7 @@ export default function AdminContentPage() {
     try {
       const formData = new FormData();
       formData.append('name', data.name);
+      formData.append('description', data.description || '');
       formData.append('link', data.link);
       formData.append('isActive', 'true');
       formData.append('order', '0');

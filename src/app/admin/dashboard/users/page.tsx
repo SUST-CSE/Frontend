@@ -332,7 +332,7 @@ export default function UsersManagementPage() {
             sx={{ bgcolor: '#16a34a' }}
             disabled={!bulkData || isBulkCreating}
             onClick={async () => {
-              const emails = bulkData.trim().split('\n').map(e => e.trim()).filter(Boolean);
+              const emails = bulkData.trim().split(/[\n,]+/).map(e => e.trim()).filter(Boolean);
 
               try {
                 const response = await bulkCreate({ users: emails, role: bulkRole }).unwrap();
