@@ -171,7 +171,9 @@ export default function AdminDashboardLayout({ children }: { children: React.Rea
               boxSizing: 'border-box',
               bgcolor: '#000000',
               color: '#ffffff',
-              borderRight: '1px solid #333'
+              borderRight: '1px solid #333',
+              top: '100px',
+              height: 'calc(100vh - 100px)',
             },
           }}
         >
