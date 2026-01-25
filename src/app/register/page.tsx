@@ -89,11 +89,16 @@ export default function RegisterPage() {
   const onStudentSubmit = async (data: any) => {
     try {
       const email = data.email;
-      const studentId = email.includes('@') ? email.split('@')[0] : email;
-      const yearStr = studentId.substring(0, 4);
+      const isSUST = email.endsWith('@student.sust.edu');
+      const localPart = email.split('@')[0];
+      
+      // Use reg num as ID for SUST, otherwise full email to ensure unique ID for externals
+      const studentId = isSUST ? localPart : email; 
+      
+      const yearStr = isSUST ? localPart.substring(0, 4) : new Date().getFullYear().toString();
       const enrollmentYear = parseInt(yearStr, 10) || new Date().getFullYear();
       
-      const isCSE = studentId.includes('331');
+      const isCSE = isSUST && localPart.includes('331');
       const batchNum = isCSE ? enrollmentYear - 1991 : 0;
       const batch = isCSE ? getOrdinal(batchNum) : 'External';
       const session = isCSE ? `${enrollmentYear}-${(enrollmentYear + 1).toString().slice(-2)}` : 'N/A';
