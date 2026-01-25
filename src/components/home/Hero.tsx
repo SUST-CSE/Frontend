@@ -29,21 +29,12 @@ export default function Hero() {
   // Static content as fallback if no slides from DB
   const DEFAULT_SLIDES = [
     {
-      title: 'Empowering the Next Generation of Engineers',
+      title: 'Department of CSE, SUST',
       subtitle: 'Excellence in Innovation',
-      description: 'Join the Department of Computer Science and Engineering at SUST. Where academic rigor meets cutting-edge research.',
+      description: 'The first department of its kind in Bangladesh, leading the way in Computer Science education and research since 1992.',
       ctaText: 'Explore Programs',
       ctaLink: '/academic',
-      secondaryCta: 'View Notice Board',
-      image: '/sust.png'
-    },
-    {
-      title: 'Pioneering Research & Development',
-      subtitle: 'Advancing Knowledge',
-      description: 'Our faculty and students are at the forefront of technological innovation, publishing groundbreaking research in AI, Data Science, and Systems.',
-      ctaText: 'View Publications',
-      ctaLink: '/research',
-      secondaryCta: 'Research Areas',
+      secondaryCta: 'Research Highlights',
       image: '/sust.png'
     }
   ];
@@ -257,6 +248,8 @@ export default function Hero() {
                       <Button
                         variant="outlined"
                         size="large"
+                        component="a"
+                        href="/research"
                         sx={{
                           borderColor: 'rgba(255,255,255,0.6)',
                           color: '#ffffff',

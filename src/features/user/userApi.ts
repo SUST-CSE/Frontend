@@ -17,6 +17,14 @@ export const userApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['User'],
     }),
+    updateUser: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `/users/${id}`,
+        method: 'PATCH',
+        body: data,
+      }),
+      invalidatesTags: ['User'],
+    }),
     updateMyProfile: builder.mutation({
       query: (formData) => ({
         url: '/users/me',
@@ -40,13 +48,27 @@ export const userApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['User'],
     }),
+    getFaculty: builder.query({
+      query: () => '/users/faculty',
+      providesTags: ['User'],
+    }),
+    getStudents: builder.query({
+      query: (params) => ({
+        url: '/users/students',
+        params,
+      }),
+      providesTags: ['User'],
+    }),
   }),
 });
 
 export const {
   useGetAllUsersQuery,
   useUpdateUserStatusMutation,
+  useUpdateUserMutation,
   useUpdateMyProfileMutation,
   useDeleteUserMutation,
   useBulkCreateUsersMutation,
+  useGetFacultyQuery,
+  useGetStudentsQuery,
 } = userApi;

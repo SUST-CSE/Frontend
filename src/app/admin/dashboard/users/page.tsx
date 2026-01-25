@@ -46,10 +46,12 @@ import {
 import { 
   useGetAllUsersQuery, 
   useUpdateUserStatusMutation, 
+  useUpdateUserMutation,
   useDeleteUserMutation,
   useBulkCreateUsersMutation
 } from '@/features/user/userApi';
-import { LucideUserPlus } from 'lucide-react';
+import { LucideUserPlus, LucideEdit } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const STATUS_COLORS: Record<string, any> = {
   ACTIVE: 'success',
@@ -70,10 +72,13 @@ export default function UsersManagementPage() {
     status: activeTab === 0 ? 'PENDING' : undefined,
   });
   const [updateStatus, { isLoading: isUpdating }] = useUpdateUserStatusMutation();
+  const [updateUser, { isLoading: isUpdatingUser }] = useUpdateUserMutation();
   const [deleteUser] = useDeleteUserMutation();
   const [bulkCreate, { isLoading: isBulkCreating }] = useBulkCreateUsersMutation();
 
   const [openBulkDialog, setOpenBulkDialog] = useState(false);
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
   const [bulkData, setBulkData] = useState('');
   const [bulkRole, setBulkRole] = useState('STUDENT');
 
@@ -231,60 +236,73 @@ export default function UsersManagementPage() {
                       )}
                     </TableCell>
                     <TableCell align="right">
-                      {user.status === 'PENDING' && (
-                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-                          <Tooltip title="Approve">
-                            <IconButton 
-                              color="success" 
-                              onClick={() => handleStatusUpdate(user._id, 'ACTIVE')}
-                              disabled={isUpdating}
-                            >
-                              <LucideUserCheck size={20} />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Reject">
-                            <IconButton 
-                              color="error"
-                              onClick={() => handleStatusUpdate(user._id, 'INACTIVE')}
-                              disabled={isUpdating}
-                            >
-                              <LucideUserX size={20} />
-                            </IconButton>
-                          </Tooltip>
-                        </Box>
-                      )}
-                      {user.status === 'ACTIVE' && (
-                        <Button 
-                          size="small" 
-                          color="error" 
-                          startIcon={<LucideShieldAlert size={16} />}
-                          onClick={() => handleStatusUpdate(user._id, 'SUSPENDED')}
-                          disabled={isUpdating}
-                        >
-                          Suspend
-                        </Button>
-                      )}
-                      {user.status === 'SUSPENDED' && (
-                        <Button 
-                          size="small" 
-                          color="success" 
-                          startIcon={<LucideUserCheck size={16} />}
-                          onClick={() => handleStatusUpdate(user._id, 'ACTIVE')}
-                          disabled={isUpdating}
-                        >
-                          Reactivate
-                        </Button>
-                      )}
-                      <Tooltip title="Delete User">
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() => handleDelete(user._id)}
-                          sx={{ ml: 1 }}
-                        >
-                          <LucideTrash2 size={18} />
-                        </IconButton>
-                      </Tooltip>
+                      <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                        {user.status === 'PENDING' && (
+                          <>
+                            <Tooltip title="Approve">
+                              <IconButton 
+                                color="success" 
+                                onClick={() => handleStatusUpdate(user._id, 'ACTIVE')}
+                                disabled={isUpdating}
+                              >
+                                <LucideUserCheck size={20} />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Reject">
+                              <IconButton 
+                                color="error"
+                                onClick={() => handleStatusUpdate(user._id, 'INACTIVE')}
+                                disabled={isUpdating}
+                              >
+                                <LucideUserX size={20} />
+                              </IconButton>
+                            </Tooltip>
+                          </>
+                        )}
+                        {user.status === 'ACTIVE' && (
+                          <Button 
+                            size="small" 
+                            color="error" 
+                            startIcon={<LucideShieldAlert size={16} />}
+                            onClick={() => handleStatusUpdate(user._id, 'SUSPENDED')}
+                            disabled={isUpdating}
+                          >
+                            Suspend
+                          </Button>
+                        )}
+                        {user.status === 'SUSPENDED' && (
+                          <Button 
+                            size="small" 
+                            color="success" 
+                            startIcon={<LucideUserCheck size={16} />}
+                            onClick={() => handleStatusUpdate(user._id, 'ACTIVE')}
+                            disabled={isUpdating}
+                          >
+                            Reactivate
+                          </Button>
+                        )}
+                        <Tooltip title="Delete User">
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={() => handleDelete(user._id)}
+                          >
+                            <LucideTrash2 size={18} />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Edit Profile">
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            onClick={() => {
+                              setSelectedUser(user);
+                              setOpenEditDialog(true);
+                            }}
+                          >
+                            <LucideEdit size={18} />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -293,6 +311,79 @@ export default function UsersManagementPage() {
           )}
         </TableContainer>
       </Paper>
+
+      {/* Edit User Dialog */}
+      <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle fontWeight={800}>Edit User Profile</DialogTitle>
+        <DialogContent>
+          <Stack spacing={3} sx={{ pt: 1 }}>
+            <TextField 
+              fullWidth 
+              label="Name" 
+              value={selectedUser?.name || ''} 
+              onChange={(e) => setSelectedUser({...selectedUser, name: e.target.value})}
+            />
+            {selectedUser?.role === 'TEACHER' && (
+              <TextField 
+                fullWidth 
+                label="Designation" 
+                value={selectedUser?.designation || ''} 
+                onChange={(e) => setSelectedUser({...selectedUser, designation: e.target.value})}
+              />
+            )}
+            {selectedUser?.role === 'STUDENT' && (
+              <>
+                <TextField 
+                  fullWidth 
+                  label="Student ID" 
+                  value={selectedUser?.studentId || ''} 
+                  onChange={(e) => setSelectedUser({...selectedUser, studentId: e.target.value})}
+                />
+                <Stack direction="row" spacing={2}>
+                  <TextField 
+                    fullWidth 
+                    label="Batch" 
+                    value={selectedUser?.batch || ''} 
+                    onChange={(e) => setSelectedUser({...selectedUser, batch: e.target.value})}
+                  />
+                  <TextField 
+                    fullWidth 
+                    label="Session" 
+                    value={selectedUser?.session || ''} 
+                    onChange={(e) => setSelectedUser({...selectedUser, session: e.target.value})}
+                  />
+                </Stack>
+              </>
+            )}
+            <TextField 
+              fullWidth 
+              label="Phone" 
+              value={selectedUser?.phone || ''} 
+              onChange={(e) => setSelectedUser({...selectedUser, phone: e.target.value})}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button onClick={() => setOpenEditDialog(false)}>Cancel</Button>
+          <Button 
+            variant="contained" 
+            sx={{ bgcolor: '#002147' }}
+            disabled={isUpdatingUser}
+            onClick={async () => {
+              try {
+                await updateUser({ id: selectedUser._id, data: selectedUser }).unwrap();
+                toast.success('User updated successfully');
+                setOpenEditDialog(false);
+                refetch();
+              } catch (err) {
+                toast.error('Failed to update user');
+              }
+            }}
+          >
+            {isUpdatingUser ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {activeTab === 0 && users.length > 0 && (
         <Alert severity="info" sx={{ mt: 3, borderRadius: 3 }}>
@@ -338,13 +429,13 @@ export default function UsersManagementPage() {
                 const response = await bulkCreate({ users: emails, role: bulkRole }).unwrap();
                 const results = response.data || [];
                 const successCount = (results as any[]).filter(r => r.success).length;
-                alert(`Successfully created ${successCount} users.`);
+                toast.success(`Successfully created ${successCount} users.`);
                 setOpenBulkDialog(false);
                 setBulkData('');
                 refetch();
               } catch (err) {
                 console.error(err);
-                alert('Bulk creation failed. Check console for details.');
+                toast.error('Bulk creation failed. Check console for details.');
               }
             }}
           >

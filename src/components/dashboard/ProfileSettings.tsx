@@ -39,6 +39,8 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
   const [batch, setBatch] = useState(user?.batch || '');
   const [session, setSession] = useState(user?.session || '');
   const [projects, setProjects] = useState<any[]>(user?.projects || []);
+  const [experiences, setExperiences] = useState<any[]>(user?.experiences || []);
+  const [researches, setResearches] = useState<any[]>(user?.researches || []);
   
   const [socialLinks, setSocialLinks] = useState({
     facebook: user?.socialLinks?.facebook || '',
@@ -88,6 +90,34 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
     setProjects(newProjects);
   };
 
+  const addExperience = () => {
+    setExperiences([...experiences, { title: '', company: '', location: '', startDate: '', endDate: '', current: false, description: '' }]);
+  };
+
+  const removeExperience = (index: number) => {
+    setExperiences(experiences.filter((_, i) => i !== index));
+  };
+
+  const handleExperienceChange = (index: number, field: string, value: any) => {
+    const newExps = [...experiences];
+    newExps[index] = { ...newExps[index], [field]: value };
+    setExperiences(newExps);
+  };
+
+  const addResearch = () => {
+    setResearches([...researches, { title: '', publicationLink: '', journal: '', publicationDate: '', description: '' }]);
+  };
+
+  const removeResearch = (index: number) => {
+    setResearches(researches.filter((_, i) => i !== index));
+  };
+
+  const handleResearchChange = (index: number, field: string, value: any) => {
+    const newRes = [...researches];
+    newRes[index] = { ...newRes[index], [field]: value };
+    setResearches(newRes);
+  };
+
   const handleSave = async () => {
     const formData = new FormData();
     formData.append('name', name);
@@ -104,6 +134,9 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
       notices: selectedNotices,
       events: selectedEvents
     }));
+
+    formData.append('experiences', JSON.stringify(experiences));
+    formData.append('researches', JSON.stringify(researches));
 
     formData.append('socialLinks', JSON.stringify(socialLinks));
     if (user.role === 'STUDENT') {
@@ -354,6 +387,56 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
             </>
           )}
 
+          <Divider sx={{ my: 2 }} />
+          
+          <Divider sx={{ my: 2 }} />
+
+          <Typography variant="subtitle1" fontWeight={800} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <LucideBriefcase size={20} color="#002147" />
+            Job Experience / Profile
+          </Typography>
+          {experiences.map((exp, idx) => (
+            <Box key={idx} sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: 2, position: 'relative' }}>
+              <IconButton size="small" color="error" onClick={() => removeExperience(idx)} sx={{ position: 'absolute', right: 8, top: 8 }}><LucideTrash2 size={16} /></IconButton>
+              <Stack spacing={2}>
+                <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+                  <TextField fullWidth label="Job Title" value={exp.title} onChange={(e) => handleExperienceChange(idx, 'title', e.target.value)} size="small" />
+                  <TextField fullWidth label="Company/Institute" value={exp.company} onChange={(e) => handleExperienceChange(idx, 'company', e.target.value)} size="small" />
+                </Stack>
+                <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+                  <TextField fullWidth label="Location" value={exp.location} onChange={(e) => handleExperienceChange(idx, 'location', e.target.value)} size="small" />
+                  <TextField fullWidth label="Start Date" type="date" value={exp.startDate ? new Date(exp.startDate).toISOString().split('T')[0] : ''} onChange={(e) => handleExperienceChange(idx, 'startDate', e.target.value)} size="small" InputLabelProps={{ shrink: true }} />
+                  <TextField fullWidth label="End Date" type="date" value={exp.endDate ? new Date(exp.endDate).toISOString().split('T')[0] : ''} onChange={(e) => handleExperienceChange(idx, 'endDate', e.target.value)} size="small" InputLabelProps={{ shrink: true }} disabled={exp.current} />
+                </Stack>
+                <FormControlLabel control={<Checkbox checked={exp.current || false} onChange={(e) => handleExperienceChange(idx, 'current', e.target.checked)} />} label="I currently work here" />
+                <TextField fullWidth label="Description" value={exp.description} onChange={(e) => handleExperienceChange(idx, 'description', e.target.value)} multiline rows={2} size="small" />
+              </Stack>
+            </Box>
+          ))}
+          <Button variant="outlined" startIcon={<LucidePlus size={16} />} onClick={addExperience} sx={{ borderStyle: 'dashed' }}>Add Experience</Button>
+
+          <Divider sx={{ my: 2 }} />
+
+          <Typography variant="subtitle1" fontWeight={800} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <LucideBriefcase size={20} color="#002147" />
+            Researches & Publications
+          </Typography>
+          {researches.map((res, idx) => (
+            <Box key={idx} sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: 2, position: 'relative' }}>
+              <IconButton size="small" color="error" onClick={() => removeResearch(idx)} sx={{ position: 'absolute', right: 8, top: 8 }}><LucideTrash2 size={16} /></IconButton>
+              <Stack spacing={2}>
+                <TextField fullWidth label="Research Title" value={res.title} onChange={(e) => handleResearchChange(idx, 'title', e.target.value)} size="small" />
+                <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+                  <TextField fullWidth label="Journal/Conference" value={res.journal} onChange={(e) => handleResearchChange(idx, 'journal', e.target.value)} size="small" />
+                  <TextField fullWidth label="Publication Date" type="date" value={res.publicationDate ? new Date(res.publicationDate).toISOString().split('T')[0] : ''} onChange={(e) => handleResearchChange(idx, 'publicationDate', e.target.value)} size="small" InputLabelProps={{ shrink: true }} />
+                </Stack>
+                <TextField fullWidth label="Link" value={res.publicationLink} onChange={(e) => handleResearchChange(idx, 'publicationLink', e.target.value)} size="small" InputProps={{ startAdornment: <LucideGlobe size={16} style={{ marginRight: 8, opacity: 0.5 }} /> }} />
+                <TextField fullWidth label="Description" value={res.description} onChange={(e) => handleResearchChange(idx, 'description', e.target.value)} multiline rows={2} size="small" />
+              </Stack>
+            </Box>
+          ))}
+          <Button variant="outlined" startIcon={<LucidePlus size={16} />} onClick={addResearch} sx={{ borderStyle: 'dashed' }}>Add Research</Button>
+          
           <Divider sx={{ my: 2 }} />
           
           <Box>

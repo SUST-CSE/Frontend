@@ -37,10 +37,7 @@ import { useRegisterStudentMutation, useRegisterTeacherMutation } from '@/featur
 // Schema for frontend validation (visible fields only)
 const studentFormSchema = z.object({
   name: z.string().min(2, 'Name is too short'),
-  email: z.string().email('Invalid email address').refine(
-    (email) => email.endsWith('@student.sust.edu'),
-    'Must be a @student.sust.edu email'
-  ),
+  email: z.string().email('Invalid email address'),
   phone: z.string().regex(/^(?:\+88|88)?(01[3-9]\d{8})$/, 'Invalid Bangladesh phone number'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   confirmPassword: z.string()
@@ -51,10 +48,7 @@ const studentFormSchema = z.object({
 
 const teacherSchema = z.object({
   name: z.string().min(2, 'Name is too short'),
-  email: z.string().email('Invalid email address').refine(
-    (email) => email.endsWith('@sust.edu'),
-    'Teachers must use a @sust.edu email address'
-  ),
+  email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   confirmPassword: z.string(),
   phone: z.string().regex(/^(?:\+88|88)?(01[3-9]\d{8})$/, 'Invalid Bangladesh phone number'),
@@ -95,21 +89,14 @@ export default function RegisterPage() {
   const onStudentSubmit = async (data: any) => {
     try {
       const email = data.email;
-      const studentId = email.split('@')[0];
+      const studentId = email.includes('@') ? email.split('@')[0] : email;
       const yearStr = studentId.substring(0, 4);
-      const enrollmentYear = parseInt(yearStr, 10);
+      const enrollmentYear = parseInt(yearStr, 10) || new Date().getFullYear();
       
-      if (isNaN(enrollmentYear) || !studentId.includes('331')) {
-         studentForm.setError('email', { 
-           type: 'manual', 
-           message: 'Invalid Student ID in email. Must be a valid CSE student email (e.g., 2021331xxx).' 
-         });
-         return;
-      }
-
-      const batchNum = enrollmentYear - 1991;
-      const batch = getOrdinal(batchNum);
-      const session = `${enrollmentYear}-${(enrollmentYear + 1).toString().slice(-2)}`;
+      const isCSE = studentId.includes('331');
+      const batchNum = isCSE ? enrollmentYear - 1991 : 0;
+      const batch = isCSE ? getOrdinal(batchNum) : 'External';
+      const session = isCSE ? `${enrollmentYear}-${(enrollmentYear + 1).toString().slice(-2)}` : 'N/A';
 
       const payload = {
         name: data.name,
@@ -325,6 +312,12 @@ export default function RegisterPage() {
                     </Grid>
                     </Grid>
                     
+                    <Alert severity="info" sx={{ borderRadius: 2, bgcolor: '#f0f9ff', color: '#0369a1', border: '1px solid #bae6fd' }}>
+                        <Typography variant="caption" fontWeight={600}>
+                        External student registrations require admin approval.
+                        </Typography>
+                    </Alert>
+                    
                     <Button 
                     fullWidth 
                     variant="contained" 
@@ -432,7 +425,7 @@ export default function RegisterPage() {
 
                     <Alert severity="info" sx={{ borderRadius: 2, bgcolor: '#f0f9ff', color: '#0369a1', border: '1px solid #bae6fd' }}>
                         <Typography variant="caption" fontWeight={600}>
-                        Faculty accounts require admin approval.
+                        All new registrations require manual admin approval.
                         </Typography>
                     </Alert>
                     

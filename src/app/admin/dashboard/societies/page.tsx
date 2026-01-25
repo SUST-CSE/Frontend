@@ -23,6 +23,7 @@ import { LucidePlus, LucideUsers, LucideSettings } from 'lucide-react';
 import { useGetSocietiesQuery, useCreateSocietyMutation, useUpdateSocietyMutation } from '@/features/society/societyApi';
 import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
+import toast from 'react-hot-toast';
 
 export default function AdminSocietiesPage() {
   const { data: societyData, isLoading } = useGetSocietiesQuery({});
@@ -73,16 +74,16 @@ export default function AdminSocietiesPage() {
 
       if (isEditMode && selectedSocietyId) {
          await updateSociety({ id: selectedSocietyId, data: formData }).unwrap();
-         alert("Organization updated successfully");
+         toast.success("Organization updated successfully");
       } else {
          await createSociety(formData).unwrap();
-         alert("Organization created successfully");
+         toast.success("Organization created successfully");
       }
       setOpenDialog(false);
       reset();
     } catch (error) {
       console.error("Failed to save society", error);
-      alert("Failed to save society");
+      toast.error("Failed to save society");
     }
   };
 
