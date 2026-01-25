@@ -112,7 +112,7 @@ export default function ProfileDetailsPage() {
           </Grid>
 
           {/* Main Content */}
-          <Grid size={{ xs: 12, md: 8 }}>
+          <Grid size={{ xs: 12, md: 8 }} sx={{ marginTop: '100px' }}>
             
             {/* About / Research Interests */}
             {isTeacher && user.researchInterests?.length > 0 && (
