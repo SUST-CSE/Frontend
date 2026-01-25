@@ -16,7 +16,7 @@ import {
   FormGroup,
   Grid
 } from '@mui/material';
-import { LucideCamera, LucideSave, LucideUser, LucidePhone, LucideBriefcase, LucideBell, LucideGlobe, LucideGithub, LucideFacebook, LucideLinkedin, LucideInstagram } from 'lucide-react';
+import { LucideCamera, LucideSave, LucideUser, LucidePhone, LucideBriefcase, LucideBell, LucideGlobe, LucideGithub, LucideFacebook, LucideLinkedin, LucideInstagram, LucidePlus, LucideTrash2 } from 'lucide-react';
 import { useUpdateMyProfileMutation } from '@/features/user/userApi';
 import ChangePassword from './ChangePassword';
 import toast from 'react-hot-toast';
@@ -35,16 +35,17 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
   const [selectedNotices, setSelectedNotices] = useState<string[]>(user?.notificationPreferences?.notices || []);
   const [selectedEvents, setSelectedEvents] = useState<string[]>(user?.notificationPreferences?.events || []);
   
+  const [studentId, setStudentId] = useState(user?.studentId || '');
+  const [batch, setBatch] = useState(user?.batch || '');
+  const [session, setSession] = useState(user?.session || '');
+  const [projects, setProjects] = useState<any[]>(user?.projects || []);
+  
   const [socialLinks, setSocialLinks] = useState({
     facebook: user?.socialLinks?.facebook || '',
+    github: user?.socialLinks?.github || '',
     linkedin: user?.socialLinks?.linkedin || '',
     instagram: user?.socialLinks?.instagram || '',
     website: user?.socialLinks?.website || '',
-  });
-
-  const [projectLinks, setProjectLinks] = useState({
-    github: user?.projectLinks?.github || '',
-    liveLink: user?.projectLinks?.liveLink || '',
   });
 
   const [updateProfile, { isLoading }] = useUpdateMyProfileMutation();
@@ -73,6 +74,20 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
     );
   };
 
+  const addProject = () => {
+    setProjects([...projects, { title: '', description: '', githubLink: '', liveLink: '', technologies: [] }]);
+  };
+
+  const removeProject = (index: number) => {
+    setProjects(projects.filter((_, i) => i !== index));
+  };
+
+  const handleProjectChange = (index: number, field: string, value: any) => {
+    const newProjects = [...projects];
+    newProjects[index] = { ...newProjects[index], [field]: value };
+    setProjects(newProjects);
+  };
+
   const handleSave = async () => {
     const formData = new FormData();
     formData.append('name', name);
@@ -92,7 +107,10 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
 
     formData.append('socialLinks', JSON.stringify(socialLinks));
     if (user.role === 'STUDENT') {
-      formData.append('projectLinks', JSON.stringify(projectLinks));
+      formData.append('studentId', studentId);
+      formData.append('batch', batch);
+      formData.append('session', session);
+      formData.append('projects', JSON.stringify(projects));
     }
 
     try {
@@ -195,6 +213,15 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField 
                 fullWidth 
+                label="GitHub" 
+                value={socialLinks.github} 
+                onChange={(e) => setSocialLinks({ ...socialLinks, github: e.target.value })}
+                InputProps={{ startAdornment: <LucideGithub size={18} style={{ marginRight: 12, opacity: 0.5 }} /> }}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <TextField 
+                fullWidth 
                 label="LinkedIn" 
                 value={socialLinks.linkedin} 
                 onChange={(e) => setSocialLinks({ ...socialLinks, linkedin: e.target.value })}
@@ -232,30 +259,98 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
 
           {user.role === 'STUDENT' && (
             <>
+              <TextField 
+                fullWidth 
+                label="Student ID" 
+                value={studentId} 
+                onChange={(e) => setStudentId(e.target.value)}
+                InputProps={{ startAdornment: <LucideUser size={18} style={{ marginRight: 12, opacity: 0.5 }} /> }}
+              />
+              <Stack direction="row" spacing={2}>
+                <TextField 
+                  fullWidth 
+                  label="Batch" 
+                  value={batch} 
+                  onChange={(e) => setBatch(e.target.value)}
+                />
+                <TextField 
+                  fullWidth 
+                  label="Session" 
+                  value={session} 
+                  onChange={(e) => setSession(e.target.value)}
+                />
+              </Stack>
+
               <Typography variant="subtitle1" fontWeight={800} sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <LucideBriefcase size={20} color="#002147" />
-                Project Showcases
+                Projects
               </Typography>
-              <Grid container spacing={2}>
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField 
-                    fullWidth 
-                    label="GitHub Profile/Link" 
-                    value={projectLinks.github} 
-                    onChange={(e) => setProjectLinks({ ...projectLinks, github: e.target.value })}
-                    InputProps={{ startAdornment: <LucideGithub size={18} style={{ marginRight: 12, opacity: 0.5 }} /> }}
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField 
-                    fullWidth 
-                    label="Live Portfolio/Link" 
-                    value={projectLinks.liveLink} 
-                    onChange={(e) => setProjectLinks({ ...projectLinks, liveLink: e.target.value })}
-                    InputProps={{ startAdornment: <LucideGlobe size={18} style={{ marginRight: 12, opacity: 0.5 }} /> }}
-                  />
-                </Grid>
-              </Grid>
+              
+              {/* Dynamic Projects Form */}
+              {projects.map((proj, idx) => (
+                <Box key={idx} sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: 2, position: 'relative' }}>
+                  <IconButton 
+                    size="small" 
+                    color="error" 
+                    onClick={() => removeProject(idx)}
+                    sx={{ position: 'absolute', right: 8, top: 8 }}
+                  >
+                    <LucideTrash2 size={16} />
+                  </IconButton>
+                  <Stack spacing={2}>
+                    <TextField 
+                      fullWidth 
+                      label="Project Title" 
+                      value={proj.title} 
+                      onChange={(e) => handleProjectChange(idx, 'title', e.target.value)}
+                      size="small"
+                    />
+                    <TextField 
+                      fullWidth 
+                      label="Description" 
+                      value={proj.description} 
+                      onChange={(e) => handleProjectChange(idx, 'description', e.target.value)}
+                      multiline
+                      rows={2}
+                      size="small"
+                    />
+                    <Stack direction="row" spacing={2}>
+                      <TextField 
+                        fullWidth 
+                        label="GitHub Link" 
+                        value={proj.githubLink} 
+                        onChange={(e) => handleProjectChange(idx, 'githubLink', e.target.value)}
+                        size="small"
+                        InputProps={{ startAdornment: <LucideGithub size={16} style={{ marginRight: 8, opacity: 0.5 }} /> }}
+                      />
+                      <TextField 
+                        fullWidth 
+                        label="Live Link" 
+                        value={proj.liveLink} 
+                        onChange={(e) => handleProjectChange(idx, 'liveLink', e.target.value)}
+                        size="small"
+                        InputProps={{ startAdornment: <LucideGlobe size={16} style={{ marginRight: 8, opacity: 0.5 }} /> }}
+                      />
+                    </Stack>
+                    <TextField 
+                      fullWidth 
+                      label="Technologies (comma separated)" 
+                      value={proj.technologies?.join(', ')} 
+                      onChange={(e) => handleProjectChange(idx, 'technologies', e.target.value.split(',').map(t => t.trim()))}
+                      size="small"
+                      placeholder="React, Node.js, MongoDB"
+                    />
+                  </Stack>
+                </Box>
+              ))}
+              <Button 
+                variant="outlined" 
+                startIcon={<LucidePlus size={16} />}
+                onClick={addProject}
+                sx={{ borderStyle: 'dashed' }}
+              >
+                Add Another Project
+              </Button>
             </>
           )}
 
