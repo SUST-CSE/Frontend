@@ -73,36 +73,47 @@ export default function StudentsPage() {
                     '&:hover': { bgcolor: 'white', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }
                   }}
                 >
-                  <Avatar 
-                    src={student.profileImage} 
-                    sx={{ width: 64, height: 64 }} 
-                  >
-                    {student.name.charAt(0)}
-                  </Avatar>
-                  <Box sx={{ flex: 1 }}>
-                    <Stack direction="row" justifyContent="space-between">
-                      <Box>
-                        <Typography variant="subtitle1" fontWeight={800}>{student.name}</Typography>
-                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                          ID: {student.studentId} • Batch: {student.batch}
-                        </Typography>
-                      </Box>
-                      {student.socialLinks?.github && (
-                        <Link href={student.socialLinks.github} target="_blank">
-                          <LucideGithub size={20} color="#333" />
-                        </Link>
-                      )}
-                    </Stack>
-                    
-                    {student.projects?.length > 0 && (
-                      <Stack direction="row" spacing={1} sx={{ mt: 1.5 }}>
-                        <LucideCode size={14} style={{ marginTop: 4, opacity: 0.6 }} />
-                        <Typography variant="caption" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 200 }}>
-                          {student.projects.length} Projects: {student.projects.map((p: any) => p.title).join(', ')}
-                        </Typography>
+                  <Link href={`/profile/${student._id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', width: '100%', alignItems: 'center', gap: 24 }}>
+                    <Avatar 
+                      src={student.profileImage} 
+                      sx={{ width: 64, height: 64 }} 
+                    >
+                      {student.name.charAt(0)}
+                    </Avatar>
+                    <Box sx={{ flex: 1 }}>
+                      <Stack direction="row" justifyContent="space-between">
+                        <Box>
+                          <Typography variant="subtitle1" fontWeight={800} sx={{ '&:hover': { color: '#002147' } }}>
+                            {student.name}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                            ID: {student.studentId} • Batch: {student.batch}
+                          </Typography>
+                        </Box>
+                        {student.socialLinks?.github && (
+                          <Box 
+                            component="span"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              window.open(student.socialLinks.github, '_blank');
+                            }}
+                            sx={{ cursor: 'pointer', '&:hover': { opacity: 0.7 } }}
+                          >
+                            <LucideGithub size={20} color="#333" />
+                          </Box>
+                        )}
                       </Stack>
-                    )}
-                  </Box>
+                      
+                      {student.projects?.length > 0 && (
+                        <Stack direction="row" spacing={1} sx={{ mt: 1.5 }}>
+                          <LucideCode size={14} style={{ marginTop: 4, opacity: 0.6 }} />
+                          <Typography variant="caption" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 200 }}>
+                            {student.projects.length} Projects: {student.projects.map((p: any) => p.title).join(', ')}
+                          </Typography>
+                        </Stack>
+                      )}
+                    </Box>
+                  </Link>
                 </Paper>
               </Grid>
             ))}

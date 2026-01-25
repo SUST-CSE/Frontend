@@ -59,6 +59,10 @@ export const userApi = apiSlice.injectEndpoints({
       }),
       providesTags: ['User'],
     }),
+    getUserById: builder.query({
+      query: (id) => `/users/${id}`,
+      providesTags: ['User'],
+    }),
   }),
 });
 
@@ -71,4 +75,5 @@ export const {
   useBulkCreateUsersMutation,
   useGetFacultyQuery,
   useGetStudentsQuery,
+  useGetUserByIdQuery,
 } = userApi;

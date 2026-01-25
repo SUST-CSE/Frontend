@@ -40,14 +40,20 @@ export default function FacultyPage() {
                 }}
               >
                 <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
-                  <Avatar 
-                    src={member.profileImage} 
-                    sx={{ width: 80, height: 80, border: '3px solid #e2e8f0' }} 
-                  >
-                    {member.name.charAt(0)}
-                  </Avatar>
+                  <Link href={`/profile/${member._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <Avatar 
+                      src={member.profileImage} 
+                      sx={{ width: 80, height: 80, border: '3px solid #e2e8f0', cursor: 'pointer', transition: '0.2s', '&:hover': { borderColor: '#002147' } }} 
+                    >
+                      {member.name.charAt(0)}
+                    </Avatar>
+                  </Link>
                   <Box>
-                    <Typography variant="h6" fontWeight={800}>{member.name}</Typography>
+                    <Link href={`/profile/${member._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                      <Typography variant="h6" fontWeight={800} sx={{ '&:hover': { color: '#002147', textDecoration: 'underline' } }}>
+                        {member.name}
+                      </Typography>
+                    </Link>
                     <Typography variant="body2" color="primary" fontWeight={600}>{member.designation}</Typography>
                     {member.experiences?.[0]?.company && (
                       <Typography variant="caption" color="text.secondary">

@@ -92,7 +92,8 @@ export default function Hero() {
     }
   }, [loaded, currentSlide]);
 
-  if (isLoading) return <Box sx={{ height: '85vh', bgcolor: 'transparent' }} />;
+  // Ensure we show default slides while loading or if no data
+  // if (isLoading) return <Box sx={{ height: '85vh', bgcolor: 'transparent' }} />;
 
   return (
     <Box sx={{ position: 'relative', height: { xs: '70vh', sm: '75vh', md: '75vh', lg: '85vh' }, minHeight: { xs: '500px', sm: 'auto' }, overflow: 'hidden', bgcolor: '#000' }}>
