@@ -38,6 +38,7 @@ export default function Footer() {
                 { label: 'Notices', href: '/notices' },
                 { label: 'Events', href: '/events' },
                 { label: 'Latest Blogs', href: '/blogs' },
+                { label: 'Student Directory', href: '/students' },
               ].map((item) => (
                 <MuiLink 
                   key={item.label} 
@@ -59,6 +60,7 @@ export default function Footer() {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               {[
                 { label: 'Academic', href: '/academic' },
+                { label: 'Faculty Members', href: '/faculty' },
                 { label: 'Societies', href: '/societies' },
                 { label: 'Alumni', href: '/alumni' },
                 { label: 'Achievements', href: '/achievements' },

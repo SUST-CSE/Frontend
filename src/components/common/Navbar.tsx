@@ -48,8 +48,8 @@ const NAV_ITEMS = [
   { label: 'Home', href: '/' },
   { label: 'Notices', href: '/notices' },
   { label: 'Events', href: '/events' },
+  { label: 'Community', href: '#', isDropdown: true },
   { label: 'Society', href: '/societies/697345563d0368295f290589' },
-  { label: 'Alumni', href: '/alumni' },
   { label: 'Academic', href: '/academic' },
   { label: 'Products', href: '#', isDropdown: true },
   { label: 'Achievements', href: '/achievements' },
@@ -66,6 +66,11 @@ export default function Navbar() {
   // Products Dropdown State
   const [productsAnchorEl, setProductsAnchorEl] = useState<null | HTMLElement>(null);
   const [mobileProductsOpen, setMobileProductsOpen] = useState(false);
+  
+  // Community Dropdown State
+  const [communityAnchorEl, setCommunityAnchorEl] = useState<null | HTMLElement>(null);
+  const [mobileCommunityOpen, setMobileCommunityOpen] = useState(false);
+
   const { data: productsData } = useGetProductsQuery({});
   const activeProducts = productsData?.data || [];
 
@@ -104,6 +109,20 @@ export default function Navbar() {
   const handleProductsClose = () => {
     setProductsAnchorEl(null);
   };
+
+  const handleCommunityClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setCommunityAnchorEl(event.currentTarget);
+  };
+
+  const handleCommunityClose = () => {
+    setCommunityAnchorEl(null);
+  };
+
+  const COMMUNITY_ITEMS = [
+    { label: 'Faculty Members', href: '/faculty' },
+    { label: 'Students', href: '/students' },
+    { label: 'Alumni', href: '/alumni' },
+  ];
 
   const drawerContent = (
     <Box sx={{ width: 280, height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#ffffff' }}>
@@ -158,6 +177,44 @@ export default function Navbar() {
                     {activeProducts.length === 0 && (
                       <Typography variant="caption" sx={{ pl: 2, py: 1, color: 'text.secondary', display: 'block' }}>No products available</Typography>
                     )}
+                  </List>
+                </Collapse>
+              </Box>
+            );
+          }
+
+          if (item.isDropdown && item.label === 'Community') {
+            return (
+              <Box key={item.label} sx={{ mb: 1 }}>
+                <ListItemButton 
+                  onClick={() => setMobileCommunityOpen(!mobileCommunityOpen)}
+                  sx={{ 
+                    borderRadius: 2,
+                    '&:hover': { bgcolor: '#f8fafc', color: '#16a34a' }
+                  }}
+                >
+                  <ListItemText 
+                    primary={item.label} 
+                    primaryTypographyProps={{ fontWeight: 600, fontSize: '0.95rem', color: '#64748b' }} 
+                  />
+                  {mobileCommunityOpen ? <LucideChevronDown size={16} color="#cbd5e1" /> : <LucideChevronRight size={16} color="#cbd5e1" />}
+                </ListItemButton>
+                <Collapse in={mobileCommunityOpen} timeout="auto" unmountOnExit>
+                  <List component="div" disablePadding sx={{ pl: 2 }}>
+                    {COMMUNITY_ITEMS.map((link) => (
+                      <ListItemButton 
+                        key={link.label}
+                        component={Link}
+                        href={link.href}
+                        onClick={handleDrawerToggle}
+                        sx={{ borderRadius: 2 }}
+                      >
+                        <ListItemText 
+                          primary={link.label} 
+                          primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: 500 }}
+                        />
+                      </ListItemButton>
+                    ))}
                   </List>
                 </Collapse>
               </Box>
@@ -367,6 +424,64 @@ export default function Navbar() {
                           <Typography variant="body2" color="text.secondary">No products available</Typography>
                         </MenuItem>
                       )}
+                    </Menu>
+                  </Box>
+                );
+              }
+
+              if (item.isDropdown && item.label === 'Community') {
+                return (
+                  <Box key={item.label}>
+                    <Button
+                      onClick={handleCommunityClick}
+                      endIcon={<LucideChevronDown size={14} />}
+                      sx={{
+                        color: '#64748b',
+                        px: 2,
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        '&:hover': {
+                          color: '#16a34a',
+                          bgcolor: '#f1f5f9',
+                        },
+                      }}
+                    >
+                      {item.label}
+                    </Button>
+                    <Menu
+                      anchorEl={communityAnchorEl}
+                      open={Boolean(communityAnchorEl)}
+                      onClose={handleCommunityClose}
+                      elevation={0}
+                      sx={{
+                        '& .MuiPaper-root': {
+                          mt: 1,
+                          minWidth: 200,
+                          borderRadius: 3,
+                          boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+                          border: '1px solid #f1f5f9'
+                        }
+                      }}
+                    >
+                      {COMMUNITY_ITEMS.map((link) => (
+                        <MenuItem 
+                          key={link.label} 
+                          component={Link} 
+                          href={link.href} 
+                          onClick={handleCommunityClose}
+                          sx={{ 
+                            py: 1.5,
+                            px: 2,
+                            fontWeight: 600,
+                            borderRadius: 2,
+                            mx: 1,
+                            my: 0.5,
+                            '&:hover': { bgcolor: '#f0fdf4', color: '#16a34a' }
+                          }}
+                        >
+                          <ListItemText primary={link.label} primaryTypographyProps={{ fontSize: '0.95rem', fontWeight: 600 }} />
+                        </MenuItem>
+                      ))}
                     </Menu>
                   </Box>
                 );
