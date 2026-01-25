@@ -69,22 +69,33 @@ export default function FacultyPage() {
                   ))}
                 </Stack>
 
-                <Stack direction="row" spacing={2} sx={{ mt: 'auto' }}>
-                  {member.email && (
-                    <Link href={`mailto:${member.email}`}>
-                      <LucideMail size={20} color="#64748b" style={{ cursor: 'pointer' }} />
-                    </Link>
-                  )}
-                  {member.socialLinks?.linkedin && (
-                    <Link href={member.socialLinks.linkedin} target="_blank">
-                      <LucideLinkedin size={20} color="#0a66c2" style={{ cursor: 'pointer' }} />
-                    </Link>
-                  )}
-                  {member.socialLinks?.website && (
-                    <Link href={member.socialLinks.website} target="_blank">
-                      <LucideGlobe size={20} color="#64748b" style={{ cursor: 'pointer' }} />
-                    </Link>
-                  )}
+                <Stack direction="row" spacing={2} sx={{ mt: 'auto', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Stack direction="row" spacing={2}>
+                    {member.email && (
+                      <Link href={`mailto:${member.email}`}>
+                        <LucideMail size={20} color="#64748b" style={{ cursor: 'pointer' }} />
+                      </Link>
+                    )}
+                    {member.socialLinks?.linkedin && (
+                      <Link href={member.socialLinks.linkedin} target="_blank">
+                        <LucideLinkedin size={20} color="#0a66c2" style={{ cursor: 'pointer' }} />
+                      </Link>
+                    )}
+                    {member.socialLinks?.website && (
+                      <Link href={member.socialLinks.website} target="_blank">
+                        <LucideGlobe size={20} color="#64748b" style={{ cursor: 'pointer' }} />
+                      </Link>
+                    )}
+                  </Stack>
+                  <Button 
+                    component={Link} 
+                    href={`/profile/${member._id}`}
+                    variant="outlined" 
+                    size="small" 
+                    sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
+                  >
+                    View Profile
+                  </Button>
                 </Stack>
               </Paper>
             </Grid>

@@ -112,6 +112,16 @@ export default function StudentsPage() {
                           </Typography>
                         </Stack>
                       )}
+                      
+                      <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+                        <Button 
+                          variant="text" 
+                          size="small" 
+                          sx={{ textTransform: 'none', fontWeight: 600, p: 0, '&:hover': { bgcolor: 'transparent', textDecoration: 'underline' } }}
+                        >
+                          View Details
+                        </Button>
+                      </Box>
                     </Box>
                   </Link>
                 </Paper>
