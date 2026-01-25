@@ -8,7 +8,8 @@ import Link from 'next/link';
 
 export default function ProfileDetailsPage() {
   const { id } = useParams();
-  const { data: user, isLoading, error } = useGetUserByIdQuery(id);
+  const { data: response, isLoading, error } = useGetUserByIdQuery(id);
+  const user = response?.data;
 
   if (isLoading) return (
     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
@@ -51,7 +52,7 @@ export default function ProfileDetailsPage() {
                   fontSize: '3rem'
                 }}
               >
-                {user.name.charAt(0)}
+                {user?.name?.charAt(0)}
               </Avatar>
               
               <Typography variant="h5" fontWeight={800} gutterBottom>{user.name}</Typography>
