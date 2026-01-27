@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function StudentsPage() {
-  const { user } = useSelector((state: any) => state.auth);
+  const { user } = useSelector((state: { auth: { user: any } }) => state.auth);
   const router = useRouter();
   const [search, setSearch] = useState('');
   const { data, isLoading } = useGetStudentsQuery({ search });
@@ -58,7 +58,7 @@ export default function StudentsPage() {
           </Box>
         ) : (
           <Grid container spacing={3}>
-            {students.map((student: any) => (
+            {students.map((student: { _id: string; name: string; studentId: string; batch: string; profileImage?: string; socialLinks?: { github?: string }; projects?: { title: string }[] }) => (
               <Grid size={{ xs: 12, md: 6 }} key={student._id}>
                 <Paper 
                   elevation={0} 
@@ -108,7 +108,7 @@ export default function StudentsPage() {
                         <Stack direction="row" spacing={1} sx={{ mt: 1.5 }}>
                           <LucideCode size={14} style={{ marginTop: 4, opacity: 0.6 }} />
                           <Typography variant="caption" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 200 }}>
-                            {student.projects.length} Projects: {student.projects.map((p: any) => p.title).join(', ')}
+                            {student.projects?.length || 0} Projects: {student.projects?.map((p: { title: string }) => p.title).join(', ')}
                           </Typography>
                         </Stack>
                       )}

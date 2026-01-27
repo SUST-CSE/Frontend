@@ -45,24 +45,17 @@ export default function VerifyEmailPage() {
         Cookies.set('refreshToken', result.data.tokens.refreshToken);
       }
 
-      setSuccess('Email verified successfully! Redirecting...');
+      setSuccess('Email verified successfully! Please log in to continue.');
       
-      // Redirect based on role
+      // Redirect to login page
       setTimeout(() => {
-        const role = result.data.user.role;
-        if (role === 'STUDENT') {
-          router.push('/dashboard/student');
-        } else if (role === 'TEACHER') {
-          router.push('/dashboard/teacher');
-        } else if (role === 'ADMIN') {
-          router.push('/admin/dashboard');
-        } else {
-          router.push('/');
-        }
+        router.push('/login');
       }, 2000);
     } catch (err: unknown) {
       const error = err as { data?: { message?: string } };
-      setError(error?.data?.message || 'Verification failed. Please try again.');
+      const msg = error?.data?.message || 'Verification failed. Please try again.';
+      toast.error(msg);
+      setError(msg);
     }
   };
 

@@ -66,10 +66,21 @@ const ROLE_COLORS: Record<string, any> = {
   STUDENT: 'info',
 };
 
+const PERMISSIONS = [
+  'MANAGE_USERS',
+  'MANAGE_CONTENT',
+  'MANAGE_SOCIETIES',
+  'MANAGE_APPLICATIONS',
+  'MANAGE_ACCOUNTS',
+  'VIEW_EMAIL_LOGS'
+];
+
 export default function UsersManagementPage() {
   const [activeTab, setActiveTab] = useState(0);
+  const [usersSearch, setUsersSearch] = useState('');
   const { data: usersData, isLoading, refetch } = useGetAllUsersQuery({
     status: activeTab === 0 ? 'PENDING' : undefined,
+    email: usersSearch || undefined
   });
   const [updateStatus, { isLoading: isUpdating }] = useUpdateUserStatusMutation();
   const [updateUser, { isLoading: isUpdatingUser }] = useUpdateUserMutation();
@@ -156,6 +167,17 @@ export default function UsersManagementPage() {
             label="All Users" 
           />
         </Tabs>
+
+        <Box sx={{ p: 2, bgcolor: '#fff', borderBottom: '1px solid rgba(0,0,0,0.05)', display: 'flex', gap: 2 }}>
+           <TextField
+              size="small"
+              placeholder="Search by Name, Email, or ID..."
+              fullWidth
+              sx={{ maxWidth: 400 }}
+              value={usersSearch}
+              onChange={(e) => setUsersSearch(e.target.value)}
+           />
+        </Box>
 
         <TableContainer sx={{ maxHeight: '70vh' }}>
           {isLoading ? (
@@ -361,6 +383,27 @@ export default function UsersManagementPage() {
               value={selectedUser?.phone || ''} 
               onChange={(e) => setSelectedUser({...selectedUser, phone: e.target.value})}
             />
+
+            <FormControl fullWidth>
+              <InputLabel>Permissions</InputLabel>
+              <Select
+                multiple
+                label="Permissions"
+                value={selectedUser?.permissions || []}
+                onChange={(e) => setSelectedUser({ ...selectedUser, permissions: e.target.value })}
+                renderValue={(selected) => (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {(selected as string[]).map((value) => (
+                      <Chip key={value} label={value} size="small" />
+                    ))}
+                  </Box>
+                )}
+              >
+                {PERMISSIONS.map((p) => (
+                  <MenuItem key={p} value={p}>{p}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Stack>
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>

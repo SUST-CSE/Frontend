@@ -80,22 +80,24 @@ export default function BlogsPage() {
               Insights, stories, and research from SUST CSE students and faculty.
             </Typography>
           </Box>
-          <Button
-            variant="contained"
-            startIcon={<LucidePenTool size={18} />}
-            onClick={() => router.push('/blogs/create')}
-            sx={{
-              bgcolor: '#000000',
-              color: '#ffffff',
-              px: 3,
-              py: 1.5,
-              borderRadius: 2,
-              fontWeight: 700,
-              '&:hover': { bgcolor: '#16a34a' }
-            }}
-          >
-            Write a Blog
-          </Button>
+          {isAuthenticated && (
+            <Button
+              variant="contained"
+              startIcon={<LucidePenTool size={18} />}
+              onClick={() => router.push('/blogs/create')}
+              sx={{
+                bgcolor: '#000000',
+                color: '#ffffff',
+                px: 3,
+                py: 1.5,
+                borderRadius: 2,
+                fontWeight: 700,
+                '&:hover': { bgcolor: '#16a34a' }
+              }}
+            >
+              Write a Blog
+            </Button>
+          )}
         </Box>
 
         <Stack direction={{ xs: 'column', md: 'row' }} spacing={3} sx={{ mb: 6 }}>

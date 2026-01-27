@@ -32,15 +32,18 @@ import { LucidePlus, LucideTrash2, LucideEdit, LucideCalendar, LucideFileText, L
 import NextImage from 'next/image';
 import { useState, useEffect } from 'react';
 import Hero from '@/components/home/Hero';
-import { useGetEventsQuery, useCreateEventMutation, useDeleteEventMutation } from '@/features/event/eventApi';
+import { useGetEventsQuery, useCreateEventMutation, useUpdateEventMutation, useDeleteEventMutation } from '@/features/event/eventApi';
+import { toast } from 'react-hot-toast';
 import { 
   useGetNoticesQuery, 
   useCreateNoticeMutation, 
+  useUpdateNoticeMutation,
   useDeleteNoticeMutation,
   useGetHomepageQuery,
   useUpdateHomepageMutation,
   useGetAchievementsQuery,
   useCreateAchievementMutation, 
+  useUpdateAchievementMutation,
   useDeleteAchievementMutation,
   useSendMessageMutation
 } from '@/features/content/contentApi';
@@ -153,8 +156,16 @@ interface Achievement {
 interface AdminEvent {
   _id: string;
   title: string;
+  description: string;
   startDate: string;
+  endDate: string;
+  startTime: string;
+  endTime: string;
+  location: string;
   organizer: string;
+  category: 'WORKSHOP' | 'SEMINAR' | 'COMPETITION' | 'SOCIAL' | 'TECHNICAL';
+  registrationLink?: string;
+  isFeatured: boolean;
   status: string;
 }
 
@@ -174,10 +185,12 @@ export default function AdminContentPage() {
 
   // Event State
   const [openEventDialog, setOpenEventDialog] = useState(false);
+  const [editEventId, setEditEventId] = useState<string | null>(null);
   const [eventFiles, setEventFiles] = useState<File[]>([]);
   const [eventAttachments, setEventAttachments] = useState<File[]>([]);
   const { data: eventData, isLoading: eventsLoading } = useGetEventsQuery({});
   const [createEvent, { isLoading: isCreatingEvent }] = useCreateEventMutation();
+  const [updateEvent, { isLoading: isUpdatingEvent }] = useUpdateEventMutation();
   const [deleteEvent] = useDeleteEventMutation();
   
   // Notice State
@@ -185,6 +198,7 @@ export default function AdminContentPage() {
   const [noticeFiles, setNoticeFiles] = useState<File[]>([]);
   const { data: noticeData, isLoading: noticesLoading } = useGetNoticesQuery({});
   const [createNotice, { isLoading: isCreatingNotice }] = useCreateNoticeMutation();
+  const [updateNotice, { isLoading: isUpdatingNotice }] = useUpdateNoticeMutation();
   const [deleteNotice] = useDeleteNoticeMutation();
 
   // Hero State
@@ -199,6 +213,7 @@ export default function AdminContentPage() {
   const [achievementFiles, setAchievementFiles] = useState<File[]>([]);
   const { data: achievementData, isLoading: achievementsLoading } = useGetAchievementsQuery({});
   const [createAchievement, { isLoading: isCreatingAchievement }] = useCreateAchievementMutation();
+  const [updateAchievement, { isLoading: isUpdatingAchievement }] = useUpdateAchievementMutation();
   const [deleteAchievement] = useDeleteAchievementMutation();
   const [openHeroDialog, setOpenHeroDialog] = useState(false);
 
@@ -300,14 +315,22 @@ export default function AdminContentPage() {
         formData.append('attachments', file);
       });
 
-      await createEvent(formData).unwrap();
+      if (editEventId) {
+        await updateEvent({ id: editEventId, data: formData }).unwrap();
+        toast.success("Event updated successfully!");
+      } else {
+        await createEvent(formData).unwrap();
+        toast.success("Event created successfully!");
+      }
+      
       setOpenEventDialog(false);
+      setEditEventId(null);
       eventForm.reset();
       setEventFiles([]);
       setEventAttachments([]);
     } catch (error) {
-       console.error("Failed to create event", error);
-       alert("Failed to create event. Please try again.");
+       console.error("Failed to save event", error);
+       toast.error(editEventId ? "Failed to update event" : "Failed to create event");
     }
   };
 
@@ -327,12 +350,13 @@ export default function AdminContentPage() {
       });
 
       await createNotice(formData).unwrap();
+      toast.success("Notice created successfully!");
       setOpenNoticeDialog(false);
       noticeForm.reset();
       setNoticeFiles([]);
     } catch (error) {
        console.error("Failed to create notice", error);
-       alert("Failed to create notice. Please try again.");
+       toast.error("Failed to create notice. Please try again.");
     }
   };
 
@@ -353,7 +377,7 @@ export default function AdminContentPage() {
 
 
       await updateHomepage(formData).unwrap();
-      alert(editSlideIndex !== null ? "Slide updated successfully!" : "New slide added successfully!");
+      toast.success(editSlideIndex !== null ? "Slide updated successfully!" : "New slide added successfully!");
       setOpenHeroDialog(false);
       setHeroFiles([]);
       setHeroPreviews([]);
@@ -363,7 +387,7 @@ export default function AdminContentPage() {
       console.error("Failed to update homepage", err);
       const error = err as { data?: { message?: string }; message?: string };
       const msg = error?.data?.message || error?.message || "Unknown error";
-      alert(`Failed to update homepage banner: ${msg}`);
+      toast.error(`Error: ${msg}`);
     }
   };
 
@@ -379,13 +403,13 @@ export default function AdminContentPage() {
       });
 
       await createAchievement(formData).unwrap();
+      toast.success("Achievement created successfully!");
       setOpenAchievementDialog(false);
       achievementForm.reset();
       setAchievementFiles([]);
-      alert("Achievement created successfully!");
     } catch (error) {
        console.error("Failed to create achievement", error);
-       alert("Failed to create achievement. Please try again.");
+       toast.error("Failed to create achievement");
     }
   };
 
@@ -404,10 +428,10 @@ export default function AdminContentPage() {
 
       if (editProductId) {
         await updateProduct({ id: editProductId, data: formData }).unwrap();
-        alert("Product updated successfully!");
+        toast.success("Product updated successfully!");
       } else {
         await createProduct(formData).unwrap();
-        alert("Product created successfully!");
+        toast.success("Product created successfully!");
       }
       
       setOpenProductDialog(false);
@@ -416,19 +440,19 @@ export default function AdminContentPage() {
       productForm.reset();
     } catch (error) {
       console.error("Failed to save product", error);
-      alert("Failed to save product. Please try again.");
+      toast.error("Failed to save product");
     }
   };
 
   const handleDeleteHeroSlide = async (index: number) => {
-    if (!confirm("Are you sure you want to delete this slide?")) return;
     try {
       const formData = new FormData();
       formData.append('deleteSlideIndex', String(index));
       await updateHomepage(formData).unwrap();
-      alert("Slide deleted successfully!");
+      toast.success("Slide deleted successfully!");
     } catch (error) {
       console.error("Failed to delete slide", error);
+      toast.error("Failed to delete slide");
     }
   };
 
@@ -753,8 +777,32 @@ export default function AdminContentPage() {
                           />
                        </TableCell>
                        <TableCell align="right">
-                          <IconButton size="small"><LucideEdit size={16} /></IconButton>
-                          <IconButton size="small" color="error" onClick={() => { if(confirm("Delete event?")) deleteEvent(event._id) }}><LucideTrash2 size={16} /></IconButton>
+                          <IconButton 
+                            size="small" 
+                            onClick={() => { 
+                              setEditEventId(event._id); 
+                              const startDateObj = new Date(event.startDate);
+                              const endDateObj = new Date(event.endDate);
+                              
+                              eventForm.reset({ 
+                                title: event.title, 
+                                description: event.description || "", 
+                                startDate: startDateObj.toISOString().split("T")[0], 
+                                startTime: startDateObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }), 
+                                endDate: endDateObj.toISOString().split("T")[0], 
+                                endTime: endDateObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }), 
+                                location: event.location, 
+                                organizer: event.organizer, 
+                                category: event.category as any, 
+                                registrationLink: event.registrationLink || "", 
+                                isFeatured: event.isFeatured || false
+                              }); 
+                              setOpenEventDialog(true); 
+                            }}
+                          >
+                            <LucideEdit size={16} />
+                          </IconButton>
+                          <IconButton size="small" color="error" onClick={async () => { if(confirm("Delete event?")) await deleteEvent(event._id).unwrap(); }}><LucideTrash2 size={16} /></IconButton>
                        </TableCell>
                      </TableRow>
                    ))}
@@ -815,7 +863,7 @@ export default function AdminContentPage() {
 
       {/* Event Dialog */}
       <Dialog open={openEventDialog} onClose={() => setOpenEventDialog(false)} maxWidth="sm" fullWidth>
-         <DialogTitle fontWeight={800}>Create New Event</DialogTitle>
+         <DialogTitle fontWeight={800}>{editEventId ? 'Edit Department Event' : 'Create New Event'}</DialogTitle>
          <form onSubmit={eventForm.handleSubmit(onEventSubmit)}>
             <DialogContent>
                <Stack spacing={3} sx={{ pt: 1 }}>
@@ -962,9 +1010,12 @@ export default function AdminContentPage() {
                </Stack>
             </DialogContent>
             <DialogActions sx={{ p: 3 }}>
-               <Button onClick={() => setOpenEventDialog(false)} sx={{ color: '#64748b' }}>Cancel</Button>
-               <Button type="submit" variant="contained" disabled={isCreatingEvent} sx={{ bgcolor: '#000000', px: 4 }}>
-                  {isCreatingEvent ? <CircularProgress size={20} /> : 'Create Event'}
+               <Button onClick={() => {
+                 setOpenEventDialog(false);
+                 setEditEventId(null);
+               }} sx={{ color: '#64748b' }}>Cancel</Button>
+               <Button type="submit" variant="contained" disabled={isCreatingEvent || isUpdatingEvent} sx={{ bgcolor: '#000000', px: 4 }}>
+                  {(isCreatingEvent || isUpdatingEvent) ? <CircularProgress size={20} /> : (editEventId ? 'Update Event' : 'Create Event')}
                </Button>
             </DialogActions>
          </form>

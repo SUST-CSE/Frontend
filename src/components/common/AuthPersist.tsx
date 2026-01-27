@@ -13,9 +13,11 @@ export default function AuthPersist({ children }: { children: React.ReactNode })
   const [token, setToken] = useState<string | null>(null);
   const [isChecking, setIsChecking] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setTimeout(() => setIsMounted(true), 0);
+  }, []);
 
   useEffect(() => {
-    setIsMounted(true);
     const storedToken = Cookies.get('token');
     
     if (storedToken) {
@@ -25,24 +27,24 @@ export default function AuthPersist({ children }: { children: React.ReactNode })
         
         if (decoded.exp < currentTime) {
           dispatch(logout());
-          setIsChecking(false);
+          setTimeout(() => setIsChecking(false), 0);
         } else {
-          // Verify we have enough data to hydrate a temporary user state
-          if (decoded.id && decoded.role) {
-             // Optimistically set credentials so the app knows we are authenticated content
+          // Map either 'userId' or 'id' from JWT to the 'id' field our UI expects
+          const userId = decoded.userId || decoded.id;
+          if (userId && decoded.role) {
              dispatch(setCredentials({ 
-                user: { id: decoded.id, role: decoded.role, name: decoded.name || 'User', email: decoded.email || '' }, 
+                user: { id: userId, role: decoded.role, name: decoded.name || 'User', email: decoded.email || '' }, 
                 accessToken: storedToken 
              }));
           }
-          setToken(storedToken);
+          setTimeout(() => setToken(storedToken), 0);
         }
       } catch {
         dispatch(logout());
-        setIsChecking(false);
+        setTimeout(() => setIsChecking(false), 0);
       }
     } else {
-      setIsChecking(false);
+      setTimeout(() => setIsChecking(false), 0);
     }
   }, [dispatch]);
 
@@ -54,19 +56,17 @@ export default function AuthPersist({ children }: { children: React.ReactNode })
     if (!token) return;
 
     if (isSuccess && data) {
-       // Update with full fresh data from server
        dispatch(setCredentials({ user: data.data, accessToken: token }));
-       setIsChecking(false);
+       setTimeout(() => setIsChecking(false), 0);
     } else if (isError) {
        dispatch(logout());
-       setIsChecking(false);
+       setTimeout(() => setIsChecking(false), 0);
     }
   }, [token, data, isError, isSuccess, dispatch]);
 
   if (!isMounted) return null;
 
   if (isChecking && !token) {
-     // Only block if we haven't even found a token yet or are in the middle of initial decode
      return (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: '#f8fafc' }}>
            <CircularProgress size={40} sx={{ color: '#000000' }} />

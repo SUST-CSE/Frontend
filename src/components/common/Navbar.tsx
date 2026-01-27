@@ -51,6 +51,7 @@ const NAV_ITEMS = [
   { label: 'Community', href: '#', isDropdown: true },
   { label: 'Society', href: '/societies/697345563d0368295f290589' },
   { label: 'Academic', href: '/academic' },
+  { label: 'Applications', href: '/applications' }, // Generic Link
   { label: 'Products', href: '#', isDropdown: true },
   { label: 'Achievements', href: '/achievements' },
   { label: 'Blogs', href: '/blogs' },

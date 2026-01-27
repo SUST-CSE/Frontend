@@ -22,12 +22,16 @@ import {
   LucideBookOpen,
   LucidePenTool,
   LucideSettings,
-  LucideCreditCard
+  LucideCreditCard,
+  LucideBriefcase,
+  LucideFileText
 } from 'lucide-react';
+import MyApplicationsSection from '@/components/dashboard/MyApplicationsSection';
 import ProfileSettings from '@/components/dashboard/ProfileSettings';
 import MyBlogsList from '@/components/dashboard/MyBlogsList';
 import ComposeBlog from '@/components/dashboard/ComposeBlog';
 import PaymentSection from '@/components/dashboard/PaymentSection';
+import MyWorkSection from '@/components/dashboard/MyWorkSection';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useRouter } from 'next/navigation';
@@ -89,6 +93,11 @@ export default function StudentDashboard() {
         </Box>
 
         <Paper elevation={0} sx={{ borderRadius: 4, mb: 4, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.05)' }}>
+
+
+// ... (existing imports)
+
+// Inside the component return, Tabs section:
           <Tabs 
             value={activeTab} 
             onChange={(_, v) => setActiveTab(v)}
@@ -104,6 +113,8 @@ export default function StudentDashboard() {
           >
             <Tab icon={<LucideLayoutDashboard size={18} />} iconPosition="start" label="Overview" />
             <Tab icon={<LucideCreditCard size={18} />} iconPosition="start" label="Payments" />
+            <Tab icon={<LucideBriefcase size={18} />} iconPosition="start" label="Your Work" />
+            <Tab icon={<LucideFileText size={18} />} iconPosition="start" label="Applications" />
             <Tab icon={<LucideBookOpen size={18} />} iconPosition="start" label="My Blogs" />
             <Tab icon={<LucidePenTool size={18} />} iconPosition="start" label="Write Blog" />
             <Tab icon={<LucideSettings size={18} />} iconPosition="start" label="Account Settings" />
@@ -162,9 +173,11 @@ export default function StudentDashboard() {
             )}
 
             {activeTab === 1 && <PaymentSection />}
-            {activeTab === 2 && <MyBlogsList />}
-            {activeTab === 3 && <ComposeBlog onSuccess={() => setActiveTab(2)} />}
-            {activeTab === 4 && <ProfileSettings user={user} />}
+            {activeTab === 2 && <MyWorkSection />}
+            {activeTab === 3 && <MyApplicationsSection />}
+            {activeTab === 4 && <MyBlogsList />}
+            {activeTab === 5 && <ComposeBlog onSuccess={() => setActiveTab(4)} />}
+            {activeTab === 6 && <ProfileSettings user={user} />}
           </Box>
         </Paper>
       </Container>

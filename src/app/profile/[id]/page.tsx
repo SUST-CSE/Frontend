@@ -3,13 +3,26 @@
 import { useParams } from 'next/navigation';
 import { Box, Container, Typography, Grid, Avatar, Stack, Chip, Button, Divider, Paper, CircularProgress, Link as MuiLink } from '@mui/material';
 import { useGetUserByIdQuery } from '@/features/user/userApi';
-import { LucideMail, LucideLinkedin, LucideGithub, LucideGlobe, LucideMapPin, LucideBriefcase, LucideGraduationCap, LucideCode, LucideBookOpen, LucideFacebook, LucideInstagram } from 'lucide-react';
+import { LucideMail, LucideLinkedin, LucideGithub, LucideGlobe, LucideMapPin, LucideBriefcase, LucideGraduationCap, LucideCode, LucideBookOpen, LucideFacebook, LucideInstagram, LucideClock, LucideCheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
+import { useGetAssignmentsQuery, useUpdateWorkStatusMutation, useGetMyWorkQuery } from '@/features/work-assignment/workAssignmentApi';
+import { useSelector } from 'react-redux';
+import { STATUS_COLORS } from '@/features/work-assignment/workAssignmentConstants';
+import toast from 'react-hot-toast';
 
 export default function ProfileDetailsPage() {
   const { id } = useParams();
   const { data: response, isLoading, error } = useGetUserByIdQuery(id);
   const user = response?.data;
+  
+  const { user: currentUser } = useSelector((state: { auth: { user: { id: string } | null } }) => state.auth);
+  const isOwner = currentUser?.id === id;
+
+  const { data: myWorkData } = useGetMyWorkQuery(undefined, { skip: !isOwner });
+  const { data: assignmentsData } = useGetAssignmentsQuery({ assignedTo: id }, { skip: isOwner });
+  const [updateStatus] = useUpdateWorkStatusMutation();
+
+  const assignments = isOwner ? (myWorkData?.data || []) : (assignmentsData?.data || []);
 
   if (isLoading) return (
     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
@@ -139,7 +152,7 @@ export default function ProfileDetailsPage() {
                   Experience
                 </Typography>
                 <Stack spacing={2}>
-                  {user.experiences.map((exp: any, i: number) => (
+                  {user.experiences.map((exp: { title: string; company: string; location: string; startDate: string; endDate: string; current: boolean; description: string }, i: number) => (
                     <Paper key={i} elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #e2e8f0' }}>
                       <Typography variant="h6" fontWeight={700}>{exp.title}</Typography>
                       <Typography variant="subtitle2" color="primary" sx={{ mb: 1 }}>{exp.company} • {exp.location}</Typography>
@@ -162,7 +175,7 @@ export default function ProfileDetailsPage() {
                   Publications
                 </Typography>
                 <Stack spacing={2}>
-                  {user.researches.map((res: any, i: number) => (
+                  {user.researches.map((res: { title: string; publicationLink?: string; journal: string; publicationDate: string; description: string }, i: number) => (
                     <Paper key={i} elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #e2e8f0' }}>
                       <Typography variant="subtitle1" fontWeight={700} sx={{ lineHeight: 1.4 }}>
                         {res.publicationLink ? (
@@ -189,7 +202,7 @@ export default function ProfileDetailsPage() {
                   Projects
                 </Typography>
                 <Grid container spacing={3}>
-                  {user.projects.map((proj: any, i: number) => (
+                  {user.projects.map((proj: { title: string; githubLink?: string; liveLink?: string; technologies?: string[]; description: string }, i: number) => (
                     <Grid size={{ xs: 12 }} key={i}>
                       <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #e2e8f0' }}>
                         <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
@@ -217,6 +230,63 @@ export default function ProfileDetailsPage() {
                     </Grid>
                   ))}
                 </Grid>
+              </Box>
+            )}
+
+            {/* Work Assignments */}
+            {assignments.length > 0 && (
+              <Box sx={{ mb: 5 }}>
+                <Typography variant="h5" fontWeight={800} sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <LucideBriefcase size={24} color="#002147" />
+                  Society Assignments
+                </Typography>
+                <Stack spacing={2}>
+                  {assignments.map((assignment: { _id: string; title: string; society?: { name: string }; status: string; description: string; deadline: string }) => (
+                    <Paper key={assignment._id} elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #e2e8f0', position: 'relative' }}>
+                      <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                        <Box>
+                          <Typography variant="h6" fontWeight={700}>{assignment.title}</Typography>
+                          <Typography variant="caption" color="primary" fontWeight={600}>{assignment.society?.name}</Typography>
+                        </Box>
+                        <Chip 
+                          label={assignment.status} 
+                          size="small" 
+                          color={STATUS_COLORS[assignment.status]} 
+                          sx={{ fontWeight: 800, fontSize: '0.7rem' }}
+                        />
+                      </Stack>
+                      <Typography variant="body2" sx={{ mt: 1.5, mb: 2, color: 'text.secondary' }}>{assignment.description}</Typography>
+                      
+                      <Stack direction="row" justifyContent="space-between" alignItems="center">
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
+                          <LucideClock size={14} />
+                          <Typography variant="caption">Deadline: {new Date(assignment.deadline).toLocaleDateString()}</Typography>
+                        </Box>
+                        
+                        {isOwner && assignment.status !== 'COMPLETED' && (
+                          <Button 
+                            variant="outlined" 
+                            size="small"
+                            color="success"
+                            startIcon={<LucideCheckCircle2 size={16} />}
+                            onClick={async () => {
+                              try {
+                                await updateStatus({ id: assignment._id, status: 'COMPLETED' }).unwrap();
+                                toast.success('Task marked as completed!');
+                              } catch (err) {
+                                console.error(err);
+                                toast.error('Failed to update status');
+                              }
+                            }}
+                            sx={{ fontWeight: 700, textTransform: 'none', borderRadius: 2 }}
+                          >
+                            Mark Complete
+                          </Button>
+                        )}
+                      </Stack>
+                    </Paper>
+                  ))}
+                </Stack>
               </Box>
             )}
 

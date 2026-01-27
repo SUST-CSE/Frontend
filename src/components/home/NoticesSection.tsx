@@ -9,8 +9,7 @@ import {
   Paper, 
   Button, 
   CircularProgress,
-  Tooltip,
-  IconButton
+  Tooltip
 } from '@mui/material';
 import { Bell as LucideBell, ArrowRight as LucideArrowRight, Paperclip as LucidePaperclip, Calendar as LucideCalendar, ExternalLink as LucideExternalLink } from 'lucide-react';
 import Link from 'next/link';
@@ -170,14 +169,21 @@ export default function NoticesSection() {
                     </Stack>
 
                       <Tooltip title="View Details">
-                        <IconButton 
-                          size="small" 
-                          component={Link}
-                          href={`/notices/${notice._id}`}
-                          sx={{ color: '#16a34a', border: '1px solid #e2e8f0', '&:hover': { bgcolor: '#f0fdf4', borderColor: '#16a34a' } }}
+                        <Box 
+                          sx={{ 
+                            p: 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#16a34a', 
+                            borderRadius: '50%',
+                            border: '1px solid #e2e8f0', 
+                            transition: 'all 0.2s ease',
+                            '&:hover': { bgcolor: '#f0fdf4', borderColor: '#16a34a' } 
+                          }}
                         >
                           <LucideExternalLink size={18} />
-                        </IconButton>
+                        </Box>
                       </Tooltip>
                     </Stack>
                 </Box>
