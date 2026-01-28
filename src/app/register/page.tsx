@@ -29,7 +29,6 @@ import {
   LucideCheckCircle2, 
   LucideEye, 
   LucideEyeOff, 
-  LucideArrowRight,
   LucideLayoutDashboard
 } from 'lucide-react';
 import { useRegisterStudentMutation, useRegisterTeacherMutation } from '@/features/auth/authApi';
@@ -86,7 +85,7 @@ export default function RegisterPage() {
     gsap.fromTo(formRef.current, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' });
   }, [role]);
 
-  const onStudentSubmit = async (data: any) => {
+  const onStudentSubmit = async (data: z.infer<typeof studentFormSchema>) => {
     try {
       const email = data.email;
       const isSUST = email.endsWith('@student.sust.edu');
@@ -99,7 +98,7 @@ export default function RegisterPage() {
       const enrollmentYear = parseInt(yearStr, 10) || new Date().getFullYear();
       
       const isCSE = isSUST && localPart.includes('331');
-      const batchNum = isCSE ? enrollmentYear - 1991 : 0;
+      const batchNum = isCSE ? enrollmentYear - 1990 : 0;
       const batch = isCSE ? getOrdinal(batchNum) : 'External';
       const session = isCSE ? `${enrollmentYear}-${(enrollmentYear + 1).toString().slice(-2)}` : 'N/A';
 
@@ -122,9 +121,9 @@ export default function RegisterPage() {
     }
   };
 
-  const onTeacherSubmit = async (data: any) => {
+  const onTeacherSubmit = async (data: z.infer<typeof teacherSchema>) => {
     try {
-      const { confirmPassword, ...payload } = data;
+      const { confirmPassword: _, ...payload } = data;
       await registerTeacher(payload).unwrap();
       router.push(`/verify?email=${encodeURIComponent(data.email)}`);
     } catch (err) {}
@@ -151,7 +150,7 @@ export default function RegisterPage() {
             </Box>
             <Typography variant="h4" fontWeight={800} gutterBottom color="#0f172a">Registration Successful!</Typography>
             <Typography color="text.secondary" variant="body1" sx={{ mb: 4, maxWidth: 400, mx: 'auto' }}>
-            We've sent a verification link to your email. Please check your inbox to activate your account.
+            We&apos;ve sent a verification link to your email. Please check your inbox to activate your account.
             </Typography>
             <Button 
                 variant="contained" 
@@ -236,7 +235,7 @@ export default function RegisterPage() {
           <Box ref={formRef}>
             {(studentError || teacherError) && (
                 <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
-                {/* @ts-ignore */}
+                {/* @ts-expect-error - standard RTK Query error structure */}
                 {(studentError?.data?.message || teacherError?.data?.message || 'Registration failed. Please check your details.')}
                 </Alert>
             )}

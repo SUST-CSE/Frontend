@@ -223,8 +223,6 @@ export default function EventsSection() {
                       <Tooltip title="View Details">
                         <IconButton 
                           size="small" 
-                          component={Link}
-                          href={`/events/${event._id}`}
                           sx={{ color: '#2563eb', border: '1px solid #e2e8f0', '&:hover': { bgcolor: '#eff6ff', borderColor: '#2563eb' } }}
                         >
                           <LucideExternalLink size={18} />
