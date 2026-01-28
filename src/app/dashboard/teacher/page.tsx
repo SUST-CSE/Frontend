@@ -21,14 +21,16 @@ import {
   LucideLayoutDashboard,
   LucideBookOpen,
   LucidePenTool,
-  LucideSettings
+  LucideSettings,
+  LucideWallet
 } from 'lucide-react';
 import ProfileSettings from '@/components/dashboard/ProfileSettings';
 import MyBlogsList from '@/components/dashboard/MyBlogsList';
 import ComposeBlog from '@/components/dashboard/ComposeBlog';
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useDispatch } from 'react-redux';
 import { logout } from '@/features/auth/authSlice';
 import { Button } from '@mui/material';
 import { LucideLogOut } from 'lucide-react';
@@ -71,6 +73,16 @@ export default function TeacherDashboard() {
           </Box>
           <Stack direction="row" spacing={2} alignItems="center">
             <Chip label="Faculty Member" color="secondary" sx={{ fontWeight: 800, borderRadius: 2 }} />
+            <Button
+              variant="outlined"
+              color="primary"
+              startIcon={<LucideWallet size={18} />}
+              component={Link}
+              href="/finance/history"
+              sx={{ fontWeight: 700, borderRadius: 2, textTransform: 'none' }}
+            >
+              Dept. Finance
+            </Button>
             <Button
               variant="outlined"
               color="error"

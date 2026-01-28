@@ -24,7 +24,8 @@ import {
   LucideSettings,
   LucideCreditCard,
   LucideBriefcase,
-  LucideFileText
+  LucideFileText,
+  LucideWallet
 } from 'lucide-react';
 import MyApplicationsSection from '@/components/dashboard/MyApplicationsSection';
 import ProfileSettings from '@/components/dashboard/ProfileSettings';
@@ -35,6 +36,7 @@ import MyWorkSection from '@/components/dashboard/MyWorkSection';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { logout } from '@/features/auth/authSlice';
 import { Button } from '@mui/material';
 import { LucideLogOut } from 'lucide-react';
@@ -79,6 +81,16 @@ export default function StudentDashboard() {
             <Chip label="Student Account" color="primary" sx={{ fontWeight: 800, borderRadius: 2 }} />
             <Button
               variant="outlined"
+              color="primary"
+              startIcon={<LucideWallet size={18} />}
+              component={Link}
+              href="/finance/history"
+              sx={{ fontWeight: 700, borderRadius: 2, textTransform: 'none' }}
+            >
+              Dept. Finance
+            </Button>
+            <Button
+              variant="outlined"
               color="error"
               startIcon={<LucideLogOut size={18} />}
               onClick={() => {
@@ -93,11 +105,6 @@ export default function StudentDashboard() {
         </Box>
 
         <Paper elevation={0} sx={{ borderRadius: 4, mb: 4, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.05)' }}>
-
-
-// ... (existing imports)
-
-// Inside the component return, Tabs section:
           <Tabs 
             value={activeTab} 
             onChange={(_, v) => setActiveTab(v)}

@@ -33,6 +33,8 @@ import {
   LucideTrash2,
   LucideFilter,
   LucideDownload,
+  LucideFileText,
+  LucideImage,
 } from 'lucide-react';
 import {
   useGetTransactionsQuery,
@@ -57,6 +59,7 @@ export default function AdminFinanceDashboard() {
     description: '',
     date: new Date().toISOString().split('T')[0],
   });
+  const [proofFile, setProofFile] = useState<File | null>(null);
 
   const { data: summaryData } = useGetFinancialSummaryQuery({});
   const { data: transactionsData, isLoading: isTXLoading } = useGetTransactionsQuery({});
@@ -72,12 +75,19 @@ export default function AdminFinanceDashboard() {
         toast.error('Please fill required fields');
         return;
       }
-      await addTransaction({
-        ...formData,
-        amount: Number(formData.amount),
-      }).unwrap();
+
+      const body = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        body.append(key, value.toString());
+      });
+      if (proofFile) {
+        body.append('proof', proofFile);
+      }
+
+      await addTransaction(body).unwrap();
       toast.success('Transaction recorded');
       setOpenAddDialog(false);
+      setProofFile(null);
       setFormData({
         title: '',
         amount: '',
@@ -174,12 +184,13 @@ export default function AdminFinanceDashboard() {
                   <TableCell sx={{ fontWeight: 800 }}>Title</TableCell>
                   <TableCell sx={{ fontWeight: 800 }}>Category</TableCell>
                   <TableCell sx={{ fontWeight: 800 }}>Type</TableCell>
+                  <TableCell sx={{ fontWeight: 800 }}>Proof</TableCell>
                   <TableCell sx={{ fontWeight: 800, textAlign: 'right' }}>Amount</TableCell>
                   <TableCell sx={{ fontWeight: 800, textAlign: 'right' }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {transactions.map((tx: { _id: string; date: string; title: string; description?: string; category: string; type: string; amount: number }) => (
+                {transactions.map((tx: { _id: string; date: string; title: string; description?: string; category: string; type: string; amount: number; proofUrl?: string; proofType?: string }) => (
                   <TableRow key={tx._id} hover>
                     <TableCell sx={{ whiteSpace: 'nowrap' }}>{new Date(tx.date).toLocaleDateString()}</TableCell>
                     <TableCell>
@@ -196,6 +207,21 @@ export default function AdminFinanceDashboard() {
                         color={TX_TYPE_COLORS[tx.type]} 
                         sx={{ fontWeight: 800, fontSize: '0.65rem' }} 
                       />
+                    </TableCell>
+                    <TableCell>
+                      {tx.proofUrl ? (
+                         <Button 
+                          size="small" 
+                          startIcon={tx.proofType === 'pdf' ? <LucideFileText size={14} /> : <LucideImage size={14} />}
+                          href={tx.proofUrl}
+                          target="_blank"
+                          sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.75rem' }}
+                         >
+                           View
+                         </Button>
+                      ) : (
+                        <Typography variant="caption" color="text.disabled">No proof</Typography>
+                      )}
                     </TableCell>
                     <TableCell align="right">
                       <Typography fontWeight={800} color={tx.type === 'INCOME' ? 'success.main' : 'error.main'}>
@@ -281,6 +307,27 @@ export default function AdminFinanceDashboard() {
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             />
+            
+            <Box>
+              <Typography variant="caption" fontWeight={700} color="text.secondary" gutterBottom display="block">
+                Proof of Transaction (Optional)
+              </Typography>
+              <Button
+                component="label"
+                variant="outlined"
+                fullWidth
+                startIcon={<LucidePlus size={18} />}
+                sx={{ borderStyle: 'dashed', py: 1.5 }}
+              >
+                {proofFile ? proofFile.name : 'Choose File (PDF or Image)'}
+                <input
+                  type="file"
+                  hidden
+                  accept="image/*,application/pdf"
+                  onChange={(e) => setProofFile(e.target.files?.[0] || null)}
+                />
+              </Button>
+            </Box>
           </Stack>
         </DialogContent>
         <DialogActions sx={{ p: 3, bgcolor: '#f8fafc' }}>
