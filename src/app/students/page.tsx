@@ -95,7 +95,7 @@ export default function StudentsPage() {
                             component="span"
                             onClick={(e) => {
                               e.preventDefault();
-                              window.open(student.socialLinks.github, '_blank');
+                              window.open(student.socialLinks?.github, '_blank');
                             }}
                             sx={{ cursor: 'pointer', '&:hover': { opacity: 0.7 } }}
                           >
@@ -104,7 +104,7 @@ export default function StudentsPage() {
                         )}
                       </Stack>
                       
-                      {student.projects?.length > 0 && (
+                      {(student.projects?.length ?? 0) > 0 && (
                         <Stack direction="row" spacing={1} sx={{ mt: 1.5 }}>
                           <LucideCode size={14} style={{ marginTop: 4, opacity: 0.6 }} />
                           <Typography variant="caption" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 200 }}>

@@ -6,6 +6,7 @@ import { useVerifyEmailMutation, useResendCodeMutation } from '@/features/auth/a
 import { Box, Container, Typography, TextField, Button, Alert, Stack, Paper } from '@mui/material';
 import { Mail as LucideMail, CheckCircle2 as LucideCheckCircle } from 'lucide-react';
 import Cookies from 'js-cookie';
+import toast from 'react-hot-toast';
 
 export default function VerifyEmailPage() {
   const router = useRouter();

@@ -50,7 +50,7 @@ export default function MyWorkSection() {
       <Typography variant="h5" fontWeight={800} sx={{ mb: 3 }}>Your Assignments</Typography>
       <Grid container spacing={3}>
         {assignments.map((assignment: any) => (
-          <Grid item xs={12} key={assignment._id}>
+          <Grid size={{ xs: 12 }} key={assignment._id}>
             <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #e2e8f0' }}>
               <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems="flex-start" gap={2}>
                 <Box sx={{ flex: 1 }}>

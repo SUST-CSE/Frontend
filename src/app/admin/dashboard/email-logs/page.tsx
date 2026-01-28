@@ -81,7 +81,7 @@ export default function AdminEmailLogsPage() {
                     <TableCell sx={{ whiteSpace: 'nowrap' }}>
                       {new Date(log.sentAt).toLocaleString()}
                     </TableCell>
-                    <TableCell fontWeight={600}>{log.recipient}</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>{log.recipient}</TableCell>
                     <TableCell>
                       <Chip label={log.type} size="small" variant="outlined" sx={{ fontWeight: 700, fontSize: '0.65rem' }} />
                     </TableCell>

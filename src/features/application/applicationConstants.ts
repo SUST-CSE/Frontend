@@ -12,7 +12,7 @@ export const APPLICATION_TYPE = {
   GENERAL: 'GENERAL',
 };
 
-export const APP_STATUS_COLORS: Record<string, string> = {
+export const APP_STATUS_COLORS: Record<string, "warning" | "success" | "error" | "default" | "primary" | "secondary" | "info"> = {
   PENDING: 'warning',
   APPROVED: 'success',
   REJECTED: 'error',

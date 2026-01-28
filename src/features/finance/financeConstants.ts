@@ -3,7 +3,7 @@ export const TRANSACTION_TYPE = {
   EXPENSE: 'EXPENSE',
 };
 
-export const TRANSACTION_CATEGORY = {
+export const TRANSACTION_CATEGORY: Record<string, string> = {
   SOCIETY_FUND: 'Society Fund',
   EVENT_SPONSORSHIP: 'Event Sponsorship',
   EQUIPMENT_PURCHASE: 'Equipment Purchase',
@@ -12,7 +12,7 @@ export const TRANSACTION_CATEGORY = {
   OTHERS: 'Others',
 };
 
-export const TX_TYPE_COLORS: Record<string, any> = {
+export const TX_TYPE_COLORS: Record<string, "success" | "error" | "warning" | "info" | "primary" | "secondary" | "default"> = {
   INCOME: 'success',
   EXPENSE: 'error',
 };
