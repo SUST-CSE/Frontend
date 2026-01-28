@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import {
   Box,
-  Container,
   Typography,
   Paper,
   Grid,
@@ -49,7 +48,7 @@ import {
 } from '@/features/finance/financeConstants';
 import toast from 'react-hot-toast';
 
-export default function AdminFinanceDashboard() {
+export default function FinanceManager() {
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -115,15 +114,15 @@ export default function AdminFinanceDashboard() {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Box>
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
-          <Typography variant="h4" fontWeight={900} color="#002147" sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <LucideWallet size={32} />
-            Department Finance
+          <Typography variant="h5" fontWeight={900} color="#002147" sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <LucideWallet size={28} />
+            Department Finance Management
           </Typography>
-          <Typography color="text.secondary">
-            Manage departmental funds, track budgets, and audit expenses
+          <Typography variant="body2" color="text.secondary">
+            Delegated access to manage departmental funds and audit expenses
           </Typography>
         </Box>
         <Button
@@ -143,17 +142,17 @@ export default function AdminFinanceDashboard() {
           { label: 'Monthly Income', value: summary.monthlyIncome, icon: <LucideTrendingUp />, color: '#16a34a' },
           { label: 'Monthly Expense', value: summary.monthlyExpense, icon: <LucideTrendingDown />, color: '#dc2626' },
         ].map((card, i) => (
-          <Grid size={{ xs: 12, md: 4 }} key={i}>
-            <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid #e2e8f0', bgcolor: i === 0 ? '#f8fafc' : 'white' }}>
+          <Grid item xs={12} md={4} key={i}>
+            <Paper elevation={0} sx={{ p: 2, borderRadius: 3, border: '1px solid #e2e8f0', bgcolor: i === 0 ? '#f8fafc' : 'white' }}>
               <Stack direction="row" spacing={2} alignItems="center">
-                <Box sx={{ p: 1.5, borderRadius: 3, bgcolor: `${card.color}15`, color: card.color }}>
+                <Box sx={{ p: 1, borderRadius: 2, bgcolor: `${card.color}15`, color: card.color }}>
                   {card.icon}
                 </Box>
                 <Box>
-                  <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
+                  <Typography variant="caption" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
                     {card.label}
                   </Typography>
-                  <Typography variant="h4" fontWeight={900} color={card.color}>
+                  <Typography variant="h5" fontWeight={900} color={card.color}>
                     ৳{card.value.toLocaleString()}
                   </Typography>
                 </Box>
@@ -164,9 +163,9 @@ export default function AdminFinanceDashboard() {
       </Grid>
 
       {/* Transaction History */}
-      <Paper elevation={0} sx={{ borderRadius: 4, border: '1px solid rgba(0,0,0,0.05)', overflow: 'hidden' }}>
-        <Box sx={{ p: 3, borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: '#f8fafc' }}>
-          <Typography variant="h6" fontWeight={800}>Transaction History</Typography>
+      <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid rgba(0,0,0,0.05)', overflow: 'hidden' }}>
+        <Box sx={{ p: 2, borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: '#f8fafc' }}>
+          <Typography variant="subtitle1" fontWeight={800}>Transaction History</Typography>
           <Stack direction="row" spacing={1}>
             <IconButton size="small"><LucideFilter size={18} /></IconButton>
             <IconButton size="small"><LucideDownload size={18} /></IconButton>
@@ -175,9 +174,9 @@ export default function AdminFinanceDashboard() {
         
         <TableContainer>
           {isTXLoading ? (
-            <Box sx={{ p: 10, textAlign: 'center' }}><CircularProgress /></Box>
+            <Box sx={{ p: 5, textAlign: 'center' }}><CircularProgress size={24} /></Box>
           ) : (
-            <Table>
+            <Table size="small">
               <TableHead sx={{ bgcolor: '#f8fafc' }}>
                 <TableRow>
                   <TableCell sx={{ fontWeight: 800 }}>Date</TableCell>
@@ -190,55 +189,55 @@ export default function AdminFinanceDashboard() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {transactions.map((tx: { _id: string; date: string; title: string; description?: string; category: string; type: string; amount: number; proofUrl?: string; proofType?: string }) => (
+                {transactions.map((tx: any) => (
                   <TableRow key={tx._id} hover>
                     <TableCell sx={{ whiteSpace: 'nowrap' }}>{new Date(tx.date).toLocaleDateString()}</TableCell>
                     <TableCell>
-                      <Typography variant="subtitle2" fontWeight={700}>{tx.title}</Typography>
-                      <Typography variant="caption" color="text.secondary">{tx.description}</Typography>
+                      <Typography variant="subtitle2" fontWeight={700} sx={{ fontSize: '0.8rem' }}>{tx.title}</Typography>
+                      <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block', maxWidth: 150 }}>{tx.description}</Typography>
                     </TableCell>
                     <TableCell>
-                      <Chip label={TRANSACTION_CATEGORY[tx.category] || tx.category} size="small" variant="outlined" sx={{ fontWeight: 600 }} />
+                      <Chip label={TRANSACTION_CATEGORY[tx.category] || tx.category} size="small" variant="outlined" sx={{ fontWeight: 600, fontSize: '0.65rem', height: 20 }} />
                     </TableCell>
                     <TableCell>
                       <Chip 
                         label={tx.type} 
                         size="small" 
                         color={TX_TYPE_COLORS[tx.type]} 
-                        sx={{ fontWeight: 800, fontSize: '0.65rem' }} 
+                        sx={{ fontWeight: 800, fontSize: '0.6rem', height: 18 }} 
                       />
                     </TableCell>
                     <TableCell>
                       {tx.proofUrl ? (
                          <Button 
                           size="small" 
-                          startIcon={tx.proofType === 'pdf' ? <LucideFileText size={14} /> : <LucideImage size={14} />}
+                          startIcon={tx.proofType === 'pdf' ? <LucideFileText size={12} /> : <LucideImage size={12} />}
                           href={tx.proofUrl}
                           target="_blank"
-                          sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.75rem' }}
+                          sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.7rem', minWidth: 0, p: 0.5 }}
                          >
                            View
                          </Button>
                       ) : (
-                        <Typography variant="caption" color="text.disabled">No proof</Typography>
+                        <Typography variant="caption" color="text.disabled">None</Typography>
                       )}
                     </TableCell>
                     <TableCell align="right">
-                      <Typography fontWeight={800} color={tx.type === 'INCOME' ? 'success.main' : 'error.main'}>
+                      <Typography variant="subtitle2" fontWeight={800} color={tx.type === 'INCOME' ? 'success.main' : 'error.main'} sx={{ fontSize: '0.8rem' }}>
                         {tx.type === 'INCOME' ? '+' : '-'}৳{tx.amount.toLocaleString()}
                       </Typography>
                     </TableCell>
                     <TableCell align="right">
                       <IconButton size="small" color="error" onClick={() => handleDelete(tx._id)}>
-                        <LucideTrash2 size={18} />
+                        <LucideTrash2 size={16} />
                       </IconButton>
                     </TableCell>
                   </TableRow>
                 ))}
                 {transactions.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={6} sx={{ py: 10, textAlign: 'center' }}>
-                      <Typography color="text.secondary">No transactions found</Typography>
+                    <TableCell colSpan={7} sx={{ py: 5, textAlign: 'center' }}>
+                      <Typography variant="body2" color="text.secondary">No transactions found</Typography>
                     </TableCell>
                   </TableRow>
                 )}
@@ -252,9 +251,10 @@ export default function AdminFinanceDashboard() {
       <Dialog open={openAddDialog} onClose={() => setOpenAddDialog(false)} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ fontWeight: 800 }}>Record Transaction</DialogTitle>
         <DialogContent>
-          <Stack spacing={3} sx={{ pt: 1 }}>
+          <Stack spacing={2.5} sx={{ pt: 1 }}>
             <TextField
               fullWidth
+              size="small"
               label="Title"
               placeholder="e.g., Sponsorship from Grameenphone"
               value={formData.title}
@@ -263,6 +263,7 @@ export default function AdminFinanceDashboard() {
             <Stack direction="row" spacing={2}>
               <TextField
                 fullWidth
+                size="small"
                 label="Amount (৳)"
                 type="number"
                 value={formData.amount}
@@ -271,6 +272,7 @@ export default function AdminFinanceDashboard() {
               <TextField
                 select
                 fullWidth
+                size="small"
                 label="Type"
                 value={formData.type}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value })}
@@ -283,6 +285,7 @@ export default function AdminFinanceDashboard() {
             <TextField
               select
               fullWidth
+              size="small"
               label="Category"
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
@@ -293,6 +296,7 @@ export default function AdminFinanceDashboard() {
             </TextField>
             <TextField
               fullWidth
+              size="small"
               label="Date"
               type="date"
               InputLabelProps={{ shrink: true }}
@@ -301,6 +305,7 @@ export default function AdminFinanceDashboard() {
             />
             <TextField
               fullWidth
+              size="small"
               multiline
               rows={2}
               label="Description (Optional)"
@@ -316,8 +321,9 @@ export default function AdminFinanceDashboard() {
                 component="label"
                 variant="outlined"
                 fullWidth
-                startIcon={<LucidePlus size={18} />}
-                sx={{ borderStyle: 'dashed', py: 1.5 }}
+                size="small"
+                startIcon={<LucidePlus size={16} />}
+                sx={{ borderStyle: 'dashed', py: 1 }}
               >
                 {proofFile ? proofFile.name : 'Choose File (PDF or Image)'}
                 <input
@@ -330,10 +336,11 @@ export default function AdminFinanceDashboard() {
             </Box>
           </Stack>
         </DialogContent>
-        <DialogActions sx={{ p: 3, bgcolor: '#f8fafc' }}>
-          <Button onClick={() => setOpenAddDialog(false)}>Cancel</Button>
+        <DialogActions sx={{ p: 2, bgcolor: '#f8fafc' }}>
+          <Button onClick={() => setOpenAddDialog(false)} size="small">Cancel</Button>
           <Button 
             variant="contained" 
+            size="small"
             sx={{ bgcolor: '#002147' }}
             disabled={isAdding}
             onClick={handleAdd}
@@ -342,6 +349,6 @@ export default function AdminFinanceDashboard() {
           </Button>
         </DialogActions>
       </Dialog>
-    </Container>
+    </Box>
   );
 }

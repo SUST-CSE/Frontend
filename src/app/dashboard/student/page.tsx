@@ -25,7 +25,8 @@ import {
   LucideCreditCard,
   LucideBriefcase,
   LucideFileText,
-  LucideWallet
+  LucideWallet,
+  LucideClipboardList
 } from 'lucide-react';
 import MyApplicationsSection from '@/components/dashboard/MyApplicationsSection';
 import ProfileSettings from '@/components/dashboard/ProfileSettings';
@@ -33,6 +34,8 @@ import MyBlogsList from '@/components/dashboard/MyBlogsList';
 import ComposeBlog from '@/components/dashboard/ComposeBlog';
 import PaymentSection from '@/components/dashboard/PaymentSection';
 import MyWorkSection from '@/components/dashboard/MyWorkSection';
+import FinanceManager from '@/components/admin/FinanceManager';
+import ApplicationManager from '@/components/admin/ApplicationManager';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useRouter } from 'next/navigation';
@@ -124,6 +127,12 @@ export default function StudentDashboard() {
             <Tab icon={<LucideFileText size={18} />} iconPosition="start" label="Applications" />
             <Tab icon={<LucideBookOpen size={18} />} iconPosition="start" label="My Blogs" />
             <Tab icon={<LucidePenTool size={18} />} iconPosition="start" label="Write Blog" />
+            {user.permissions?.includes('MANAGE_ACCOUNTS') && (
+              <Tab icon={<LucideWallet size={18} />} iconPosition="start" label="Manage Finance" />
+            )}
+            {user.permissions?.includes('MANAGE_APPLICATIONS') && (
+              <Tab icon={<LucideClipboardList size={18} />} iconPosition="start" label="Manage Apps" />
+            )}
             <Tab icon={<LucideSettings size={18} />} iconPosition="start" label="Account Settings" />
           </Tabs>
 
@@ -184,7 +193,17 @@ export default function StudentDashboard() {
             {activeTab === 3 && <MyApplicationsSection />}
             {activeTab === 4 && <MyBlogsList />}
             {activeTab === 5 && <ComposeBlog onSuccess={() => setActiveTab(4)} />}
-            {activeTab === 6 && <ProfileSettings user={user} />}
+            
+            {/* Conditional Management Tabs */}
+            {activeTab === (user.permissions?.includes('MANAGE_ACCOUNTS') ? 6 : -1) && <FinanceManager />}
+            {activeTab === (user.permissions?.includes('MANAGE_APPLICATIONS') 
+              ? (user.permissions?.includes('MANAGE_ACCOUNTS') ? 7 : 6) 
+              : -1) && <ApplicationManager />}
+            
+            {/* Account Settings is always the last tab */}
+            {activeTab === (6 + (user.permissions?.includes('MANAGE_ACCOUNTS') ? 1 : 0) + (user.permissions?.includes('MANAGE_APPLICATIONS') ? 1 : 0)) && (
+              <ProfileSettings user={user} />
+            )}
           </Box>
         </Paper>
       </Container>

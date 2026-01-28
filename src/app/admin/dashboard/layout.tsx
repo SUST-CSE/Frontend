@@ -23,9 +23,7 @@ import {
   LucideSend,
   LucideMenu,
   LucideX,
-  LucideWallet,
   LucideBriefcase,
-  LucideClipboardList,
   LucideMailCheck
 } from 'lucide-react';
 import NextImage from 'next/image';
@@ -42,15 +40,13 @@ const DRAWER_WIDTH = 280;
 const MENU_ITEMS = [
   { label: 'Overview', icon: <LucideLayoutDashboard size={20} />, href: '/admin/dashboard' },
   { label: 'Messenger', icon: <LucideSend size={20} />, href: '/admin/dashboard/messenger' },
-  { label: 'Blog Moderation', icon: <LucideFileText size={20} />, href: '/admin/dashboard/blogs' },
-  { label: 'Organizations', icon: <LucideGlobe size={20} />, href: '/admin/dashboard/societies' },
-  { label: 'Home & Content', icon: <LucideCalendar size={20} />, href: '/admin/dashboard/content' },
-  { label: 'User Management', icon: <LucideUsers size={20} />, href: '/admin/dashboard/users' },
-  { label: 'Work Assignments', icon: <LucideBriefcase size={20} />, href: '/admin/dashboard/work-assignments' },
-  { label: 'Applications', icon: <LucideClipboardList size={20} />, href: '/admin/dashboard/applications' },
-  { label: 'Department Finance', icon: <LucideWallet size={20} />, href: '/admin/dashboard/finance' },
-  { label: 'Email Logs', icon: <LucideMailCheck size={20} />, href: '/admin/dashboard/email-logs' },
-  { label: 'Alumni Management', icon: <LucideGraduationCap size={20} />, href: '/admin/dashboard/alumni' },
+  { label: 'Blog Moderation', icon: <LucideFileText size={20} />, href: '/admin/dashboard/blogs', permission: 'MANAGE_BLOGS' },
+  { label: 'Organizations', icon: <LucideGlobe size={20} />, href: '/admin/dashboard/societies', permission: 'MANAGE_SOCIETIES' },
+  { label: 'Home & Content', icon: <LucideCalendar size={20} />, href: '/admin/dashboard/content', permission: 'MANAGE_CONTENT' },
+  { label: 'User Management', icon: <LucideUsers size={20} />, href: '/admin/dashboard/users', permission: 'MANAGE_USERS' },
+  { label: 'Work Assignments', icon: <LucideBriefcase size={20} />, href: '/admin/dashboard/work-assignments', permission: 'MANAGE_WORK' },
+  { label: 'Email Logs', icon: <LucideMailCheck size={20} />, href: '/admin/dashboard/email-logs', permission: 'VIEW_EMAIL_LOGS' },
+  { label: 'Alumni Management', icon: <LucideGraduationCap size={20} />, href: '/admin/dashboard/alumni', permission: 'MANAGE_USERS' },
 ];
 
 export default function AdminDashboardLayout({ children }: { children: React.ReactNode }) {
@@ -64,7 +60,8 @@ export default function AdminDashboardLayout({ children }: { children: React.Rea
   const [logoutUser] = useLogoutUserMutation();
 
   useEffect(() => {
-    if (!isAuthenticated || user?.role !== 'ADMIN') {
+    const hasAnyAdminPermission = user?.permissions && user.permissions.length > 0;
+    if (!isAuthenticated || (user?.role !== 'ADMIN' && !hasAnyAdminPermission)) {
       router.push('/login');
     }
   }, [isAuthenticated, user, router]);
@@ -84,7 +81,19 @@ export default function AdminDashboardLayout({ children }: { children: React.Rea
     }
   };
 
-  if (!isAuthenticated || user?.role !== 'ADMIN') return null;
+  const hasAnyAdminPermission = user?.permissions && user.permissions.length > 0;
+  if (!isAuthenticated || (user?.role !== 'ADMIN' && !hasAnyAdminPermission)) return null;
+
+  const filteredMenuItems = MENU_ITEMS.filter(item => {
+    // If it's a global admin, show everything
+    if (user?.role === 'ADMIN') return true;
+    
+    // If it has no specific permission requirement, show it to anyone allowed in admin panel
+    if (!item.permission) return true;
+    
+    // Check if user has the specific permission
+    return user?.permissions?.includes(item.permission);
+  });
 
   const drawerContent = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -115,7 +124,7 @@ export default function AdminDashboardLayout({ children }: { children: React.Rea
       </Box>
 
       <List sx={{ px: 2, flexGrow: 1 }}>
-        {MENU_ITEMS.map((item) => {
+        {filteredMenuItems.map((item) => {
           const isActive = pathname === item.href;
           return (
             <ListItem key={item.href} disablePadding sx={{ mb: 1 }}>

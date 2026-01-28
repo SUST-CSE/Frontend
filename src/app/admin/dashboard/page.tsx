@@ -4,22 +4,30 @@ import { Box, Typography, Grid, Paper, Stack, Button } from '@mui/material';
 import { LucideFileText, LucideUsers, LucideActivity } from 'lucide-react';
 import { useGetBlogsQuery, useGetPendingBlogsQuery } from '@/features/blog/blogApi';
 import { useRouter } from 'next/navigation';
+import { useSelector } from 'react-redux';
 // import { useGetStatsQuery } from '@/features/admin/adminApi'; // Placeholder
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const { data: pendingData } = useGetPendingBlogsQuery({});
-  const { data: allBlogs } = useGetBlogsQuery({});
+  const { user } = useSelector((state: any) => state.auth);
+  const { data: pendingData } = useGetPendingBlogsQuery({}, { skip: user?.role !== 'ADMIN' && !user?.permissions?.includes('MANAGE_BLOGS') });
+  const { data: allBlogs } = useGetBlogsQuery({}, { skip: user?.role !== 'ADMIN' && !user?.permissions?.includes('MANAGE_BLOGS') });
   
   const pendingCount = pendingData?.data?.length || 0;
   const totalBlogs = allBlogs?.data?.length || 0;
  
   const STATS = [
-    { label: 'Pending Blogs', value: pendingCount, icon: LucideFileText, color: '#eab308' },
-    { label: 'Total Blogs', value: totalBlogs, icon: LucideFileText, color: '#3b82f6' },
-    { label: 'Active Users', value: '1,234', icon: LucideUsers, color: '#16a34a' },
-    { label: 'Site Visits', value: '45.2k', icon: LucideActivity, color: '#8b5cf6' },
-  ];
+    { label: 'Pending Blogs', value: pendingCount, icon: LucideFileText, color: '#eab308', permission: 'MANAGE_BLOGS' },
+    { label: 'Total Blogs', value: totalBlogs, icon: LucideFileText, color: '#3b82f6', permission: 'MANAGE_BLOGS' },
+    { label: 'Active Users', value: '1,234', icon: LucideUsers, color: '#16a34a', permission: 'MANAGE_USERS' },
+    { label: 'Site Visits', value: '45.2k', icon: LucideActivity, color: '#8b5cf6', permission: 'ADMIN' },
+  ].filter(s => user?.role === 'ADMIN' || (s.permission === 'ADMIN' ? false : user?.permissions?.includes(s.permission)));
+
+  const QUICK_ACTIONS = [
+    { label: 'Compose Notice', href: '/admin/dashboard/content', permission: 'MANAGE_NOTICES' },
+    { label: 'Send Direct Message', href: '/admin/dashboard/messenger', permission: 'ADMIN' },
+    { label: 'Manage Users', href: '/admin/dashboard/users', permission: 'MANAGE_USERS' },
+  ].filter(a => user?.role === 'ADMIN' || (a.permission === 'ADMIN' ? false : user?.permissions?.includes(a.permission)));
 
   return (
     <Box>
@@ -28,41 +36,43 @@ export default function AdminDashboardPage() {
           Dashboard <span style={{ color: '#16a34a' }}>Overview</span>
         </Typography>
         <Typography color="text.secondary" fontWeight={500}>
-          Welcome back, administrator. Here&apos;s what&apos;s happening today.
+          Welcome back, {user?.name}. Here&apos;s what&apos;s happening today.
         </Typography>
       </Box>
 
-      <Grid container spacing={{ xs: 2, md: 4 }}>
-        {STATS.map((stat) => (
-          <Grid size={{ xs: 12, sm: 6, lg: 3 }} key={stat.label}>
-            <Paper 
-              elevation={0} 
-              sx={{ 
-                p: 3, 
-                borderRadius: 4, 
-                border: '1px solid #e2e8f0',
-                bgcolor: '#fff',
-                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                '&:hover': {
-                   transform: 'translateY(-4px)',
-                   boxShadow: '0 10px 25px rgba(0,0,0,0.05)',
-                   borderColor: stat.color
-                }
-              }}
-            >
-               <Stack direction="row" justifyContent="space-between" alignItems="center">
-                  <Box>
-                     <Typography variant="h4" fontWeight={900} color="#0f172a" sx={{ mb: 0.5 }}>{stat.value}</Typography>
-                     <Typography variant="body2" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>{stat.label}</Typography>
-                  </Box>
-                  <Box sx={{ p: 1.5, borderRadius: 2.5, bgcolor: `${stat.color}10`, color: stat.color, display: 'flex' }}>
-                     <stat.icon size={24} />
-                  </Box>
-               </Stack>
-            </Paper>
-          </Grid>
-        ))}
-      </Grid>
+      {STATS.length > 0 && (
+        <Grid container spacing={{ xs: 2, md: 4 }}>
+          {STATS.map((stat) => (
+            <Grid size={{ xs: 12, sm: 6, lg: 3 }} key={stat.label}>
+              <Paper 
+                elevation={0} 
+                sx={{ 
+                  p: 3, 
+                  borderRadius: 4, 
+                  border: '1px solid #e2e8f0',
+                  bgcolor: '#fff',
+                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: '0 10px 25px rgba(0,0,0,0.05)',
+                    borderColor: stat.color
+                  }
+                }}
+              >
+                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                    <Box>
+                      <Typography variant="h4" fontWeight={900} color="#0f172a" sx={{ mb: 0.5 }}>{stat.value}</Typography>
+                      <Typography variant="body2" fontWeight={700} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.7rem' }}>{stat.label}</Typography>
+                    </Box>
+                    <Box sx={{ p: 1.5, borderRadius: 2.5, bgcolor: `${stat.color}10`, color: stat.color, display: 'flex' }}>
+                      <stat.icon size={24} />
+                    </Box>
+                </Stack>
+              </Paper>
+            </Grid>
+          ))}
+        </Grid>
+      )}
       
       <Grid container spacing={4} sx={{ mt: 2 }}>
          <Grid size={{ xs: 12, md: 8 }}>
@@ -77,27 +87,28 @@ export default function AdminDashboardPage() {
             <Paper elevation={0} sx={{ p: 4, bgcolor: '#111', color: '#fff', borderRadius: 6, border: '1px solid #333' }}>
                <Typography variant="h6" fontWeight={800} sx={{ mb: 3 }}>Quick Actions</Typography>
                 <Stack spacing={2}>
-                  <Button 
-                    variant="contained" 
-                    sx={{ bgcolor: '#16a34a', '&:hover': { bgcolor: '#15803d' }, py: 1.5 }}
-                    onClick={() => router.push('/admin/dashboard/content')}
-                  >
-                     Compose Notice
-                  </Button>
-                  <Button 
-                    variant="outlined" 
-                    sx={{ borderColor: '#333', color: '#fff', '&:hover': { borderColor: '#fff' }, py: 1.5 }}
-                    onClick={() => router.push('/admin/dashboard/messenger')}
-                  >
-                     Send Direct Message
-                  </Button>
-                  <Button 
-                    variant="outlined" 
-                    sx={{ borderColor: '#333', color: '#fff', '&:hover': { borderColor: '#fff' }, py: 1.5 }}
-                    onClick={() => router.push('/admin/dashboard/users')}
-                  >
-                     Manage Users
-                  </Button>
+                  {QUICK_ACTIONS.map((action) => (
+                    <Button 
+                      key={action.label}
+                      variant="contained" 
+                      sx={{ 
+                        bgcolor: action.label === 'Compose Notice' ? '#16a34a' : 'transparent', 
+                        color: action.label === 'Compose Notice' ? '#fff' : '#fff',
+                        border: action.label === 'Compose Notice' ? 'none' : '1px solid #333',
+                        '&:hover': { 
+                          bgcolor: action.label === 'Compose Notice' ? '#15803d' : 'rgba(255,255,255,0.05)',
+                          borderColor: '#fff'
+                        }, 
+                        py: 1.5 
+                      }}
+                      onClick={() => router.push(action.href)}
+                    >
+                      {action.label}
+                    </Button>
+                  ))}
+                  {QUICK_ACTIONS.length === 0 && (
+                    <Typography variant="caption" color="text.disabled">No quick actions available.</Typography>
+                  )}
                </Stack>
             </Paper>
          </Grid>

@@ -72,7 +72,13 @@ const PERMISSIONS = [
   'MANAGE_SOCIETIES',
   'MANAGE_APPLICATIONS',
   'MANAGE_ACCOUNTS',
-  'VIEW_EMAIL_LOGS'
+  'VIEW_EMAIL_LOGS',
+  'MANAGE_ACHIEVEMENTS',
+  'MANAGE_NOTICES',
+  'MANAGE_EVENTS',
+  'MANAGE_RESEARCH',
+  'MANAGE_BLOGS',
+  'MANAGE_WORK',
 ];
 
 export default function UsersManagementPage() {
@@ -194,11 +200,12 @@ export default function UsersManagementPage() {
               <TableHead>
                 <TableRow>
                   <TableCell sx={{ fontWeight: 800, bgcolor: '#f8fafc' }}>Member</TableCell>
-                  <TableCell sx={{ fontWeight: 800, bgcolor: '#f8fafc' }}>Role</TableCell>
-                  <TableCell sx={{ fontWeight: 800, bgcolor: '#f8fafc' }}>Details</TableCell>
-                  <TableCell sx={{ fontWeight: 800, bgcolor: '#f8fafc' }}>Status</TableCell>
-                  <TableCell sx={{ fontWeight: 800, bgcolor: '#f8fafc' }}>Verified</TableCell>
-                  <TableCell sx={{ fontWeight: 800, bgcolor: '#f8fafc', textAlign: 'right' }}>Actions</TableCell>
+                   <TableCell sx={{ fontWeight: 800, bgcolor: '#f1f5f9' }}>Role</TableCell>
+                   <TableCell sx={{ fontWeight: 900, bgcolor: '#e2e8f0', color: '#002147', borderLeft: '2px solid #cbd5e1' }}>Permissions</TableCell>
+                   <TableCell sx={{ fontWeight: 800, bgcolor: '#f8fafc' }}>Details</TableCell>
+                   <TableCell sx={{ fontWeight: 800, bgcolor: '#f8fafc' }}>Status</TableCell>
+                   <TableCell sx={{ fontWeight: 800, bgcolor: '#f8fafc' }}>Verified</TableCell>
+                   <TableCell sx={{ fontWeight: 800, bgcolor: '#f8fafc', textAlign: 'right' }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -222,6 +229,25 @@ export default function UsersManagementPage() {
                         color={ROLE_COLORS[user.role] || 'default'} 
                         sx={{ fontWeight: 700, height: 24 }}
                       />
+                    </TableCell>
+                    <TableCell sx={{ borderLeft: '2px solid #f1f5f9' }}>
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, maxWidth: 200 }}>
+                        {user.permissions?.map((p: string) => (
+                          <Chip 
+                            key={p} 
+                            label={p.replace('MANAGE_', '')} 
+                            size="small" 
+                            color="primary"
+                            variant="filled" 
+                            sx={{ fontSize: '0.6rem', height: 20, fontWeight: 700 }} 
+                          />
+                        ))}
+                        {(!user.permissions || user.permissions.length === 0) && (
+                          <Typography variant="caption" color="text.disabled" sx={{ fontStyle: 'italic' }}>
+                            {user.role === 'ADMIN' ? 'Full Access' : 'No extra permissions'}
+                          </Typography>
+                        )}
+                      </Box>
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2" sx={{ opacity: 0.8 }}>
@@ -257,6 +283,7 @@ export default function UsersManagementPage() {
                         />
                       )}
                     </TableCell>
+
                     <TableCell align="right">
                       <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
                         {user.status === 'PENDING' && (
@@ -310,6 +337,18 @@ export default function UsersManagementPage() {
                             onClick={() => handleDelete(user._id)}
                           >
                             <LucideTrash2 size={18} />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Manage Rights">
+                          <IconButton
+                            size="small"
+                            color="info"
+                            onClick={() => {
+                              setSelectedUser(user);
+                              setOpenEditDialog(true);
+                            }}
+                          >
+                            <LucideShieldCheck size={18} />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Edit Profile">

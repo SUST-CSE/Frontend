@@ -9,6 +9,7 @@ interface User {
   email: string;
   role: 'STUDENT' | 'TEACHER' | 'ADMIN';
   profileImage?: string;
+  permissions?: string[];
 }
 
 interface AuthState {
