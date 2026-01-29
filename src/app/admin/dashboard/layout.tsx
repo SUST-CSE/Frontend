@@ -24,7 +24,9 @@ import {
   LucideMenu,
   LucideX,
   LucideBriefcase,
-  LucideMailCheck
+  LucideMailCheck,
+  LucideWallet,
+  LucideClipboardList
 } from 'lucide-react';
 import NextImage from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
@@ -45,6 +47,8 @@ const MENU_ITEMS = [
   { label: 'Home & Content', icon: <LucideCalendar size={20} />, href: '/admin/dashboard/content', permission: 'MANAGE_CONTENT' },
   { label: 'User Management', icon: <LucideUsers size={20} />, href: '/admin/dashboard/users', permission: 'MANAGE_USERS' },
   { label: 'Work Assignments', icon: <LucideBriefcase size={20} />, href: '/admin/dashboard/work-assignments', permission: 'MANAGE_WORK' },
+  { label: 'Applications', icon: <LucideClipboardList size={20} />, href: '/admin/dashboard/applications', permission: 'MANAGE_APPLICATIONS' },
+  { label: 'Department Finance', icon: <LucideWallet size={20} />, href: '/admin/dashboard/finance', permission: 'MANAGE_ACCOUNTS' },
   { label: 'Email Logs', icon: <LucideMailCheck size={20} />, href: '/admin/dashboard/email-logs', permission: 'VIEW_EMAIL_LOGS' },
   { label: 'Alumni Management', icon: <LucideGraduationCap size={20} />, href: '/admin/dashboard/alumni', permission: 'MANAGE_USERS' },
 ];

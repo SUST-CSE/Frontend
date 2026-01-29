@@ -67,7 +67,7 @@ export default function AdminAlumniPage() {
   const [graduateSession, { isLoading: isGraduating }] = useGraduateSessionMutation();
 
   const { data: usersData } = useGetAllUsersQuery({ role: 'STUDENT' });
-  const students = usersData?.data || [];
+  const students = usersData?.data?.users || [];
 
   const alumni = data?.data?.alumni || [];
 

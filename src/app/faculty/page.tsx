@@ -1,13 +1,18 @@
 'use client';
 
-import { Box, Container, Typography, Grid, Paper, Avatar, Stack, Chip, CircularProgress, Button } from '@mui/material';
+import { Box, Container, Typography, Grid, Paper, Avatar, Stack, Chip, CircularProgress, Button, Pagination } from '@mui/material';
+import { useState } from 'react';
 import { useGetFacultyQuery } from '@/features/user/userApi';
 import { LucideMail, LucideLinkedin, LucideGlobe } from 'lucide-react';
 import Link from 'next/link';
 
 export default function FacultyPage() {
-  const { data, isLoading } = useGetFacultyQuery({});
-  const faculty = data?.data || [];
+  const [page, setPage] = useState(1);
+  const [limit] = useState(12);
+  const { data, isLoading } = useGetFacultyQuery({ page, limit });
+  const faculty = data?.data?.users || [];
+  const total = data?.data?.total || 0;
+  const totalPages = data?.data?.totalPages || 1;
 
   if (isLoading) return (
     <Box sx={{ display: 'flex', justifyContent: 'center', py: 20 }}>
@@ -101,6 +106,25 @@ export default function FacultyPage() {
             </Grid>
           ))}
         </Grid>
+
+        {/* Pagination Controls */}
+        {!isLoading && faculty.length > 0 && (
+          <Box sx={{ mt: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="body2" color="text.secondary" fontWeight={600}>
+               Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, total)} of {total} distinguished members
+            </Typography>
+            <Pagination 
+              count={totalPages} 
+              page={page} 
+              onChange={(_, value) => {
+                setPage(value);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              color="primary"
+              shape="rounded"
+            />
+          </Box>
+        )}
       </Container>
     </Box>
   );

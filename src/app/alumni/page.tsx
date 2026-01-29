@@ -17,6 +17,7 @@ import {
   Stack,
   Button,
   Divider,
+  Pagination,
 } from '@mui/material';
 import { LucideSearch, LucideBuilding, LucideBriefcase } from 'lucide-react';
 import Link from 'next/link';
@@ -34,9 +35,13 @@ interface Alumni {
 export default function AlumniPage() {
   const [search, setSearch] = useState('');
   const [batch, setBatch] = useState('');
+  const [page, setPage] = useState(1);
+  const [limit] = useState(12);
 
-  const { data, isLoading } = useGetAllAlumniQuery({ search, batch });
+  const { data, isLoading } = useGetAllAlumniQuery({ search, batch, page, limit });
   const alumni = data?.data?.alumni || [];
+  const total = data?.data?.total || 0;
+  const totalPages = Math.ceil(total / limit);
 
   if (isLoading) {
     return (
@@ -78,7 +83,10 @@ export default function AlumniPage() {
               size="small"
               placeholder="Search alumni..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -99,7 +107,10 @@ export default function AlumniPage() {
               size="small"
               placeholder="Batch"
               value={batch}
-              onChange={(e) => setBatch(e.target.value)}
+              onChange={(e) => {
+                setBatch(e.target.value);
+                setPage(1);
+              }}
               sx={{ 
                 width: 100,
                 '& .MuiOutlinedInput-root': {
@@ -118,7 +129,10 @@ export default function AlumniPage() {
                 size="small"
                 placeholder="Search alumni..."
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
                 sx={{ bgcolor: '#ffffff', borderRadius: 2 }}
             />
             <TextField
@@ -126,7 +140,10 @@ export default function AlumniPage() {
                 size="small"
                 placeholder="Batch"
                 value={batch}
-                onChange={(e) => setBatch(e.target.value)}
+                onChange={(e) => {
+                  setBatch(e.target.value);
+                  setPage(1);
+                }}
                 sx={{ bgcolor: '#ffffff', borderRadius: 2 }}
             />
         </Box>
@@ -260,6 +277,32 @@ export default function AlumniPage() {
               </Grid>
             ))}
           </Grid>
+        )}
+
+        {/* Pagination Controls */}
+        {!isLoading && alumni.length > 0 && (
+          <Box sx={{ mt: 8, pt: 4, borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexDirection: { xs: 'column', sm: 'row' }, gap: 3 }}>
+            <Typography variant="body2" color="text.secondary" fontWeight={600}>
+               Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, total)} of {total} distinguished alumni
+            </Typography>
+            <Pagination 
+              count={totalPages} 
+              page={page} 
+              onChange={(_, value) => {
+                setPage(value);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              color="primary"
+              shape="rounded"
+              size="large"
+              sx={{
+                '& .MuiPaginationItem-root': {
+                  fontWeight: 700,
+                  borderRadius: 2
+                }
+              }}
+            />
+          </Box>
         )}
       </Container>
     </Box>

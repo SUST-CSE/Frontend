@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Container, Typography, Grid, Paper, Avatar, Stack, Chip, CircularProgress, TextField, InputAdornment, Button } from '@mui/material';
+import { Box, Container, Typography, Grid, Paper, Avatar, Stack, CircularProgress, TextField, InputAdornment, Button, Pagination } from '@mui/material';
 import { useGetStudentsQuery } from '@/features/user/userApi';
 import { LucideSearch, LucideCode, LucideGithub } from 'lucide-react';
 import { useState } from 'react';
@@ -12,8 +12,12 @@ export default function StudentsPage() {
   const { user } = useSelector((state: { auth: { user: any } }) => state.auth);
   const router = useRouter();
   const [search, setSearch] = useState('');
-  const { data, isLoading } = useGetStudentsQuery({ search });
+  const [page, setPage] = useState(1);
+  const [limit] = useState(20);
+  const { data, isLoading } = useGetStudentsQuery({ search, page, limit });
   const students = data?.data?.users || [];
+  const total = data?.data?.total || 0;
+  const totalPages = data?.data?.totalPages || 1;
 
   if (!user && typeof window !== 'undefined') {
     // Basic client-side protection (API also protected)
@@ -40,7 +44,10 @@ export default function StudentsPage() {
           <TextField
             placeholder="Search by Name or ID..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -128,6 +135,22 @@ export default function StudentsPage() {
               </Grid>
             ))}
           </Grid>
+        )}
+
+        {/* Pagination Controls */}
+        {!isLoading && students.length > 0 && (
+          <Box sx={{ mt: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="body2" color="text.secondary">
+              Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, total)} of {total} students
+            </Typography>
+            <Pagination 
+              count={totalPages} 
+              page={page} 
+              onChange={(_, value) => { setPage(value); setSearch(''); }}
+              color="primary"
+              shape="rounded"
+            />
+          </Box>
         )}
       </Container>
     </Box>

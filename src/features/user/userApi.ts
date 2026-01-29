@@ -49,7 +49,10 @@ export const userApi = apiSlice.injectEndpoints({
       invalidatesTags: ['User'],
     }),
     getFaculty: builder.query({
-      query: () => '/users/faculty',
+      query: (params) => ({
+        url: '/users/faculty',
+        params,
+      }),
       providesTags: ['User'],
     }),
     getStudents: builder.query({

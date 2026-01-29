@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { 
   Box, 
-  Container, 
   Typography, 
   Paper, 
   Table, 
@@ -42,7 +41,9 @@ import {
   LucideShieldAlert,
   LucideRefreshCcw,
   LucideTrash2,
-  LucideShieldCheck
+  LucideShieldCheck,
+  LucideUserPlus,
+  LucideEdit
 } from 'lucide-react';
 import { 
   useGetAllUsersQuery, 
@@ -51,7 +52,6 @@ import {
   useDeleteUserMutation,
   useBulkCreateUsersMutation
 } from '@/features/user/userApi';
-import { LucideUserPlus, LucideEdit } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const STATUS_COLORS: Record<string, any> = {
@@ -82,7 +82,7 @@ const PERMISSIONS = [
   'MANAGE_WORK',
 ];
 
-export default function UsersManagementPage() {
+export default function UserManager() {
   const [activeTab, setActiveTab] = useState(0);
   const [usersSearch, setUsersSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -107,8 +107,10 @@ export default function UsersManagementPage() {
   const handleStatusUpdate = async (id: string, newStatus: string) => {
     try {
       await updateStatus({ id, status: newStatus }).unwrap();
+      toast.success(`User status updated to ${newStatus}`);
     } catch (err) {
       console.error('Failed to update status:', err);
+      toast.error('Failed to update user status');
     }
   };
 
@@ -116,8 +118,10 @@ export default function UsersManagementPage() {
     if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
       try {
         await deleteUser(id).unwrap();
+        toast.success('User deleted successfully');
       } catch (err) {
         console.error('Failed to delete user:', err);
+        toast.error('Failed to delete user');
       }
     }
   };
@@ -127,7 +131,7 @@ export default function UsersManagementPage() {
   const totalPages = usersData?.data?.totalPages || 1;
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Box>
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
           <Typography variant="h4" fontWeight={900} color="#002147" sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -352,19 +356,7 @@ export default function UsersManagementPage() {
                             <LucideTrash2 size={18} />
                           </IconButton>
                         </Tooltip>
-                        <Tooltip title="Manage Rights">
-                          <IconButton
-                            size="small"
-                            color="info"
-                            onClick={() => {
-                              setSelectedUser(user);
-                              setOpenEditDialog(true);
-                            }}
-                          >
-                            <LucideShieldCheck size={18} />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Edit Profile">
+                        <Tooltip title="Manage Profile/Rights">
                           <IconButton
                             size="small"
                             color="primary"
@@ -554,6 +546,6 @@ export default function UsersManagementPage() {
           </Button>
         </DialogActions>
       </Dialog>
-    </Container>
+    </Box>
   );
 }
