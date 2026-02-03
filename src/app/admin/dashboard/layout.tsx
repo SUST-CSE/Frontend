@@ -45,6 +45,7 @@ const MENU_ITEMS = [
   { label: 'Blog Moderation', icon: <LucideFileText size={20} />, href: '/admin/dashboard/blogs', permission: 'MANAGE_BLOGS' },
   { label: 'Organizations', icon: <LucideGlobe size={20} />, href: '/admin/dashboard/societies', permission: 'MANAGE_SOCIETIES' },
   { label: 'Home & Content', icon: <LucideCalendar size={20} />, href: '/admin/dashboard/content', permission: 'MANAGE_CONTENT' },
+  { label: 'Important Data', icon: <LucideClipboardList size={20} />, href: '/admin/dashboard/important-data', permission: 'MANAGE_CONTENT' },
   { label: 'User Management', icon: <LucideUsers size={20} />, href: '/admin/dashboard/users', permission: 'MANAGE_USERS' },
   { label: 'Work Assignments', icon: <LucideBriefcase size={20} />, href: '/admin/dashboard/work-assignments', permission: 'MANAGE_WORK' },
   { label: 'Applications', icon: <LucideClipboardList size={20} />, href: '/admin/dashboard/applications', permission: 'MANAGE_APPLICATIONS' },

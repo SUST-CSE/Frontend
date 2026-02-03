@@ -33,6 +33,21 @@ export const workAssignmentApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['WorkAssignment'],
     }),
+    updateAssignment: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/work-assignments/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['WorkAssignment'],
+    }),
+    deleteAssignment: builder.mutation({
+      query: (id) => ({
+        url: `/work-assignments/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['WorkAssignment'],
+    }),
   }),
 });
 
@@ -42,4 +57,6 @@ export const {
   useGetSocietyWorkQuery,
   useCreateAssignmentMutation,
   useUpdateWorkStatusMutation,
+  useUpdateAssignmentMutation,
+  useDeleteAssignmentMutation,
 } = workAssignmentApi;

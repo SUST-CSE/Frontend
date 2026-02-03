@@ -12,25 +12,46 @@ import {
   Grid,
   CircularProgress,
   InputAdornment,
-  IconButton,
-  Button
+  Button,
+  Avatar,
+  Skeleton
 } from '@mui/material';
-import { LucideSearch, LucideCalendar, LucidePin, LucideFileText, LucideExternalLink } from 'lucide-react';
+import { LucideSearch, LucideCalendar, LucidePin, LucideBell, LucideGraduationCap, LucideBriefcase, LucideInfo } from 'lucide-react';
 import gsap from 'gsap';
 import { useGetNoticesQuery } from '@/features/content/contentApi';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const CATEGORIES = ['ALL', 'ACADEMIC', 'ADMINISTRATIVE', 'EVENT', 'GENERAL'];
 
+const getCategoryIcon = (category: string) => {
+  switch (category) {
+    case 'ACADEMIC': return <LucideGraduationCap size={24} />;
+    case 'ADMINISTRATIVE': return <LucideBriefcase size={24} />;
+    case 'EVENT': return <LucideCalendar size={24} />;
+    case 'GENERAL': return <LucideInfo size={24} />;
+    default: return <LucideBell size={24} />;
+  }
+};
+
+const getCategoryColor = (category: string) => {
+  switch (category) {
+    case 'ACADEMIC': return '#2563eb';
+    case 'ADMINISTRATIVE': return '#0891b2';
+    case 'EVENT': return '#db2777';
+    case 'GENERAL': return '#64748b';
+    default: return '#002147';
+  }
+};
+
 export default function NoticesPage() {
   const { data, isLoading } = useGetNoticesQuery({});
+  const router = useRouter();
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('ALL');
   const listRef = useRef<HTMLDivElement>(null);
 
   const notices = data?.data || [];
 
-  // load balancing (memoized filtering) as requested
   const filteredNotices = useMemo(() => {
     return notices.filter((notice: any) => {
       const matchesSearch = notice.title.toLowerCase().includes(search.toLowerCase()) || 
@@ -53,125 +74,149 @@ export default function NoticesPage() {
   return (
     <Box sx={{ py: 8, bgcolor: '#f8fafc', minHeight: '100vh' }}>
       <Container maxWidth="lg">
-        <Box sx={{ mb: 6 }}>
-          <Typography variant="h3" fontWeight={900} color="#002147" gutterBottom>
-            Notice Board
-          </Typography>
-          <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
-            Stay updated with the latest academic and administrative announcements.
-          </Typography>
-
-          <Stack 
-            direction={{ xs: 'column', md: 'row' }} 
-            spacing={3} 
-            alignItems={{ xs: 'stretch', md: 'center' }}
-            sx={{ mb: 4 }}
-          >
-            <TextField
-              sx={{ flexGrow: 1, bgcolor: '#ffffff', borderRadius: 2 }}
-              placeholder="Search notices..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <LucideSearch size={20} color="#64748b" />
-                  </InputAdornment>
-                ),
-                sx: { borderRadius: 2 }
-              }}
-            />
-            
-            <Stack direction="row" spacing={1} sx={{ overflowX: 'auto', pb: 1 }}>
-              {CATEGORIES.map((cat) => (
-                <Chip
-                  key={cat}
-                  label={cat}
-                  onClick={() => setCategory(cat)}
-                  sx={{
-                    fontWeight: 700,
-                    px: 1,
-                    bgcolor: category === cat ? '#002147' : '#e2e8f0',
-                    color: category === cat ? '#ffffff' : '#475569',
-                    '&:hover': { bgcolor: category === cat ? '#001a35' : '#cbd5e1' }
-                  }}
-                />
-              ))}
-            </Stack>
-          </Stack>
+        <Box sx={{ mb: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
+          <Box>
+            <Typography variant="h3" fontWeight={900} color="#002147" sx={{ mb: 2 }}>
+              Notice Board
+            </Typography>
+            <Typography variant="h6" color="text.secondary">
+              Stay updated with academic and administrative announcements.
+            </Typography>
+          </Box>
+          <TextField
+             placeholder="Search notices..."
+             value={search}
+             onChange={(e) => setSearch(e.target.value)}
+             InputProps={{
+               startAdornment: (
+                 <InputAdornment position="start">
+                   <LucideSearch size={20} />
+                 </InputAdornment>
+               ),
+             }}
+             sx={{ bgcolor: 'white', borderRadius: 2, width: { xs: '100%', md: 350 } }}
+           />
         </Box>
 
+        <Stack direction="row" spacing={1} sx={{ overflowX: 'auto', pb: 4, mb: 2 }}>
+          {CATEGORIES.map((cat) => (
+            <Chip
+              key={cat}
+              label={cat}
+              onClick={() => setCategory(cat)}
+              sx={{
+                fontWeight: 700,
+                px: 1,
+                bgcolor: category === cat ? '#002147' : '#e2e8f0',
+                color: category === cat ? '#ffffff' : '#475569',
+                '&:hover': { bgcolor: category === cat ? '#001a35' : '#cbd5e1' }
+              }}
+            />
+          ))}
+        </Stack>
+        
         {isLoading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
-            <CircularProgress size={60} thickness={4} sx={{ color: '#002147' }} />
-          </Box>
+          <Grid container spacing={3}>
+            {[1, 2, 3, 4].map((i) => (
+              <Grid size={{ xs: 12, md: 6 }} key={i}>
+                <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid rgba(0,0,0,0.05)', display: 'flex', gap: 3 }}>
+                   <Skeleton variant="circular" width={56} height={56} />
+                   <Box sx={{ flex: 1 }}>
+                      <Skeleton width="40%" height={20} sx={{ mb: 1 }} />
+                      <Skeleton width="90%" height={28} sx={{ mb: 1 }} />
+                      <Skeleton width="100%" height={20} />
+                      <Skeleton width="80%" height={20} sx={{ mb: 2 }} />
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                         <Skeleton width="30%" height={16} />
+                         <Skeleton width="20%" height={24} />
+                      </Box>
+                   </Box>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
         ) : (
-          <Grid container spacing={4} ref={listRef}>
+          <Grid container spacing={3} ref={listRef}>
             {filteredNotices.length > 0 ? (
               filteredNotices.map((notice: any) => (
-                <Grid size={{ xs: 12 }} key={notice._id} className="notice-card">
+                <Grid size={{ xs: 12, md: 6 }} key={notice._id} className="notice-card">
                   <Paper 
                     elevation={0}
+                    onClick={() => router.push(`/notices/${notice._id}`)}
                     sx={{ 
-                      p: 4, 
-                      borderRadius: 4, 
+                      p: 3, 
+                      borderRadius: 3, 
                       border: '1px solid rgba(0,0,0,0.05)',
-                      transition: 'border-color 0.3s ease',
-                      '&:hover': { borderColor: '#2563eb' }
+                      display: 'flex',
+                      alignItems: 'flex-start', // Top align for longer text
+                      gap: 3,
+                      height: '100%',
+                      cursor: 'pointer',
+                      transition: '0.2s',
+                      '&:hover': { bgcolor: 'white', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', transform: 'translateY(-2px)' }
                     }}
                   >
-                    <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 2 }}>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <Chip 
-                          label={notice.category} 
-                          size="small" 
-                          sx={{ bgcolor: '#dbeafe', color: '#1e40af', fontWeight: 800, fontSize: '0.65rem' }} 
-                        />
-                        {notice.isPinned && (
-                          <Chip 
-                            icon={<LucidePin size={14} />} 
-                            label="Pinned" 
-                            size="small" 
-                            sx={{ bgcolor: '#fef3c7', color: '#92400e', fontWeight: 800, fontSize: '0.65rem' }} 
-                          />
-                        )}
-                      </Stack>
-                      <Stack direction="row" spacing={0.5} alignItems="center" sx={{ color: '#64748b' }}>
-                        <LucideCalendar size={16} />
-                        <Typography variant="caption" fontWeight={600}>
-                          {new Date(notice.createdAt).toLocaleDateString()}
-                        </Typography>
-                      </Stack>
-                    </Stack>
-
-                    <Typography variant="h5" fontWeight={800} color="#0f172a" gutterBottom>
-                      {notice.title}
-                    </Typography>
+                    <Avatar 
+                      sx={{ 
+                        width: 56, 
+                        height: 56, 
+                        bgcolor: `${getCategoryColor(notice.category)}15`, 
+                        color: getCategoryColor(notice.category) 
+                      }}
+                    >
+                      {getCategoryIcon(notice.category)}
+                    </Avatar>
                     
-                    <Typography variant="body1" color="text.secondary" sx={{ mb: 3, lineHeight: 1.7 }}>
-                      {notice.description}
-                    </Typography>
+                    <Box sx={{ flex: 1 }}>
+                      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
+                        <Typography variant="caption" fontWeight={700} color={getCategoryColor(notice.category)} sx={{ textTransform: 'uppercase' }}>
+                           {notice.category}
+                        </Typography>
+                         {notice.isPinned && (
+                             <LucidePin size={14} color="#eab308" fill="#eab308" />
+                         )}
+                      </Stack>
+                      
+                      <Typography variant="subtitle1" fontWeight={800} sx={{ mb: 1, lineHeight: 1.3, '&:hover': { color: '#002147' } }}>
+                        {notice.title}
+                      </Typography>
+                      
+                      <Typography variant="body2" color="text.secondary" sx={{ 
+                          mb: 2, 
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden'
+                      }}>
+                        {notice.description}
+                      </Typography>
 
-                    <Stack direction="row" spacing={2}>
-                      <Button 
-                        component={Link}
-                        href={`/notices/${notice._id}`}
-                        startIcon={<LucideFileText size={18} />}
-                        endIcon={<LucideExternalLink size={14} />}
-                        sx={{ color: '#2563eb', fontWeight: 700, textTransform: 'none' }}
-                      >
-                        View Details
-                      </Button>
-                    </Stack>
+                      <Stack direction="row" justifyContent="space-between" alignItems="center">
+                          <Stack direction="row" spacing={1} alignItems="center" color="text.disabled">
+                             <LucideCalendar size={14} />
+                             <Typography variant="caption" fontWeight={600}>
+                                {new Date(notice.createdAt).toLocaleDateString()}
+                             </Typography>
+                          </Stack>
+
+                          <Button 
+                            variant="text" 
+                            size="small" 
+                            sx={{ textTransform: 'none', fontWeight: 600, p: 0, minWidth: 'auto', '&:hover': { bgcolor: 'transparent', textDecoration: 'underline' } }}
+                          >
+                            View Details
+                          </Button>
+                      </Stack>
+                    </Box>
                   </Paper>
                 </Grid>
               ))
             ) : (
-              <Grid size={{ xs: 12 }}>
-                <Box sx={{ textAlign: 'center', py: 10, bgcolor: '#ffffff', borderRadius: 4, border: '1px dashed #cbd5e1' }}>
-                  <Typography variant="h6" color="text.secondary">No notices found matching your criteria.</Typography>
-                </Box>
-              </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <Box sx={{ textAlign: 'center', py: 10, bgcolor: 'white', borderRadius: 4, border: '1px dashed #cbd5e1' }}>
+                    <Typography variant="h6" color="text.secondary">No notices found.</Typography>
+                  </Box>
+                </Grid>
             )}
           </Grid>
         )}

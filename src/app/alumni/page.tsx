@@ -18,8 +18,10 @@ import {
   Button,
   Divider,
   Pagination,
+  Tooltip,
+  IconButton,
 } from '@mui/material';
-import { LucideSearch, LucideBuilding, LucideBriefcase } from 'lucide-react';
+import { LucideSearch, LucideBuilding, LucideBriefcase, LucideExternalLink } from 'lucide-react';
 import Link from 'next/link';
 
 interface Alumni {
@@ -252,7 +254,7 @@ export default function AlumniPage() {
                         </Typography>
                       </Stack>
 
-                      <Button 
+                      {/* <Button 
                         size="small" 
                         variant="outlined"
                         sx={{ 
@@ -270,7 +272,16 @@ export default function AlumniPage() {
                         }}
                       >
                         View Profile
-                      </Button>
+                      </Button> */}
+
+                      <Tooltip title="View Details">
+                        <IconButton 
+                          size="small" 
+                          sx={{ color: '#2563eb', border: '1px solid #e2e8f0', '&:hover': { bgcolor: '#eff6ff', borderColor: '#2563eb' } }}
+                        >
+                          <LucideExternalLink size={18} />
+                        </IconButton>
+                      </Tooltip>
                     </Stack>
                   </CardContent>
                 </Card>

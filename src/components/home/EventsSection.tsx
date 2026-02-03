@@ -89,7 +89,7 @@ export default function EventsSection() {
                 Join Us
               </Typography>
             </Stack>
-            <Typography variant="h3" fontWeight={900} color="#0f172a" sx={{ fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' } }}>
+            <Typography variant="h3" fontWeight={900} color="#0f172a">
               Latest <span style={{ color: '#2563eb' }}>Events</span>
             </Typography>
           </Box>

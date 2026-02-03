@@ -86,7 +86,7 @@ export default function NoticesSection() {
                 Stay Updated
               </Typography>
             </Stack>
-            <Typography variant="h3" fontWeight={900} color="#0f172a" sx={{ fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' } }}>
+            <Typography variant="h3" fontWeight={900} color="#0f172a">
               Latest <span style={{ color: '#16a34a' }}>Notices</span>
             </Typography>
           </Box>

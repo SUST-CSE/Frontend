@@ -34,11 +34,14 @@ import {
   LucideBriefcase,
   LucideClock,
   LucideAlertCircle,
-  LucideExternalLink
+  LucideEdit,
+  LucideTrash2,
 } from 'lucide-react';
 import {
   useGetAssignmentsQuery,
   useCreateAssignmentMutation,
+  useUpdateAssignmentMutation,
+  useDeleteAssignmentMutation,
 } from '@/features/work-assignment/workAssignmentApi';
 import { useGetAllUsersQuery } from '@/features/user/userApi';
 import { useGetSocietiesQuery } from '@/features/society/societyApi';
@@ -63,6 +66,7 @@ export default function WorkManager() {
   const [openDialog, setOpenDialog] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery, 500);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -82,6 +86,8 @@ export default function WorkManager() {
   });
   const { data: societiesData } = useGetSocietiesQuery({});
   const [createAssignment, { isLoading: isCreating }] = useCreateAssignmentMutation();
+  const [updateAssignment, { isLoading: isUpdating }] = useUpdateAssignmentMutation();
+  const [deleteAssignment] = useDeleteAssignmentMutation();
 
   const assignments = assignmentsData?.data || [];
   const students = usersData?.data?.users || [];
@@ -93,9 +99,17 @@ export default function WorkManager() {
         toast.error('Please fill in all required fields');
         return;
       }
-      await createAssignment(formData).unwrap();
-      toast.success('Work assigned successfully');
+      
+      if (editingId) {
+        await updateAssignment({ id: editingId, ...formData }).unwrap();
+        toast.success('Work updated successfully');
+      } else {
+        await createAssignment(formData).unwrap();
+        toast.success('Work assigned successfully');
+      }
+      
       setOpenDialog(false);
+      setEditingId(null);
       setFormData({
         title: '',
         description: '',
@@ -106,8 +120,33 @@ export default function WorkManager() {
         visibility: WORK_VISIBILITY.PUBLIC_TO_SOCIETY,
       });
     } catch {
-      toast.error('Failed to assign work');
+      toast.error(editingId ? 'Failed to update work' : 'Failed to assign work');
     }
+  };
+
+  const handleEdit = (assignment: { _id: string; title: string; description: string; assignedTo: { _id: string }; society: { _id: string }; deadline: string | number | Date; priority: string; visibility?: string }) => {
+     setEditingId(assignment._id);
+     setFormData({
+        title: assignment.title,
+        description: assignment.description,
+        assignedTo: assignment.assignedTo?._id,
+        society: assignment.society?._id,
+        deadline: new Date(assignment.deadline).toISOString().split('T')[0],
+        priority: assignment.priority,
+        visibility: assignment.visibility || WORK_VISIBILITY.PUBLIC_TO_SOCIETY,
+     });
+     setOpenDialog(true);
+  };
+
+  const handleDelete = async (id: string) => {
+     if (confirm('Are you sure you want to delete this assignment?')) {
+        try {
+           await deleteAssignment(id).unwrap();
+           toast.success('Assignment deleted');
+        } catch {
+           toast.error('Failed to delete assignment');
+        }
+     }
   };
 
   return (
@@ -125,7 +164,14 @@ export default function WorkManager() {
         <Button
           variant="contained"
           startIcon={<LucidePlus size={18} />}
-          onClick={() => setOpenDialog(true)}
+          onClick={() => {
+             setEditingId(null);
+             setFormData({
+                title: '', description: '', assignedTo: '', society: '', deadline: '', 
+                priority: WORK_PRIORITY.MEDIUM, visibility: WORK_VISIBILITY.PUBLIC_TO_SOCIETY
+             });
+             setOpenDialog(true);
+          }}
           sx={{ bgcolor: '#002147', px: 3, py: 1.2, fontWeight: 700, borderRadius: 2 }}
         >
           New Assignment
@@ -213,9 +259,18 @@ export default function WorkManager() {
                       </Box>
                     </TableCell>
                     <TableCell align="right">
-                      <Tooltip title="View Details">
-                        <IconButton size="small"><LucideExternalLink size={18} /></IconButton>
-                      </Tooltip>
+                      <Stack direction="row" spacing={1} justifyContent="flex-end">
+                         <Tooltip title="Edit">
+                            <IconButton size="small" onClick={() => handleEdit(assignment)}>
+                               <LucideEdit size={18} />
+                            </IconButton>
+                         </Tooltip>
+                         <Tooltip title="Delete">
+                            <IconButton size="small" color="error" onClick={() => handleDelete(assignment._id)}>
+                               <LucideTrash2 size={18} />
+                            </IconButton>
+                         </Tooltip>
+                      </Stack>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -235,7 +290,7 @@ export default function WorkManager() {
 
       {/* Create Dialog */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 800 }}>Assign New Work</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 800 }}>{editingId ? 'Edit Assignment' : 'Assign New Work'}</DialogTitle>
         <DialogContent>
           <Stack spacing={3} sx={{ mt: 1 }}>
             <TextField
@@ -355,7 +410,7 @@ export default function WorkManager() {
             onClick={handleCreate}
             sx={{ bgcolor: '#002147', px: 4 }}
           >
-            {isCreating ? <CircularProgress size={24} color="inherit" /> : 'Assign Task'}
+            {isCreating || isUpdating ? <CircularProgress size={24} color="inherit" /> : (editingId ? 'Update Task' : 'Assign Task')}
           </Button>
         </DialogActions>
       </Dialog>

@@ -43,12 +43,12 @@ const Designations = [
   'SPORTS_SECRETARY',
   'ORGANIZING_SECRETARY',
   'PUBLICATION_SECRETARY',
-  'ASSISTANT_GENERAL_SECRETARY',
+  'ASSISTANT_ORGANIZING_SECRETARY',
   'EXECUTIVE_MEMBER'
 ];
 
 interface MemberFormData {
-  user: string; // User ID
+  user: any; // User Object
   designation: string;
   tenureStart: string;
   tenureEnd?: string;
@@ -79,7 +79,7 @@ export default function AdminSocietyMembersPage() {
 
   const { control, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<MemberFormData>({
     defaultValues: {
-      user: '',
+      user: null,
       designation: 'EXECUTIVE_MEMBER',
       tenureStart: new Date().toISOString().split('T')[0],
       isCurrent: true,
@@ -90,7 +90,7 @@ export default function AdminSocietyMembersPage() {
   const onSubmit = async (data: any) => {
     try {
       const formData = new FormData();
-      formData.append('user', data.user);
+      formData.append('user', data.user?._id);
       formData.append('designation', data.designation);
       formData.append('tenureStart', data.tenureStart);
       if (data.tenureEnd) formData.append('tenureEnd', data.tenureEnd);
@@ -230,12 +230,12 @@ export default function AdminSocietyMembersPage() {
                      rules={{ required: 'User is required' }}
                      render={({ field: { onChange, value } }) => (
                         <Autocomplete
-                           options={usersData?.data || []}
+                           options={usersData?.data?.users || []}
                            getOptionLabel={(option: any) => `${option.name} (${option.email})`}
-                           isOptionEqualToValue={(option, value) => option._id === value}
+                           isOptionEqualToValue={(option, value) => option._id === value?._id}
                            loading={loadingUsers}
                            onInputChange={(_, newInputValue) => setSearchTerm(newInputValue)}
-                           onChange={(_, newValue: any) => onChange(newValue?._id)}
+                           onChange={(_, newValue: any) => onChange(newValue)}
                            renderInput={(params) => (
                               <TextField 
                                  {...params} 

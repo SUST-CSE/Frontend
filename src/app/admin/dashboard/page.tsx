@@ -5,22 +5,30 @@ import { LucideFileText, LucideUsers, LucideActivity } from 'lucide-react';
 import { useGetBlogsQuery, useGetPendingBlogsQuery } from '@/features/blog/blogApi';
 import { useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
-// import { useGetStatsQuery } from '@/features/admin/adminApi'; // Placeholder
+import { useGetAllUsersQuery } from '@/features/user/userApi';
+import { useGetNoticesQuery } from '@/features/content/contentApi';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
   const { user } = useSelector((state: any) => state.auth);
+  
+  // Queries
   const { data: pendingData } = useGetPendingBlogsQuery({}, { skip: user?.role !== 'ADMIN' && !user?.permissions?.includes('MANAGE_BLOGS') });
   const { data: allBlogs } = useGetBlogsQuery({}, { skip: user?.role !== 'ADMIN' && !user?.permissions?.includes('MANAGE_BLOGS') });
-  
+  const { data: userData } = useGetAllUsersQuery({ limit: 1 }, { skip: user?.role !== 'ADMIN' && !user?.permissions?.includes('MANAGE_USERS') });
+  const { data: noticeData } = useGetNoticesQuery({}, { skip: user?.role !== 'ADMIN' && !user?.permissions?.includes('MANAGE_NOTICES') });
+
+  // Counts
   const pendingCount = pendingData?.data?.length || 0;
   const totalBlogs = allBlogs?.data?.length || 0;
+  const totalUsers = userData?.data?.total || 0;
+  const totalNotices = Array.isArray(noticeData) ? noticeData.length : 0;
  
   const STATS = [
     { label: 'Pending Blogs', value: pendingCount, icon: LucideFileText, color: '#eab308', permission: 'MANAGE_BLOGS' },
     { label: 'Total Blogs', value: totalBlogs, icon: LucideFileText, color: '#3b82f6', permission: 'MANAGE_BLOGS' },
-    { label: 'Active Users', value: '1,234', icon: LucideUsers, color: '#16a34a', permission: 'MANAGE_USERS' },
-    { label: 'Site Visits', value: '45.2k', icon: LucideActivity, color: '#8b5cf6', permission: 'ADMIN' },
+    { label: 'Total Users', value: totalUsers, icon: LucideUsers, color: '#16a34a', permission: 'MANAGE_USERS' },
+    { label: 'Published Notices', value: totalNotices, icon: LucideActivity, color: '#8b5cf6', permission: 'MANAGE_NOTICES' },
   ].filter(s => user?.role === 'ADMIN' || (s.permission === 'ADMIN' ? false : user?.permissions?.includes(s.permission)));
 
   const QUICK_ACTIONS = [

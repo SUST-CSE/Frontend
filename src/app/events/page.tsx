@@ -11,7 +11,8 @@ import {
   Button,
   CircularProgress,
   TextField,
-  InputAdornment
+  InputAdornment,
+  Skeleton
 } from '@mui/material';
 import { LucideCalendar, LucideMapPin, LucideSearch, LucideArrowRight } from 'lucide-react';
 import gsap from 'gsap';
@@ -93,9 +94,24 @@ export default function EventsPage() {
         </Box>
 
         {isLoading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
-            <CircularProgress size={60} thickness={4} sx={{ color: '#002147' }} />
-          </Box>
+          <Grid container spacing={4}>
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Grid size={{ xs: 12, md: 6, lg: 4 }} key={i}>
+                <Paper elevation={0} sx={{ borderRadius: 4, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.05)' }}>
+                  <Skeleton variant="rectangular" height={200} />
+                  <Box sx={{ p: 4 }}>
+                    <Skeleton width="40%" height={20} sx={{ mb: 1 }} />
+                    <Skeleton width="90%" height={32} sx={{ mb: 3 }} />
+                    <Stack spacing={2} sx={{ mb: 4 }}>
+                      <Skeleton width="60%" height={20} />
+                      <Skeleton width="70%" height={20} />
+                    </Stack>
+                    <Skeleton width="100%" height={45} sx={{ borderRadius: 2 }} />
+                  </Box>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
         ) : (
           <Grid container spacing={4} ref={containerRef}>
             {filteredEvents.length > 0 ? filteredEvents.map((event: any) => (
