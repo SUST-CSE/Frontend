@@ -124,7 +124,7 @@ export default function WorkManager() {
     }
   };
 
-  const handleEdit = (assignment: { _id: string; title: string; description: string; assignedTo: { _id: string }; society: { _id: string }; deadline: string | number | Date; priority: string; visibility?: string }) => {
+  const handleEdit = (assignment: any) => {
      setEditingId(assignment._id);
      setFormData({
         title: assignment.title,

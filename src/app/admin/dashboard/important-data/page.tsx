@@ -115,7 +115,7 @@ export default function ImportantDataPage() {
       ) : (
         <Grid container spacing={3}>
           {importantData.map((item: any) => (
-            <Grid item xs={12} sm={6} md={4} key={item._id}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={item._id}>
               <Card 
                 elevation={0} 
                 sx={{ 

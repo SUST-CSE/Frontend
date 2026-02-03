@@ -242,7 +242,7 @@ export default function AdminSocietyMembersPage() {
                                  label="Search User by Email" 
                                  fullWidth 
                                  error={!!errors.user}
-                                 helperText={errors.user?.message}
+                                 helperText={errors.user?.message?.toString()}
                                />
                            )}
                         />
