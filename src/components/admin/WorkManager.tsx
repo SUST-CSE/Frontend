@@ -27,7 +27,9 @@ import {
   IconButton,
   Tooltip,
   CircularProgress,
-  Autocomplete
+  Autocomplete,
+  Fade,
+  Grow
 } from '@mui/material';
 import {
   LucidePlus,
@@ -36,6 +38,8 @@ import {
   LucideAlertCircle,
   LucideEdit,
   LucideTrash2,
+  LucideSearch,
+  LucideMoreVertical
 } from 'lucide-react';
 import {
   useGetAssignmentsQuery,
@@ -53,6 +57,7 @@ import {
 } from '@/features/work-assignment/workAssignmentConstants';
 import toast from 'react-hot-toast';
 import { useDebounce } from '@/hooks/useDebounce';
+import ConfirmDialog from '@/components/common/ConfirmDialog';
 
 interface IUser {
   _id: string;
@@ -77,6 +82,9 @@ export default function WorkManager() {
     priority: WORK_PRIORITY.MEDIUM,
     visibility: WORK_VISIBILITY.PUBLIC_TO_SOCIETY,
   });
+
+  const [openConfirm, setOpenConfirm] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const { data: assignmentsData, isLoading: loadingAssignments } = useGetAssignmentsQuery({});
   const { data: usersData, isLoading: loadingUsers } = useGetAllUsersQuery({ 
@@ -138,13 +146,21 @@ export default function WorkManager() {
      setOpenDialog(true);
   };
 
-  const handleDelete = async (id: string) => {
-     if (confirm('Are you sure you want to delete this assignment?')) {
+  const handleDeleteClick = (id: string) => {
+     setDeleteId(id);
+     setOpenConfirm(true);
+  };
+
+  const handleConfirmDelete = async () => {
+     if (deleteId) {
         try {
-           await deleteAssignment(id).unwrap();
+           await deleteAssignment(deleteId).unwrap();
            toast.success('Assignment deleted');
         } catch {
            toast.error('Failed to delete assignment');
+        } finally {
+           setOpenConfirm(false);
+           setDeleteId(null);
         }
      }
   };
@@ -179,106 +195,121 @@ export default function WorkManager() {
       </Box>
 
       <Paper elevation={0} sx={{ borderRadius: 4, border: '1px solid rgba(0,0,0,0.05)', overflow: 'hidden' }}>
-        <TableContainer>
+        <TableContainer sx={{ px: 1 }}>
           {loadingAssignments ? (
             <Box sx={{ p: 10, textAlign: 'center' }}>
-              <CircularProgress />
+              <CircularProgress size={32} thickness={5} />
             </Box>
           ) : (
             <Table>
-              <TableHead sx={{ bgcolor: '#f8fafc' }}>
+              <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 800 }}>Task</TableCell>
-                  <TableCell sx={{ fontWeight: 800 }}>Assigned To</TableCell>
-                  <TableCell sx={{ fontWeight: 800 }}>Society</TableCell>
-                  <TableCell sx={{ fontWeight: 800 }}>Priority</TableCell>
-                  <TableCell sx={{ fontWeight: 800 }}>Status</TableCell>
-                  <TableCell sx={{ fontWeight: 800 }}>Deadline</TableCell>
-                  <TableCell sx={{ fontWeight: 800, textAlign: 'right' }}>Actions</TableCell>
+                  <TableCell sx={{ fontWeight: 800, color: '#64748b', borderBottom: '2px solid #f1f5f9' }}>TASK DESCRIPTION</TableCell>
+                  <TableCell sx={{ fontWeight: 800, color: '#64748b', borderBottom: '2px solid #f1f5f9' }}>ASSIGNEE</TableCell>
+                  <TableCell sx={{ fontWeight: 800, color: '#64748b', borderBottom: '2px solid #f1f5f9' }}>ENTITY</TableCell>
+                  <TableCell sx={{ fontWeight: 800, color: '#64748b', borderBottom: '2px solid #f1f5f9' }}>PRIORITY</TableCell>
+                  <TableCell sx={{ fontWeight: 800, color: '#64748b', borderBottom: '2px solid #f1f5f9' }}>STATUS</TableCell>
+                  <TableCell sx={{ fontWeight: 800, color: '#64748b', borderBottom: '2px solid #f1f5f9' }}>DEADLINE</TableCell>
+                  <TableCell sx={{ fontWeight: 800, color: '#64748b', borderBottom: '2px solid #f1f5f9', textAlign: 'right' }}>ACTIONS</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {assignments.map((assignment: {
-                  _id: string;
-                  title: string;
-                  description: string;
-                  assignedTo: {
-                    name: string;
-                    profileImage?: string;
-                    studentId?: string;
-                  };
-                  society: {
-                    name: string;
-                  };
-                  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-                  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'OVERDUE';
-                  deadline: string;
-                }) => (
-                  <TableRow key={assignment._id} hover>
-                    <TableCell>
-                      <Typography variant="subtitle2" fontWeight={700}>{assignment.title}</Typography>
-                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {assignment.description}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Stack direction="row" spacing={1.5} alignItems="center">
-                        <Avatar src={assignment.assignedTo?.profileImage} sx={{ width: 32, height: 32 }}>
-                          {assignment.assignedTo?.name?.charAt(0)}
-                        </Avatar>
-                        <Box>
-                          <Typography variant="body2" fontWeight={600}>{assignment.assignedTo?.name}</Typography>
-                          <Typography variant="caption" color="text.secondary">{assignment.assignedTo?.studentId}</Typography>
+                {assignments.map((assignment: any, index: number) => (
+                  <Grow in={true} key={assignment._id} style={{ transformOrigin: '0 0 0' }} timeout={(index + 1) * 200}>
+                    <TableRow hover sx={{ '&:hover': { bgcolor: 'rgba(59, 130, 246, 0.02) !important' } }}>
+                      <TableCell sx={{ py: 2.5 }}>
+                        <Typography variant="subtitle2" fontWeight={700} color="#0f172a">{assignment.title}</Typography>
+                        <Typography variant="caption" sx={{ color: '#64748b', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                          {assignment.description}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Stack direction="row" spacing={1.5} alignItems="center">
+                          <Avatar 
+                            src={assignment.assignedTo?.profileImage} 
+                            sx={{ width: 34, height: 34, bgcolor: '#f1f5f9', color: '#3b82f6', fontWeight: 800, fontSize: '0.8rem' }}
+                          >
+                            {assignment.assignedTo?.name?.charAt(0)}
+                          </Avatar>
+                          <Box>
+                            <Typography variant="body2" fontWeight={700} color="#334155">{assignment.assignedTo?.name}</Typography>
+                            <Typography variant="caption" color="text.secondary">{assignment.assignedTo?.studentId || 'N/A'}</Typography>
+                          </Box>
+                        </Stack>
+                      </TableCell>
+                      <TableCell>
+                        <Chip 
+                          label={assignment.society?.name} 
+                          size="small" 
+                          sx={{ bgcolor: '#eff6ff', color: '#1e40af', fontWeight: 700, borderRadius: 1.5 }} 
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ 
+                          display: 'inline-flex', 
+                          alignItems: 'center', 
+                          gap: 1, 
+                          px: 1.5, 
+                          py: 0.5, 
+                          borderRadius: 10,
+                          bgcolor: `${PRIORITY_COLORS[assignment.priority]}20`,
+                          color: PRIORITY_COLORS[assignment.priority] === 'primary' ? '#3b82f6' : 
+                                 PRIORITY_COLORS[assignment.priority] === 'warning' ? '#f59e0b' :
+                                 PRIORITY_COLORS[assignment.priority] === 'error' ? '#ef4444' : '#64748b'
+                        }}>
+                          <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'currentColor' }} />
+                          <Typography variant="caption" fontWeight={800}>{assignment.priority}</Typography>
                         </Box>
-                      </Stack>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" fontWeight={500}>{assignment.society?.name}</Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip 
-                        label={assignment.priority} 
-                        size="small" 
-                        color={PRIORITY_COLORS[assignment.priority]} 
-                        variant="outlined"
-                        sx={{ fontWeight: 700, fontSize: '0.65rem' }}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Chip 
-                        label={assignment.status} 
-                        size="small" 
-                        color={STATUS_COLORS[assignment.status]}
-                        sx={{ fontWeight: 800, fontSize: '0.7rem' }}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <LucideClock size={14} color="#64748b" />
-                        <Typography variant="body2">{new Date(assignment.deadline).toLocaleDateString()}</Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell align="right">
-                      <Stack direction="row" spacing={1} justifyContent="flex-end">
-                         <Tooltip title="Edit">
-                            <IconButton size="small" onClick={() => handleEdit(assignment)}>
-                               <LucideEdit size={18} />
-                            </IconButton>
-                         </Tooltip>
-                         <Tooltip title="Delete">
-                            <IconButton size="small" color="error" onClick={() => handleDelete(assignment._id)}>
-                               <LucideTrash2 size={18} />
-                            </IconButton>
-                         </Tooltip>
-                      </Stack>
-                    </TableCell>
-                  </TableRow>
+                      </TableCell>
+                      <TableCell>
+                        <Chip 
+                          label={assignment.status} 
+                          size="small" 
+                          color={STATUS_COLORS[assignment.status]}
+                          sx={{ fontWeight: 800, fontSize: '0.7rem', textTransform: 'uppercase' }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Stack component="span" direction="row" spacing={1} alignItems="center">
+                           <LucideClock size={14} color={new Date(assignment.deadline) < new Date() ? '#ef4444' : '#64748b'} />
+                           <Typography variant="body2" fontWeight={600} color={new Date(assignment.deadline) < new Date() ? '#ef4444' : 'inherit'}>
+                             {new Date(assignment.deadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                           </Typography>
+                        </Stack>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Stack direction="row" spacing={0.5} justifyContent="flex-end">
+                           <Tooltip title="Edit Task">
+                              <IconButton 
+                                size="small" 
+                                onClick={() => handleEdit(assignment)}
+                                sx={{ color: '#64748b', '&:hover': { color: '#3b82f6', bgcolor: 'rgba(59, 130, 246, 0.08)' } }}
+                              >
+                                 <LucideEdit size={18} />
+                              </IconButton>
+                           </Tooltip>
+                           <Tooltip title="Delete Task">
+                              <IconButton 
+                                size="small" 
+                                onClick={() => handleDeleteClick(assignment._id)}
+                                sx={{ color: '#64748b', '&:hover': { color: '#ef4444', bgcolor: 'rgba(239, 68, 68, 0.08)' } }}
+                              >
+                                 <LucideTrash2 size={18} />
+                              </IconButton>
+                           </Tooltip>
+                        </Stack>
+                      </TableCell>
+                    </TableRow>
+                  </Grow>
                 ))}
                 {assignments.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={7} sx={{ py: 10, textAlign: 'center' }}>
-                      <LucideAlertCircle size={40} color="#cbd5e1" style={{ marginBottom: 12 }} />
-                      <Typography color="text.secondary">No work assignments found</Typography>
+                    <TableCell colSpan={7} sx={{ py: 12, textAlign: 'center' }}>
+                      <Box sx={{ opacity: 0.5 }}>
+                        <LucideAlertCircle size={48} />
+                        <Typography variant="h6" sx={{ mt: 2 }}>No assignments found</Typography>
+                        <Typography variant="body2">Start by assigning a task to a member</Typography>
+                      </Box>
                     </TableCell>
                   </TableRow>
                 )}
@@ -414,6 +445,15 @@ export default function WorkManager() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        open={openConfirm}
+        title="Delete Assignment"
+        message="Are you sure you want to delete this work assignment? This cannot be undone."
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setOpenConfirm(false)}
+      />
     </Box>
   );
 }

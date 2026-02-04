@@ -17,22 +17,35 @@ export default function AboutSection() {
   const leftRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Animations temporarily disabled for debugging visibility
-    /*
     const ctx = gsap.context(() => {
-      gsap.from(leftRef.current, {
-        x: -40,
-        duration: 1.2,
+      // Animate text content
+      gsap.from('.about-animate', {
+        y: 40,
+        opacity: 0,
+        duration: 1,
+        stagger: 0.2,
         ease: 'power3.out',
         scrollTrigger: {
           trigger: containerRef.current,
-          start: 'top 85%',
+          start: 'top 80%',
+        }
+      });
+
+      // Animate image grid
+      gsap.from('.about-image', {
+        scale: 0.8,
+        opacity: 0,
+        duration: 1,
+        stagger: 0.15,
+        ease: 'back.out(1.7)',
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: 'top 70%',
         }
       });
     }, containerRef);
 
     return () => ctx.revert();
-    */
   }, []);
 
   const images = [
@@ -84,6 +97,7 @@ export default function AboutSection() {
 
               <Typography 
                 variant="h2" 
+                className="about-animate"
                 sx={{ 
                   fontWeight: 950, 
                   color: '#0f172a',
@@ -115,7 +129,7 @@ export default function AboutSection() {
                 </span>
               </Typography>
 
-              <Stack spacing={4} sx={{ mb: 7 }}>
+              <Stack spacing={4} sx={{ mb: 7 }} className="about-animate">
                 <Typography 
                   variant="body1" 
                   sx={{ 
@@ -183,8 +197,9 @@ export default function AboutSection() {
               }}
             >
               {images.map((img, idx) => (
-                <Box
+                 <Box
                   key={idx}
+                  className="about-image"
                   sx={{
                     position: 'relative',
                     height: { xs: 150, md: 240 },

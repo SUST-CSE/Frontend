@@ -9,10 +9,10 @@ import {
   Stack, 
   Chip, 
   Button,
-  CircularProgress,
   TextField,
   InputAdornment,
-  Avatar
+  Avatar,
+  Skeleton
 } from '@mui/material';
 import { LucideSearch, LucideArrowRight, LucidePenTool } from 'lucide-react';
 import gsap from 'gsap';
@@ -133,9 +133,32 @@ export default function BlogsPage() {
         </Stack>
 
         {isLoading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
-            <CircularProgress size={60} thickness={4} sx={{ color: '#16a34a' }} />
-          </Box>
+          <Grid container spacing={4}>
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Grid size={{ xs: 12, md: 6, lg: 4 }} key={i}>
+                <Paper sx={{ height: '100%', borderRadius: 4, overflow: 'hidden', border: '1px solid #e5e7eb' }}>
+                  <Box sx={{ p: 4, flexGrow: 1 }}>
+                    <Skeleton width={100} height={24} sx={{ mb: 2, borderRadius: 1 }} />
+                    <Skeleton width="90%" height={32} sx={{ mb: 1 }} />
+                    <Skeleton width="80%" height={32} sx={{ mb: 2 }} />
+                    <Skeleton width="100%" height={20} />
+                    <Skeleton width="100%" height={20} />
+                    <Skeleton width="70%" height={20} sx={{ mb: 3 }} />
+                  </Box>
+                  <Box sx={{ p: 3, bgcolor: '#f8fafc', borderTop: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Stack direction="row" spacing={1.5} alignItems="center">
+                      <Skeleton variant="circular" width={32} height={32} />
+                      <Box>
+                        <Skeleton width={80} height={16} />
+                        <Skeleton width={60} height={12} />
+                      </Box>
+                    </Stack>
+                    <Skeleton variant="circular" width={24} height={24} />
+                  </Box>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
         ) : (
           <Grid container spacing={4} ref={containerRef}>
             {filteredBlogs.length > 0 ? filteredBlogs.map((blog: IBlog) => (

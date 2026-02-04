@@ -3,6 +3,13 @@
 import { useMemo } from 'react';
 import { Box, Container, Grid, Typography, Paper } from '@mui/material';
 import { LucideUsers, LucideBookOpen, LucideTrophy, LucideBriefcase } from 'lucide-react';
+import { useEffect, useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 const STATIC_STATS = [
   { label: 'Students', value: 1200, icon: LucideUsers, color: '#3b82f6' },
@@ -14,21 +21,65 @@ const STATIC_STATS = [
 export default function Stats() {
   // Demonstrating useMemo for data processing as requested
   const processedStats = useMemo(() => {
-    // In a real app, this might involve complex calculations from an API response
     return STATIC_STATS.map(stat => ({
       ...stat,
       displayValue: stat.suffix ? `${stat.value}${stat.suffix}` : stat.value.toLocaleString(),
     }));
   }, []);
 
+  const statsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      // Stagger entrance
+      gsap.from('.stat-box', {
+        y: 30,
+        opacity: 0,
+        duration: 0.8,
+        stagger: 0.15,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: statsRef.current,
+          start: 'top 85%',
+        }
+      });
+
+      // Number counting animation
+      const stats = document.querySelectorAll('.stat-number');
+      stats.forEach((stat) => {
+        const value = parseInt(stat.getAttribute('data-value') || '0');
+        gsap.fromTo(stat, 
+          { textContent: 0 },
+          { 
+            textContent: value, 
+            duration: 2, 
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: stat,
+              start: 'top 95%',
+            },
+            snap: { textContent: 1 },
+            onUpdate: function() {
+              const suffix = stat.getAttribute('data-suffix') || '';
+              this.targets()[0].innerHTML = Math.ceil(this.targets()[0].textContent).toLocaleString() + suffix;
+            }
+          }
+        );
+      });
+    }, statsRef);
+
+    return () => ctx.revert();
+  }, [processedStats]);
+
   return (
-    <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+    <Box ref={statsRef} sx={{ py: { xs: 6, md: 10 }, bgcolor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
       <Container maxWidth="lg">
         <Grid container spacing={4}>
           {processedStats.map((stat, idx) => (
             <Grid size={{ xs: 12, sm: 6, md: 3 }} key={idx}>
               <Paper
                 elevation={0}
+                className="stat-box"
                 sx={{
                   p: { xs: 3, sm: 4 },
                   textAlign: 'center',
@@ -55,7 +106,13 @@ export default function Stats() {
                 >
                   <stat.icon size={28} />
                 </Box>
-                <Typography variant="h3" sx={{ fontWeight: 800, mb: 0.5, color: '#0f172a', fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' } }}>
+                <Typography 
+                  variant="h3" 
+                  className="stat-number"
+                  data-value={stat.value}
+                  data-suffix={stat.suffix || ''}
+                  sx={{ fontWeight: 800, mb: 0.5, color: '#0f172a', fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' } }}
+                >
                   {stat.displayValue}
                 </Typography>
                 <Typography variant="body1" sx={{ color: '#64748b', fontWeight: 600, letterSpacing: 0.5 }}>

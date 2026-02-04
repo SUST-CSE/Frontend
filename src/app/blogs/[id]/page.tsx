@@ -9,11 +9,12 @@ import {
   Stack, 
   Chip, 
   Button, 
-  CircularProgress, 
-  Paper
+  Paper,
+  Skeleton
 } from '@mui/material';
 import { LucideArrowLeft, LucideCalendar, LucideClock, LucideShare2 } from 'lucide-react';
 import { useGetBlogByIdQuery } from '@/features/blog/blogApi';
+import toast from 'react-hot-toast';
 
 export default function BlogDetailsPage() {
   const { id } = useParams();
@@ -32,8 +33,27 @@ export default function BlogDetailsPage() {
 
   if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <CircularProgress size={60} thickness={4} sx={{ color: '#16a34a' }} />
+      <Box sx={{ py: 8, bgcolor: '#ffffff', minHeight: '100vh' }}>
+        <Container maxWidth="md">
+          <Skeleton width={150} height={32} sx={{ mb: 4 }} />
+          <Skeleton width={100} height={32} sx={{ mb: 3 }} />
+          <Skeleton width="100%" height={80} sx={{ mb: 4 }} />
+          <Box sx={{ mb: 6, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Stack direction="row" spacing={2} alignItems="center">
+              <Skeleton variant="circular" width={48} height={48} />
+              <Box>
+                <Skeleton width={150} height={24} />
+                <Skeleton width={200} height={16} />
+              </Box>
+            </Stack>
+            <Skeleton width={100} height={40} sx={{ borderRadius: 4 }} />
+          </Box>
+          <Skeleton variant="rectangular" height={400} sx={{ borderRadius: 4, mb: 6 }} />
+          <Skeleton width="100%" height={24} sx={{ mb: 1 }} />
+          <Skeleton width="100%" height={24} sx={{ mb: 1 }} />
+          <Skeleton width="100%" height={24} sx={{ mb: 1 }} />
+          <Skeleton width="60%" height={24} />
+        </Container>
       </Box>
     );
   }
@@ -114,7 +134,7 @@ export default function BlogDetailsPage() {
                 }).catch(console.error);
               } else {
                 navigator.clipboard.writeText(url);
-                window.alert('Link copied to clipboard!');
+                toast.success('Link copied to clipboard!');
               }
             }}
             sx={{ borderRadius: 4, textTransform: 'none', color: '#64748b', borderColor: '#e2e8f0' }}

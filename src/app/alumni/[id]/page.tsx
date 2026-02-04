@@ -10,10 +10,9 @@ import {
   Chip,
   Paper,
   Avatar,
-  CircularProgress,
-  Divider,
   Button,
   Grid,
+  Skeleton
 } from '@mui/material';
 import { LucideBuilding, LucideBriefcase, LucideLinkedin, LucideMail, LucideQuote } from 'lucide-react';
 
@@ -24,8 +23,42 @@ export default function AlumniDetailPage() {
 
   if (isLoading) {
     return (
-      <Box sx={{ py: 20, textAlign: 'center' }}>
-        <CircularProgress color="success" />
+      <Box sx={{ bgcolor: '#f8fafc', minHeight: '100vh' }}>
+        <Box sx={{ pt: { xs: 10, md: 15 }, pb: { xs: 8, md: 12 }, background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)' }}>
+          <Container maxWidth="lg">
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={6} alignItems="center">
+              <Skeleton variant="circular" width={240} height={240} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+              <Box sx={{ flexGrow: 1, width: '100%' }}>
+                <Skeleton width={100} height={32} sx={{ mb: 2, bgcolor: 'rgba(255,255,255,0.1)' }} />
+                <Skeleton width="60%" height={80} sx={{ mb: 2, bgcolor: 'rgba(255,255,255,0.1)' }} />
+                <Skeleton width="40%" height={32} sx={{ mb: 4, bgcolor: 'rgba(255,255,255,0.1)' }} />
+                <Stack direction="row" spacing={2}>
+                  <Skeleton width={120} height={40} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                  <Skeleton width={120} height={40} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                </Stack>
+              </Box>
+            </Stack>
+          </Container>
+        </Box>
+        <Container maxWidth="lg" sx={{ py: 10 }}>
+          <Grid container spacing={8}>
+            <Grid size={{ xs: 12, md: 7 }}>
+              <Skeleton width="40%" height={48} sx={{ mb: 4 }} />
+              <Skeleton width="100%" height={20} sx={{ mb: 1 }} />
+              <Skeleton width="100%" height={20} sx={{ mb: 1 }} />
+              <Skeleton width="100%" height={20} sx={{ mb: 1 }} />
+              <Skeleton width="80%" height={20} sx={{ mb: 8 }} />
+              <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 6 }} />
+            </Grid>
+            <Grid size={{ xs: 12, md: 5 }}>
+              <Skeleton width="60%" height={32} sx={{ mb: 3 }} />
+              <Stack spacing={4}>
+                <Skeleton width="100%" height={60} />
+                <Skeleton width="100%" height={60} />
+              </Stack>
+            </Grid>
+          </Grid>
+        </Container>
       </Box>
     );
   }

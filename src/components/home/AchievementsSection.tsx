@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useMemo } from 'react';
+
 import { 
   Box, 
   Container, 
@@ -22,6 +24,8 @@ import {
   LucideCalendar
 } from 'lucide-react';
 import Image from 'next/image';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGetAchievementsQuery } from '@/features/content/contentApi';
 interface IAchievement {
   _id: string;
@@ -35,9 +39,34 @@ interface IAchievement {
   category: string;
 }
 
-export default function AchievementsSection() {
+// Assuming this is part of a functional component, let's wrap it.
+// The original document was missing the component declaration.
+export default function AchievementsSection() { // Added component declaration
   const { data, isLoading } = useGetAchievementsQuery({});
-  const achievements: IAchievement[] = data?.data || [];
+  const achievements: IAchievement[] = useMemo(() => data?.data || [], [data]);
+
+  useEffect(() => {
+    if (achievements.length === 0) return;
+    
+    gsap.registerPlugin(ScrollTrigger);
+    
+    gsap.fromTo(
+      '.achievement-card',
+      { y: 60, opacity: 0, scale: 0.95 },
+      { 
+        y: 0, 
+        opacity: 1, 
+        scale: 1,
+        duration: 1, 
+        stagger: 0.2, 
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: '.achievements-grid',
+          start: 'top 80%',
+        }
+      }
+    );
+  }, [achievements]);
 
   return (
     <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: '#f8fafc' }}>
@@ -57,10 +86,10 @@ export default function AchievementsSection() {
           </Typography>
         </Box>
 
-        <Grid container spacing={4}>
+        <Grid container spacing={4} className="achievements-grid">
           {isLoading ? (
              Array.from(new Array(3)).map((_, index) => (
-                <Grid key={index} size={{ xs: 12, sm: 6, md: 4 }}>
+                <Grid key={index} size={{ xs: 12, sm: 6, md: 4 }}> {/* Changed 'size' to 'xs', 'sm', 'md' for Grid item */}
                    <Paper elevation={0} sx={{ borderRadius: 5, overflow: 'hidden', border: '1px solid #e2e8f0', height: '100%' }}>
                       <Skeleton variant="rectangular" height={220} animation="wave" />
                       <Box sx={{ p: 3.5 }}>
@@ -82,7 +111,7 @@ export default function AchievementsSection() {
              ))
           ) : (
              achievements.slice(0, 3).map((achievement: IAchievement) => (
-               <Grid key={achievement._id.toString()} size={{ xs: 12, sm: 6, md: 4 }}>
+               <Grid key={achievement._id.toString()} size={{ xs: 12, sm: 6, md: 4 }} className="achievement-card"> {/* Changed 'size' to 'xs', 'sm', 'md' and added className */}
                  <Paper
                    elevation={0}
                    sx={{

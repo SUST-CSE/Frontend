@@ -20,7 +20,6 @@ import {
   TableRow,
   Chip,
   MenuItem,
-  CircularProgress,
   Autocomplete,
   Switch,
   FormControlLabel
@@ -48,16 +47,20 @@ const Designations = [
 ];
 
 interface MemberFormData {
-  user: any; // User Object
+  user: { _id: string, name: string, email: string } | null;
   designation: string;
   tenureStart: string;
   tenureEnd?: string;
   isCurrent: boolean;
   image?: File;
-  session: string; // Add session
+  session: string;
 }
 
 import { useParams } from 'next/navigation';
+
+import toast from 'react-hot-toast';
+import ConfirmDialog from '@/components/common/ConfirmDialog';
+import { Skeleton } from '@mui/material';
 
 export default function AdminSocietyMembersPage() {
   const router = useRouter();
@@ -65,6 +68,9 @@ export default function AdminSocietyMembersPage() {
   const [activeTab, setActiveTab] = useState<'current' | 'former'>('current');
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [removeId, setRemoveId] = useState<string | null>(null);
 
   const { data: societyData } = useGetSocietyByIdQuery(societyId, { skip: !societyId });
   const { data: currentMembersData, isLoading: loadingCurrent } = useGetSocietyMembersQuery(societyId, { skip: !societyId });
@@ -77,7 +83,7 @@ export default function AdminSocietyMembersPage() {
   const members = activeTab === 'current' ? currentMembersData?.data : formerMembersData?.data;
   const isLoading = activeTab === 'current' ? loadingCurrent : loadingFormer;
 
-  const { control, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<MemberFormData>({
+  const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<MemberFormData>({
     defaultValues: {
       user: null,
       designation: 'EXECUTIVE_MEMBER',
@@ -87,10 +93,10 @@ export default function AdminSocietyMembersPage() {
     }
   });
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: MemberFormData) => {
     try {
       const formData = new FormData();
-      formData.append('user', data.user?._id);
+      if (data.user?._id) formData.append('user', data.user._id);
       formData.append('designation', data.designation);
       formData.append('tenureStart', data.tenureStart);
       if (data.tenureEnd) formData.append('tenureEnd', data.tenureEnd);
@@ -99,24 +105,42 @@ export default function AdminSocietyMembersPage() {
       if (data.image) formData.append('image', data.image);
 
       await addMember({ societyId, data: formData }).unwrap();
+      toast.success('Member added successfully');
       setOpenAddDialog(false);
       reset();
-    } catch (error) {
+    } catch (error: unknown) {
+      const err = error as { data?: { message?: string } };
+      toast.error(err.data?.message || "Failed to add member");
       console.error("Failed to add member", error);
-      alert("Failed to add member. Please try again.");
     }
   };
 
   const handleRemove = async (memberId: string) => {
-    if(confirm("Are you sure you want to remove this member?")) {
-      await removeMember({ societyId, memberId });
+    setRemoveId(memberId);
+    setConfirmOpen(true);
+  };
+
+  const confirmRemove = async () => {
+    if (!removeId) return;
+    try {
+      await removeMember({ societyId, memberId: removeId }).unwrap();
+      toast.success('Member removed successfully');
+      setConfirmOpen(false);
+    } catch (error) {
+      toast.error('Failed to remove member');
+      console.error(error);
     }
   };
 
-  const selectedUser = watch('user'); // Just to triger re-renders if needed, or manage state logic
-
   return (
     <Box>
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Remove Member"
+        message="Are you sure you want to remove this member from the organization?"
+        onConfirm={confirmRemove}
+        onCancel={() => setConfirmOpen(false)}
+      />
       <Button 
         startIcon={<LucideArrowLeft size={18} />} 
         onClick={() => router.back()} 
@@ -166,7 +190,13 @@ export default function AdminSocietyMembersPage() {
       </Stack>
 
       <Paper elevation={0} sx={{ borderRadius: 4, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-        {isLoading ? <Box sx={{ p: 4, display: 'flex', justifyContent: 'center' }}><CircularProgress /></Box> : (
+        {isLoading ? (
+          <Box sx={{ p: 4 }}>
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Skeleton key={i} height={60} sx={{ mb: 1 }} />
+            ))}
+          </Box>
+        ) : (
           <TableContainer>
             <Table>
               <TableHead sx={{ bgcolor: '#f8fafc' }}>

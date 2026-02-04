@@ -45,9 +45,14 @@ export const theme = createTheme({
           borderRadius: 8,
           padding: '10px 24px',
           boxShadow: 'none',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           '&:hover': {
-            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+            boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+            transform: 'translateY(-2px)',
           },
+          '&:active': {
+            transform: 'translateY(0)',
+          }
         },
         containedPrimary: {
           backgroundColor: '#000000',
@@ -64,8 +69,13 @@ export const theme = createTheme({
         root: {
           border: '1px solid #e5e7eb',
           boxShadow: 'none',
+          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+          '&:hover': {
+            boxShadow: '0 20px 40px rgba(0,0,0,0.06)',
+            borderColor: '#e2e8f0',
+          },
         },
       },
-    },
+    }
   },
 });

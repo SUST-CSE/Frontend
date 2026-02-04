@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Container, Typography, Grid, Paper, Avatar, Stack, Chip, CircularProgress, Button, Pagination } from '@mui/material';
+import { Box, Container, Typography, Grid, Paper, Avatar, Stack, Chip, Button, Pagination, Skeleton } from '@mui/material';
 import { useState } from 'react';
 import { useGetFacultyQuery } from '@/features/user/userApi';
 import { LucideMail, LucideLinkedin, LucideGlobe } from 'lucide-react';
@@ -15,8 +15,40 @@ export default function FacultyPage() {
   const totalPages = data?.data?.totalPages || 1;
 
   if (isLoading) return (
-    <Box sx={{ display: 'flex', justifyContent: 'center', py: 20 }}>
-      <CircularProgress />
+    <Box sx={{ py: 8, bgcolor: '#f8fafc', minHeight: '100vh' }}>
+      <Container maxWidth="lg">
+        <Skeleton width={300} height={60} sx={{ mb: 2 }} />
+        <Skeleton width={600} height={24} sx={{ mb: 8 }} />
+        <Grid container spacing={4}>
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={i}>
+              <Paper sx={{ p: 4, borderRadius: 4, border: '1px solid rgba(0,0,0,0.05)', height: '100%' }}>
+                <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
+                   <Skeleton variant="circular" width={80} height={80} />
+                   <Box sx={{ flex: 1 }}>
+                      <Skeleton width="80%" height={24} />
+                      <Skeleton width="60%" height={16} />
+                      <Skeleton width="40%" height={14} />
+                   </Box>
+                </Stack>
+                <Stack direction="row" spacing={1} sx={{ mb: 3 }}>
+                   <Skeleton width={60} height={24} sx={{ borderRadius: 1 }} />
+                   <Skeleton width={80} height={24} sx={{ borderRadius: 1 }} />
+                   <Skeleton width={70} height={24} sx={{ borderRadius: 1 }} />
+                </Stack>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 'auto' }}>
+                   <Stack direction="row" spacing={2}>
+                      <Skeleton variant="circular" width={24} height={24} />
+                      <Skeleton variant="circular" width={24} height={24} />
+                      <Skeleton variant="circular" width={24} height={24} />
+                   </Stack>
+                   <Skeleton width={100} height={32} sx={{ borderRadius: 2 }} />
+                </Box>
+              </Paper>
+            </Grid>
+          ))}
+        </Grid>
+      </Container>
     </Box>
   );
 
@@ -31,7 +63,7 @@ export default function FacultyPage() {
         </Typography>
 
         <Grid container spacing={4}>
-          {faculty.map((member: any) => (
+          {faculty.map((member: { _id: string; name: string; designation: string; profileImage?: string; researchInterests?: string[]; email?: string; socialLinks?: { linkedin?: string; website?: string }; experiences?: { company: string }[] }) => (
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={member._id}>
               <Paper 
                 elevation={0} 

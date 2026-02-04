@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Container, Typography, Button, Paper, CircularProgress, Stack } from '@mui/material';
+import { Box, Container, Typography, Button, Paper, Stack, Skeleton } from '@mui/material';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -14,8 +14,24 @@ export default function ProjectPage() {
 
   if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-        <CircularProgress />
+      <Box sx={{ py: 10, bgcolor: '#f8fafc', minHeight: '100vh' }}>
+        <Container maxWidth="lg">
+          <Skeleton width={120} height={40} sx={{ mb: 4 }} />
+          <Paper elevation={0} sx={{ p: { xs: 4, md: 8 }, borderRadius: 4, border: '1px solid #e2e8f0' }}>
+            <Stack spacing={6} alignItems="center">
+              <Skeleton variant="rectangular" width={120} height={120} sx={{ borderRadius: 3 }} />
+              <Skeleton width="60%" height={80} />
+              <Skeleton width="30%" height={32} />
+              <Box sx={{ width: '100%', maxWidth: 800 }}>
+                <Skeleton width="100%" height={24} />
+                <Skeleton width="100%" height={24} />
+                <Skeleton width="100%" height={24} />
+                <Skeleton width="70%" height={24} />
+              </Box>
+              <Skeleton width={250} height={60} sx={{ borderRadius: 2 }} />
+            </Stack>
+          </Paper>
+        </Container>
       </Box>
     );
   }

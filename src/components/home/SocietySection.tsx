@@ -7,10 +7,13 @@ import {
   Typography, 
   Stack, 
   Button, 
-  CircularProgress,
   Paper,
-  Avatar
+  Avatar,
+  Skeleton,
+  Grid
 } from '@mui/material';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { LucideArrowRight, LucideUsers, LucideAward } from 'lucide-react';
 import Link from 'next/link';
 import { useKeenSlider } from 'keen-slider/react';
@@ -41,9 +44,10 @@ interface ISociety {
 export default function SocietySection() {
   const { data: societiesData, isLoading: isLoadingSocieties } = useGetSocietiesQuery({});
   
+
   const societies: ISociety[] = societiesData?.data || [];
-  const cseSociety = societies.find((s) => 
-    s.name.toUpperCase().includes('CSE SOCIETY') || 
+  const cseSociety = societies.find((s) =>
+    s.name.toUpperCase().includes('CSE SOCIETY') ||
     s.name.toUpperCase().includes('CSE SOCIET')
   ) || societies[0];
 
@@ -83,6 +87,25 @@ export default function SocietySection() {
   });
 
   useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+    
+    // Animate title and cards on scroll
+    gsap.fromTo(
+      '.society-stagger',
+      { y: 50, opacity: 0 },
+      { 
+        y: 0, 
+        opacity: 1, 
+        duration: 1.2, 
+        stagger: 0.2, 
+        ease: 'power4.out',
+        scrollTrigger: {
+          trigger: '.society-trigger',
+          start: 'top 80%',
+        }
+      }
+    );
+
     let interval: NodeJS.Timeout;
     if (!pause && internalSlider.current && members.length > 0) {
       interval = setInterval(() => {
@@ -94,8 +117,31 @@ export default function SocietySection() {
 
   if (isLoadingSocieties || isLoadingMembers) {
     return (
-      <Box sx={{ py: 8, textAlign: 'center' }}>
-        <CircularProgress color="success" />
+      <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: '#0f172a' }}>
+        <Container maxWidth="lg">
+          <Stack direction="row" justifyContent="space-between" alignItems="flex-end" sx={{ mb: 8 }}>
+             <Box>
+                <Skeleton width={120} height={20} sx={{ mb: 2, bgcolor: 'rgba(255,255,255,0.05)' }} />
+                <Skeleton width={350} height={60} sx={{ bgcolor: 'rgba(255,255,255,0.05)' }} />
+             </Box>
+             <Skeleton width={180} height={36} sx={{ bgcolor: 'rgba(255,255,255,0.05)' }} />
+          </Stack>
+          <Grid container spacing={3}>
+            {[1, 2, 3, 4].map((i) => (
+              <Grid size={{ xs: 12, sm: 6, md: 3 }} key={i}>
+                <Paper sx={{ p: 4, height: '100%', borderRadius: 6, bgcolor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <Skeleton variant="circular" width={120} height={120} sx={{ mb: 2, bgcolor: 'rgba(255,255,255,0.05)' }} />
+                  <Skeleton width="80%" height={24} sx={{ mb: 1, bgcolor: 'rgba(255,255,255,0.05)' }} />
+                  <Skeleton width="60%" height={16} sx={{ mb: 3, bgcolor: 'rgba(255,255,255,0.05)' }} />
+                  <Box sx={{ mt: 'auto', p: 2, width: '100%', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                    <Skeleton width="100%" height={12} sx={{ mb: 0.5, bgcolor: 'rgba(255,255,255,0.05)' }} />
+                    <Skeleton width="100%" height={12} sx={{ bgcolor: 'rgba(255,255,255,0.05)' }} />
+                  </Box>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
       </Box>
     );
   }
@@ -119,7 +165,7 @@ export default function SocietySection() {
 
       <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
         <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ md: 'flex-end' }} sx={{ mb: 8 }}>
-          <Box>
+          <Box className="society-stagger society-trigger">
             <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
               <LucideUsers size={20} color="#16a34a" />
               <Typography variant="overline" fontWeight={700} sx={{ letterSpacing: 2, color: '#16a34a' }}>
@@ -145,7 +191,7 @@ export default function SocietySection() {
           </Button>
         </Stack>
 
-        <Box ref={sliderRef} className="keen-slider" sx={{ alignItems: 'stretch' }}>
+        <Box ref={sliderRef} className="keen-slider society-stagger" sx={{ alignItems: 'stretch' }}>
           {members.map((member) => (
             <Box key={member._id} className="keen-slider__slide" sx={{ py: 2, px: 1 }}>
               <Paper

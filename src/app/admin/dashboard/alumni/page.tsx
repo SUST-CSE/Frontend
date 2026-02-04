@@ -29,16 +29,36 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  CircularProgress,
   Stack,
   Avatar,
   Chip,
 } from '@mui/material';
 import { LucidePlus, LucideEdit, LucideTrash2 } from 'lucide-react';
 
+import toast from 'react-hot-toast';
+import ConfirmDialog from '@/components/common/ConfirmDialog';
+import { Skeleton } from '@mui/material';
+
+interface Alumni {
+  _id: string;
+  name: string;
+  batch: string;
+  currentCompany: string;
+  currentPosition: string;
+  description?: string;
+  quotes?: string;
+  previousCompanies?: string[];
+  linkedIn?: string;
+  facebook?: string;
+  instagram?: string;
+  website?: string;
+  email?: string;
+  profileImage?: string;
+}
+
 export default function AdminAlumniPage() {
   const [open, setOpen] = useState(false);
-  const [editingAlumni, setEditingAlumni] = useState<any>(null);
+  const [editingAlumni, setEditingAlumni] = useState<null | Alumni>(null);
   const [formData, setFormData] = useState({
     name: '',
     batch: '',
@@ -59,6 +79,9 @@ export default function AdminAlumniPage() {
   const [openSessionDialog, setOpenSessionDialog] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
 
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
   const { data, isLoading } = useGetAllAlumniQuery({});
   const [createAlumni, { isLoading: isCreating }] = useCreateAlumniMutation();
   const [updateAlumni, { isLoading: isUpdating }] = useUpdateAlumniMutation();
@@ -71,7 +94,7 @@ export default function AdminAlumniPage() {
 
   const alumni = data?.data?.alumni || [];
 
-  const handleOpen = (alumniData?: any) => {
+  const handleOpen = (alumniData?: Alumni) => {
     if (alumniData) {
       setEditingAlumni(alumniData);
       setFormData({
@@ -80,8 +103,8 @@ export default function AdminAlumniPage() {
         currentCompany: alumniData.currentCompany,
         currentPosition: alumniData.currentPosition,
         previousCompanies: alumniData.previousCompanies?.join(', ') || '',
-        description: alumniData.description,
-        quotes: alumniData.quotes,
+        description: alumniData.description || '',
+        quotes: alumniData.quotes || '',
         linkedIn: alumniData.linkedIn || '',
         facebook: alumniData.facebook || '',
         instagram: alumniData.instagram || '',
@@ -126,7 +149,6 @@ export default function AdminAlumniPage() {
     submitData.append('description', formData.description);
     submitData.append('quotes', formData.quotes);
 
-    // Handle previous companies as array
     if (formData.previousCompanies) {
       const companiesArray = formData.previousCompanies.split(',').map((c) => c.trim()).filter(Boolean);
       companiesArray.forEach((company) => {
@@ -143,32 +165,42 @@ export default function AdminAlumniPage() {
 
     try {
       if (editingAlumni) {
-        // Send FormData directly for updates to support file uploads
         await updateAlumni({ id: editingAlumni._id, formData: submitData }).unwrap();
+        toast.success('Alumni updated successfully');
       } else {
         await createAlumni(submitData).unwrap();
+        toast.success('Alumni created successfully');
       }
       handleClose();
     } catch (error) {
+      toast.error('Failed to save alumni');
       console.error('Failed to save alumni:', error);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this alumni?')) {
-      try {
-        await deleteAlumni(id).unwrap();
-      } catch (error) {
-        console.error('Failed to delete alumni:', error);
-      }
+    setDeleteId(id);
+    setConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+    try {
+      await deleteAlumni(deleteId).unwrap();
+      toast.success('Alumni deleted successfully');
+      setConfirmOpen(false);
+    } catch (error) {
+      toast.error('Failed to delete alumni');
+      console.error('Failed to delete alumni:', error);
     }
   };
 
   if (isLoading) {
     return (
-      <Box sx={{ py: 20, textAlign: 'center' }}>
-        <CircularProgress />
-      </Box>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Skeleton width={300} height={60} sx={{ mb: 4 }} />
+        <Skeleton variant="rectangular" height={400} sx={{ borderRadius: 2 }} />
+      </Container>
     );
   }
 
@@ -226,7 +258,7 @@ export default function AdminAlumniPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              alumni.map((person: any) => (
+              alumni.map((person: Alumni) => (
                 <TableRow key={person._id} hover>
                   <TableCell>
                     <Avatar src={person.profileImage} alt={person.name} sx={{ width: 50, height: 50 }} />
@@ -408,7 +440,7 @@ export default function AdminAlumniPage() {
             SelectProps={{ native: true }}
           >
             <option value=""></option>
-            {students.map((s: any) => (
+            {students.map((s: { _id: string, name: string, studentId: string }) => (
               <option key={s._id} value={s._id}>{s.name} ({s.studentId})</option>
             ))}
           </TextField>
@@ -423,7 +455,11 @@ export default function AdminAlumniPage() {
                 await addAlumniFromUser({ userId }).unwrap();
                 setOpenUserDialog(false);
                 setUserId('');
-              } catch (err) { console.error(err); }
+                toast.success('User updated to alumni successfully');
+              } catch (err) { 
+                toast.error('Failed to add alumni from user');
+                console.error(err); 
+              }
             }}
           >
             {isAddingFromUser ? 'Adding...' : 'Add as Alumni'}
@@ -455,16 +491,27 @@ export default function AdminAlumniPage() {
             onClick={async () => {
               try {
                 await graduateSession({ session }).unwrap();
-                alert(`All students from session ${session} have been marked as alumni.`);
+                toast.success(`All students from session ${session} have been marked as alumni.`);
                 setOpenSessionDialog(false);
                 setSession('');
-              } catch (err) { console.error(err); }
+              } catch (err) { 
+                toast.error('Failed to graduate session');
+                console.error(err); 
+              }
             }}
           >
             {isGraduating ? 'Processing...' : 'Mark as Alumni'}
           </Button>
         </DialogActions>
       </Dialog>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Delete Alumni"
+        message="Are you sure you want to delete this alumni record? This action cannot be undone."
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </Container>
   );
 }

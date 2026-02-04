@@ -9,19 +9,19 @@ import {
   Button, 
   Stack, 
   Chip,
-  CircularProgress
+  Skeleton
 } from '@mui/material';
 import { LucideExternalLink, LucideUsers, LucideCalendar } from 'lucide-react';
 import Link from 'next/link';
 import gsap from 'gsap';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import { useGetSocietiesQuery } from '@/features/society/societyApi';
 
 export default function SocietiesPage() {
   const { data, isLoading } = useGetSocietiesQuery({});
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const societies = data?.data || [];
+  const societies = useMemo(() => data?.data || [], [data]);
 
   useEffect(() => {
     if (!isLoading && societies.length > 0) {
@@ -47,12 +47,31 @@ export default function SocietiesPage() {
         </Box>
 
         {isLoading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
-            <CircularProgress size={60} thickness={4} sx={{ color: '#002147' }} />
-          </Box>
+          <Grid container spacing={4}>
+            {[1, 2, 3, 4].map((i) => (
+              <Grid size={{ xs: 12, md: 6 }} key={i}>
+                <Paper sx={{ p: 4, height: '100%', borderRadius: 4, border: '1px solid rgba(0,0,0,0.05)' }}>
+                  <Stack direction="row" spacing={3} sx={{ mb: 3 }}>
+                    <Skeleton variant="rectangular" width={80} height={80} sx={{ borderRadius: 3 }} />
+                    <Box sx={{ flex: 1 }}>
+                      <Skeleton width={80} height={24} sx={{ mb: 1 }} />
+                      <Skeleton width="60%" height={32} />
+                    </Box>
+                  </Stack>
+                  <Skeleton width="100%" height={20} />
+                  <Skeleton width="100%" height={20} />
+                  <Skeleton width="80%" height={20} sx={{ mb: 4 }} />
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Skeleton width={100} height={20} />
+                    <Skeleton width={120} height={36} sx={{ borderRadius: 2 }} />
+                  </Box>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
         ) : (
           <Grid container spacing={4} ref={containerRef}>
-            {societies.map((society: any) => (
+            {societies.map((society: { _id: string; logo?: string; name: string; category: string; description: string; foundedDate: string }) => (
               <Grid size={{ xs: 12, md: 6 }} key={society._id} className="soc-card">
                 <Paper
                   elevation={0}

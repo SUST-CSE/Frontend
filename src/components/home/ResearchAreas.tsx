@@ -2,7 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { Box, Container, Grid, Typography, Button, Stack, Paper } from '@mui/material';
-import Link from 'next/link'; // Added import
+import Link from 'next/link';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
 import { useKeenSlider } from 'keen-slider/react';
 import 'keen-slider/keen-slider.min.css';
 import { 
@@ -87,14 +93,31 @@ export default function ResearchAreas() {
   });
 
   useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.from('.research-card', {
+        y: 40,
+        opacity: 0,
+        duration: 0.8,
+        stagger: 0.15,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: '.research-trigger',
+          start: 'top 80%',
+        }
+      });
+    }, sliderRef);
+
     let interval: NodeJS.Timeout;
     if (!pause && instanceRef.current) {
       interval = setInterval(() => {
         instanceRef.current?.next();
       }, timer);
     }
-    return () => clearInterval(interval);
-  }, [pause, instanceRef]);
+    return () => {
+      clearInterval(interval);
+      ctx.revert();
+    };
+  }, [pause, instanceRef, sliderRef]);
 
   // Split RESEARCH_AREAS into groups of 4 for the 2x2 grid look per slide
   const slides = [
@@ -178,14 +201,14 @@ export default function ResearchAreas() {
           </Grid>
 
           {/* Right Slider */}
-          <Grid size={{ xs: 12, md: 7.5 }}>
+          <Grid size={{ xs: 12, md: 7.5 }} className="research-trigger">
             <Box sx={{ position: 'relative' }}>
               <Box ref={sliderRef} className="keen-slider" sx={{ overflow: 'hidden' }}>
                 {slides.map((group, sIdx) => (
                   <Box key={sIdx} className="keen-slider__slide">
                     <Grid container spacing={3}>
                       {group.map((area, aIdx) => (
-                        <Grid size={{ xs: 12, sm: 6 }} key={aIdx}>
+                        <Grid size={{ xs: 12, sm: 6 }} key={aIdx} className="research-card">
                           <Paper
                             elevation={0}
                             sx={{

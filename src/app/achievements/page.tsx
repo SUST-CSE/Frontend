@@ -8,13 +8,12 @@ import {
   Breadcrumbs,
   Link as MuiLink,
   Stack,
-  CircularProgress,
+  Skeleton,
   Grid,
   Paper,
   Chip,
   Tabs,
   Tab,
-  Fade,
   Grow,
   InputBase
 } from '@mui/material';
@@ -41,22 +40,35 @@ const CATEGORIES = [
   { id: 'OTHER', label: 'Others' },
 ];
 
+interface Achievement {
+  _id: string;
+  title: string;
+  description: string;
+  category: string;
+  competitionName?: string;
+  teamName?: string;
+  position?: string;
+  date: string;
+  image?: string;
+}
+
 export default function AchievementsPage() {
   const [activeCategory, setActiveCategory] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const { data, isLoading } = useGetAchievementsQuery({});
-  const achievements = data?.data || [];
+  
+  const achievements = useMemo<Achievement[]>(() => data?.data || [], [data]);
 
   const filteredAchievements = useMemo(() => {
     let filtered = achievements;
     
     if (activeCategory !== 'ALL') {
-      filtered = filtered.filter((a: any) => a.category === activeCategory);
+      filtered = filtered.filter((a) => a.category === activeCategory);
     }
 
     if (searchQuery) {
       const lowerQuery = searchQuery.toLowerCase();
-      filtered = filtered.filter((a: any) => 
+      filtered = filtered.filter((a) => 
         a.title.toLowerCase().includes(lowerQuery) || 
         a.description.toLowerCase().includes(lowerQuery) ||
         a.competitionName?.toLowerCase().includes(lowerQuery)
@@ -163,9 +175,24 @@ export default function AchievementsPage() {
       {/* Grid Section */}
       <Container maxWidth="lg" sx={{ py: 8 }}>
          {isLoading ? (
-            <Box sx={{ textAlign: 'center', py: 10 }}>
-              <CircularProgress />
-            </Box>
+            <Grid container spacing={4}>
+               {[1, 2, 3, 4].map((i) => (
+                 <Grid size={{ xs: 12, md: 6 }} key={i}>
+                    <Paper elevation={0} sx={{ borderRadius: 5, overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+                       <Skeleton variant="rectangular" height={300} />
+                       <Box sx={{ p: 4 }}>
+                          <Stack direction="row" justifyContent="space-between" sx={{ mb: 2 }}>
+                             <Skeleton width={80} height={24} />
+                             <Skeleton width={120} height={20} />
+                          </Stack>
+                          <Skeleton width="100%" height={32} sx={{ mb: 2 }} />
+                          <Skeleton width="60%" height={24} sx={{ mb: 2 }} />
+                          <Skeleton width="100%" height={40} sx={{ mt: 2 }} />
+                       </Box>
+                    </Paper>
+                 </Grid>
+               ))}
+            </Grid>
          ) : filteredAchievements.length === 0 ? (
            <Box sx={{ textAlign: 'center', py: 10, bgcolor: 'white', borderRadius: 4, border: '1px dashed #e2e8f0' }}>
               <LucideAward size={48} color="#cbd5e1" style={{ marginBottom: 16 }} />
@@ -174,7 +201,7 @@ export default function AchievementsPage() {
            </Box>
          ) : (
             <Grid container spacing={4}>
-               {filteredAchievements.map((item: any, idx: number) => (
+               {filteredAchievements.map((item: Achievement, idx: number) => (
                  <Grid size={{ xs: 12, md: 6 }} key={item._id}>
                     <Grow in timeout={300 + (idx * 100)}>
                       <Paper 
@@ -276,8 +303,8 @@ export default function AchievementsPage() {
                       </Paper>
                     </Grow>
                  </Grid>
-              ))}
-           </Grid>
+               ))}
+            </Grid>
          )}
       </Container>
     </Box>

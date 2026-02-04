@@ -9,10 +9,10 @@ import {
   Paper,
   Chip,
   Stack,
-  CircularProgress,
   Divider,
   Breadcrumbs,
-  Link as MuiLink
+  Link as MuiLink,
+  Skeleton
 } from '@mui/material';
 import { 
   LucideChevronLeft, 
@@ -20,13 +20,14 @@ import {
   LucideUsers, 
   LucideTrophy, 
   LucideAward,
-  LucideShare2,
-  LucideChevronRight
+  LucideChevronRight,
+  LucideCopy
 } from 'lucide-react';
 import { useRouter, useParams } from 'next/navigation';
 import NextImage from 'next/image';
 import Link from 'next/link';
 import { useGetAchievementByIdQuery } from '@/features/content/contentApi';
+import toast from 'react-hot-toast';
 
 export default function AchievementDetailsPage() {
   const router = useRouter();
@@ -36,10 +37,40 @@ export default function AchievementDetailsPage() {
   const { data, isLoading, error } = useGetAchievementByIdQuery(id);
   const achievement = data?.data;
 
+  const handleShare = () => {
+    if (typeof window !== 'undefined') {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success('Link copied to clipboard!');
+    }
+  };
+
   if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <CircularProgress />
+      <Box sx={{ bgcolor: '#f8fafc', minHeight: '100vh', py: 8 }}>
+        <Container maxWidth="lg">
+          <Skeleton width={200} height={24} sx={{ mb: 4 }} />
+          <Paper elevation={0} sx={{ borderRadius: 4, overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+            <Skeleton variant="rectangular" height={500} />
+            <Grid container>
+              <Grid size={{ xs: 12, md: 8 }} sx={{ p: { xs: 3, md: 6 }, borderRight: { md: '1px solid #e2e8f0' } }}>
+                <Skeleton width="40%" height={32} sx={{ mb: 3 }} />
+                <Skeleton width="100%" height={20} />
+                <Skeleton width="100%" height={20} />
+                <Skeleton width="100%" height={20} />
+                <Skeleton width="100%" height={20} />
+                <Skeleton width="70%" height={20} sx={{ mb: 3 }} />
+              </Grid>
+              <Grid size={{ xs: 12, md: 4 }} sx={{ p: { xs: 3, md: 6 }, bgcolor: '#f8fafc' }}>
+                <Skeleton width="30%" height={24} sx={{ mb: 3 }} />
+                <Stack spacing={3}>
+                   <Skeleton width="80%" height={40} />
+                   <Skeleton width="80%" height={40} />
+                   <Skeleton width="100%" height={60} />
+                </Stack>
+              </Grid>
+            </Grid>
+          </Paper>
+        </Container>
       </Box>
     );
   }
@@ -196,14 +227,12 @@ export default function AchievementDetailsPage() {
                     
                     <Button 
                       variant="contained" 
-                      startIcon={<LucideShare2 size={18} />}
+                      startIcon={<LucideCopy size={18} />}
                       fullWidth
                       sx={{ bgcolor: '#0f172a', fontWeight: 700, py: 1.5, borderRadius: 2 }}
-                      onClick={() => {
-                        window.alert('Share functionality coming soon!');
-                      }}
+                      onClick={handleShare}
                     >
-                      Share Achievement
+                      Copy Link
                     </Button>
                  </Stack>
               </Grid>

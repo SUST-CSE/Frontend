@@ -8,9 +8,10 @@ import {
   Stack, 
   Paper, 
   Button, 
-  CircularProgress,
   Avatar,
-  Chip
+  Chip,
+  Skeleton,
+  Grid
 } from '@mui/material';
 import { BookOpen as LucideBookOpen, ArrowRight as LucideArrowRight, ExternalLink as LucideExternalLink } from 'lucide-react';
 import Link from 'next/link';
@@ -73,8 +74,36 @@ export default function BlogSection() {
 
   if (isLoading) {
     return (
-      <Box sx={{ py: 8, textAlign: 'center' }}>
-        <CircularProgress color="success" />
+      <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: '#f8fafc' }}>
+        <Container maxWidth="lg">
+          <Stack direction="row" justifyContent="space-between" alignItems="flex-end" sx={{ mb: 6 }}>
+             <Box>
+                <Skeleton width={120} height={20} sx={{ mb: 1 }} />
+                <Skeleton width={250} height={48} />
+             </Box>
+             <Skeleton width={100} height={36} />
+          </Stack>
+          <Grid container spacing={3}>
+            {[1, 2, 3].map((i) => (
+              <Grid size={{ xs: 12, md: 4 }} key={i}>
+                <Paper sx={{ p: 4, height: '100%', borderRadius: 4, bgcolor: '#ffffff', border: '1px solid #e2e8f0' }}>
+                  <Skeleton width={60} height={24} sx={{ mb: 2 }} />
+                  <Skeleton variant="text" width="90%" height={32} sx={{ mb: 1.5 }} />
+                  <Skeleton variant="text" width="100%" height={20} />
+                  <Skeleton variant="text" width="100%" height={20} />
+                  <Skeleton variant="text" width="80%" height={20} sx={{ mb: 3 }} />
+                  <Stack direction="row" spacing={1.5} alignItems="center" sx={{ pt: 3, borderTop: '1px solid #f1f5f9' }}>
+                    <Skeleton variant="circular" width={32} height={32} />
+                    <Box sx={{ flex: 1 }}>
+                      <Skeleton width="40%" height={16} />
+                      <Skeleton width="30%" height={12} />
+                    </Box>
+                  </Stack>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
       </Box>
     );
   }

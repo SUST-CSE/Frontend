@@ -6,13 +6,13 @@ import {
   Typography, 
   Paper, 
   Grid, 
-  CircularProgress, 
   Divider,
   Stack,
   Avatar,
   Chip,
   Tabs,
-  Tab
+  Tab,
+  Skeleton
 } from '@mui/material';
 import { useGetMeQuery } from '@/features/auth/authApi';
 import { 
@@ -148,8 +148,47 @@ export default function StudentDashboard() {
   allTabs.push({ id: 'settings', label: 'Account Settings', icon: <LucideSettings size={18} />, component: <ProfileSettings user={user} /> });
 
   if (isLoading) return (
-    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: '#f8fafc' }}>
-      <CircularProgress size={40} sx={{ color: '#002147' }} />
+    <Box sx={{ minHeight: '100vh', bgcolor: '#f8fafc', py: { xs: 2, md: 5 } }}>
+      <Container maxWidth="xl">
+        <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box>
+            <Skeleton width={300} height={48} sx={{ mb: 1 }} />
+            <Skeleton width={200} height={24} />
+          </Box>
+          <Skeleton width={120} height={40} sx={{ borderRadius: 2 }} />
+        </Box>
+        <Paper elevation={0} sx={{ borderRadius: 4, border: '1px solid rgba(0,0,0,0.05)', overflow: 'hidden' }}>
+          <Skeleton width="100%" height={64} />
+          <Box sx={{ p: { xs: 2, md: 5 } }}>
+            <Grid container spacing={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
+                <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid #e2e8f0' }}>
+                  <Skeleton variant="circular" width={100} height={100} sx={{ mx: 'auto', mb: 2 }} />
+                  <Skeleton width="60%" height={32} sx={{ mx: 'auto', mb: 1 }} />
+                  <Skeleton width="40%" height={20} sx={{ mx: 'auto', mb: 3 }} />
+                  <Skeleton width="100%" height={1} sx={{ my: 3 }} />
+                  <Stack spacing={2}>
+                    <Skeleton width="100%" height={40} />
+                    <Skeleton width="100%" height={40} />
+                  </Stack>
+                </Paper>
+              </Grid>
+              <Grid size={{ xs: 12, md: 8 }}>
+                <Skeleton width="40%" height={24} sx={{ mb: 2 }} />
+                <Grid container spacing={2} sx={{ mb: 4 }}>
+                  <Grid size={{ xs: 12, sm: 6 }}><Skeleton height={100} sx={{ borderRadius: 3 }} /></Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}><Skeleton height={100} sx={{ borderRadius: 3 }} /></Grid>
+                </Grid>
+                <Skeleton width="40%" height={24} sx={{ mb: 2 }} />
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 12, sm: 6 }}><Skeleton height={80} sx={{ borderRadius: 3 }} /></Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}><Skeleton height={80} sx={{ borderRadius: 3 }} /></Grid>
+                </Grid>
+              </Grid>
+            </Grid>
+          </Box>
+        </Paper>
+      </Container>
     </Box>
   );
 

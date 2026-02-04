@@ -23,7 +23,7 @@ export default function Hero() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [loaded, setLoaded] = useState(false);
   
-  const { data: homepageData, isLoading } = useGetHomepageQuery({});
+  const { data: homepageData } = useGetHomepageQuery({});
   const heroSlides = (homepageData?.data?.heroSlides as HeroSlide[]) || [];
   
   // Static content as fallback if no slides from DB
@@ -84,10 +84,18 @@ export default function Hero() {
   // GSAP Animation for active slide content
   useEffect(() => {
     if (loaded) {
+      // Content animation
       gsap.fromTo(
         `.slide-content-${currentSlide} .animate-item`,
-        { y: 30, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.8, stagger: 0.1, ease: 'power3.out', delay: 0.2 }
+        { y: 40, opacity: 0 },
+        { y: 0, opacity: 1, duration: 1.2, stagger: 0.15, ease: 'power4.out', delay: 0.3 }
+      );
+
+      // Background zoom animation
+      gsap.fromTo(
+        `.slide-image-${currentSlide}`,
+        { scale: 1 },
+        { scale: 1.1, duration: 6, ease: 'linear' }
       );
     }
   }, [loaded, currentSlide]);
@@ -118,6 +126,7 @@ export default function Hero() {
                 fill
                 priority={idx === 0}
                 unoptimized={true}
+                className={`slide-image-${idx}`}
                 style={{ 
                   objectFit: 'cover',
                   objectPosition: 'center',

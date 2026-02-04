@@ -10,10 +10,12 @@ import {
   CardContent, 
   CardMedia, 
   Button, 
-  CircularProgress,
+  Paper,
   Chip,
   IconButton,
-  Tooltip
+  Tooltip,
+  Skeleton,
+  Grid
 } from '@mui/material';
 import { Calendar as LucideCalendar, MapPin as LucideMapPin, ArrowRight as LucideArrowRight, ChevronLeft as LucideChevronLeft, ChevronRight as LucideChevronRight, Paperclip as LucidePaperclip, ExternalLink as LucideExternalLink } from 'lucide-react';
 import Link from 'next/link';
@@ -72,8 +74,38 @@ export default function EventsSection() {
 
   if (isLoading) {
     return (
-      <Box sx={{ py: 8, textAlign: 'center' }}>
-        <CircularProgress />
+      <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: '#f8fafc' }}>
+        <Container maxWidth="lg">
+          <Stack direction="row" justifyContent="space-between" alignItems="flex-end" sx={{ mb: 6 }}>
+             <Box>
+                <Skeleton width={120} height={20} sx={{ mb: 1 }} />
+                <Skeleton width={250} height={48} />
+             </Box>
+             <Skeleton width={150} height={36} />
+          </Stack>
+          <Grid container spacing={3}>
+            {[1, 2, 3].map((i) => (
+              <Grid size={{ xs: 12, md: 4 }} key={i}>
+                <Paper sx={{ borderRadius: 4, overflow: 'hidden', border: '1px solid #e2e8f0', bgcolor: '#ffffff' }}>
+                  <Skeleton variant="rectangular" height={240} />
+                  <Box sx={{ p: 3 }}>
+                    <Skeleton width="40%" height={16} sx={{ mb: 1 }} />
+                    <Skeleton width="90%" height={28} sx={{ mb: 1 }} />
+                    <Skeleton width="60%" height={16} sx={{ mb: 3 }} />
+                    <Skeleton width="100%" height={40} sx={{ mb: 3 }} />
+                    <Box sx={{ pt: 2, borderTop: '1px dashed #e2e8f0', display: 'flex', justifyContent: 'space-between' }}>
+                      <Box sx={{ flex: 1 }}>
+                        <Skeleton width="60%" height={14} />
+                        <Skeleton width="40%" height={14} />
+                      </Box>
+                      <Skeleton variant="circular" width={32} height={32} />
+                    </Box>
+                  </Box>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
       </Box>
     );
   }

@@ -6,18 +6,15 @@ import {
   Typography, 
   Button, 
   Grid, 
-  Paper, 
   IconButton, 
   Dialog, 
   DialogTitle, 
   DialogContent, 
   DialogActions, 
   TextField,
-  MenuItem,
   Stack,
   CircularProgress,
   Card,
-  CardMedia,
   CardContent,
   CardActions,
   Chip
@@ -26,9 +23,7 @@ import {
   LucidePlus, 
   LucideTrash2, 
   LucideFileText, 
-  LucideImage, 
-  LucideDownload,
-  LucideX
+  LucideDownload
 } from 'lucide-react';
 import { 
   useGetImportantDataQuery, 
@@ -37,19 +32,40 @@ import {
 } from '@/features/content/contentApi';
 import toast from 'react-hot-toast';
 import { useForm } from 'react-hook-form';
+import ConfirmDialog from '@/components/common/ConfirmDialog';
+
+interface IImportantData {
+  _id: string;
+  title: string;
+  category: string;
+  file: string; // Renamed from fileUrl to file to match usage
+  type: 'IMAGE' | 'PDF' | string; // Added type
+  description: string; // Added description
+  createdBy?: { // Added createdBy
+    name: string;
+  };
+  createdAt: string;
+}
 
 export default function ImportantDataPage() {
   const { data, isLoading } = useGetImportantDataQuery({});
   const [createData, { isLoading: isCreating }] = useCreateImportantDataMutation();
   const [deleteData] = useDeleteImportantDataMutation();
-  
+
   const [open, setOpen] = useState(false);
-  const { register, handleSubmit, reset } = useForm();
+  const [openConfirm, setOpenConfirm] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  interface IUploadFormData {
+    title: string;
+    category: string;
+    description: string;
+  }
+
+  const { register, handleSubmit, reset } = useForm<IUploadFormData>();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  const importantData = data?.data || [];
-
-  const handleCreate = async (formData: any) => {
+  const onUpload = async (formData: IUploadFormData) => {
     if (!selectedFile) {
       toast.error('Please select a file');
       return;
@@ -57,6 +73,7 @@ export default function ImportantDataPage() {
 
     const data = new FormData();
     data.append('title', formData.title);
+    data.append('category', formData.category);
     data.append('description', formData.description);
     data.append('file', selectedFile);
 
@@ -66,18 +83,26 @@ export default function ImportantDataPage() {
       setOpen(false);
       reset();
       setSelectedFile(null);
-    } catch (error) {
-      toast.error('Failed to upload data');
+    } catch {
+      toast.error('Failed to update status');
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this item?')) {
+  const handleDeleteClick = (id: string) => {
+    setDeleteId(id);
+    setOpenConfirm(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (deleteId) {
       try {
-        await deleteData(id).unwrap();
+        await deleteData(deleteId).unwrap();
         toast.success('Item deleted successfully');
-      } catch (error) {
+      } catch {
         toast.error('Failed to delete item');
+      } finally {
+        setOpenConfirm(false);
+        setDeleteId(null);
       }
     }
   };
@@ -93,12 +118,12 @@ export default function ImportantDataPage() {
             Manage repository of important documents and images.
           </Typography>
         </Box>
-        <Button 
-          variant="contained" 
+        <Button
+          variant="contained"
           startIcon={<LucidePlus size={18} />}
           onClick={() => setOpen(true)}
-          sx={{ 
-            bgcolor: '#0f172a', 
+          sx={{
+            bgcolor: '#0f172a',
             '&:hover': { bgcolor: '#334155' },
             textTransform: 'none',
             borderRadius: 2
@@ -114,13 +139,13 @@ export default function ImportantDataPage() {
         </Box>
       ) : (
         <Grid container spacing={3}>
-          {importantData.map((item: any) => (
+          {data?.data?.map((item: IImportantData) => (
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={item._id}>
-              <Card 
-                elevation={0} 
-                sx={{ 
-                  borderRadius: 3, 
-                  border: '1px solid #e2e8f0', 
+              <Card
+                elevation={0}
+                sx={{
+                  borderRadius: 3,
+                  border: '1px solid #e2e8f0',
                   height: '100%',
                   display: 'flex',
                   flexDirection: 'column'
@@ -169,7 +194,7 @@ export default function ImportantDataPage() {
                   <IconButton 
                     size="small" 
                     color="error" 
-                    onClick={() => handleDelete(item._id)}
+                    onClick={() => handleDeleteClick(item._id)}
                     sx={{ bgcolor: '#fee2e2', '&:hover': { bgcolor: '#fecaca' } }}
                   >
                     <LucideTrash2 size={18} />
@@ -184,7 +209,7 @@ export default function ImportantDataPage() {
       {/* Add Dialog */}
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ fontWeight: 700 }}>Upload Important Data</DialogTitle>
-        <form onSubmit={handleSubmit(handleCreate)}>
+        <form onSubmit={handleSubmit(onUpload)}>
           <DialogContent>
             <Stack spacing={3}>
               <TextField
@@ -248,6 +273,15 @@ export default function ImportantDataPage() {
           </DialogActions>
         </form>
       </Dialog>
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        open={openConfirm}
+        title="Delete Item"
+        message="Are you sure you want to delete this item from the repository? This action cannot be undone."
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setOpenConfirm(false)}
+      />
     </Box>
   );
 }

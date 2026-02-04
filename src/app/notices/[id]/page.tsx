@@ -9,9 +9,9 @@ import {
   Stack, 
   Paper, 
   Button, 
-  CircularProgress,
   Chip,
-  Breadcrumbs
+  Breadcrumbs,
+  Skeleton
 } from '@mui/material';
 import { LucideCalendar, LucideArrowLeft, LucideUser, LucideFileText } from 'lucide-react';
 import Link from 'next/link';
@@ -24,8 +24,28 @@ export default function NoticeDetails() {
 
   if (isLoading) {
     return (
-      <Box sx={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <CircularProgress color="success" />
+      <Box sx={{ py: 8 }}>
+        <Container maxWidth="lg">
+          <Skeleton width={300} height={24} sx={{ mb: 4 }} />
+          <Paper elevation={0} sx={{ p: { xs: 4, md: 8 }, borderRadius: 6, border: '1px solid #e2e8f0', bgcolor: '#ffffff' }}>
+            <Stack spacing={4}>
+              <Box>
+                <Skeleton width={100} height={32} sx={{ mb: 2 }} />
+                <Skeleton width="80%" height={60} sx={{ mb: 3 }} />
+                <Stack direction="row" spacing={3}>
+                  <Skeleton width={150} height={20} />
+                  <Skeleton width={150} height={20} />
+                </Stack>
+              </Box>
+              <Box>
+                <Skeleton width="100%" height={20} />
+                <Skeleton width="100%" height={20} />
+                <Skeleton width="100%" height={20} />
+                <Skeleton width="60%" height={20} />
+              </Box>
+            </Stack>
+          </Paper>
+        </Container>
       </Box>
     );
   }

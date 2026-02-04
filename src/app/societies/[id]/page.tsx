@@ -9,7 +9,6 @@ import {
   Paper, 
   Stack, 
   Avatar, 
-  CircularProgress,
   IconButton,
   Breadcrumbs,
   Link as MuiLink,
@@ -25,7 +24,8 @@ import {
   TableRow,
   Card,
   CardContent,
-  CardMedia
+  CardMedia,
+  Skeleton
 } from '@mui/material';
 import { LucideGlobe, LucideLinkedin, LucideCalendar, LucideMapPin, LucideClock, LucideFacebook } from 'lucide-react';
 import Link from 'next/link';
@@ -84,7 +84,7 @@ export default function SocietyDetailsPage() {
   const { data: societyData, isLoading: socLoading } = useGetSocietyByIdQuery(id, { skip: !id });
   const { data: currentMemberData, isLoading: curMemLoading } = useGetSocietyMembersQuery(id, { skip: !id });
   const { data: formerMemberData, isLoading: formerMemLoading } = useGetFormerSocietyMembersQuery(id, { skip: !id });
-  const { data: eventsData, isLoading: eventsLoading } = useGetEventsQuery({}); // Fetch all events, filter client-side
+  const { data: eventsData, isLoading: eventsLoading } = useGetEventsQuery({}); 
   
   const [tabFor, setTabFor] = useState(0);
   
@@ -95,11 +95,9 @@ export default function SocietyDetailsPage() {
   const formerMembers = sortMembers(formerMemberData?.data || []);
   const allEvents = eventsData?.data || [];
 
-  // Filter events where committee/organizer matches society name roughly
-  // Ideally backend should link Event -> Society ID. For now string match.
   const societyEvents = allEvents.filter((event: any) => 
     event.organizer?.toLowerCase().includes(society?.name?.toLowerCase()) || 
-    event.organizer?.toLowerCase().includes('cse society') // Fallback common name
+    event.organizer?.toLowerCase().includes('cse society')
   );
 
   const upcomingEvents = societyEvents.filter((event: any) => new Date(event.startDate) > new Date());
@@ -121,8 +119,25 @@ export default function SocietyDetailsPage() {
 
   if (socLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <CircularProgress size={60} thickness={4} sx={{ color: '#16a34a' }} />
+      <Box sx={{ py: 6, bgcolor: '#ffffff', minHeight: '100vh' }}>
+        <Container maxWidth="lg">
+          <Skeleton width={300} height={24} sx={{ mb: 4 }} />
+          <Box sx={{ mb: 6, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: 'center', gap: 6 }}>
+            <Skeleton variant="rectangular" width={180} height={180} sx={{ borderRadius: 4 }} />
+            <Box sx={{ flexGrow: 1, width: '100%' }}>
+              <Skeleton width={100} height={24} sx={{ mb: 1 }} />
+              <Skeleton width="60%" height={64} sx={{ mb: 2 }} />
+              <Stack direction="row" spacing={1}>
+                <Skeleton variant="circular" width={40} height={40} />
+                <Skeleton variant="circular" width={40} height={40} />
+                <Skeleton variant="circular" width={40} height={40} />
+              </Stack>
+            </Box>
+          </Box>
+          <Skeleton width="100%" height={48} sx={{ mb: 4 }} />
+          <Skeleton width="20%" height={32} sx={{ mb: 2 }} />
+          <Skeleton width="100%" height={100} />
+        </Container>
       </Box>
     );
   }
@@ -235,7 +250,13 @@ export default function SocietyDetailsPage() {
               Current Executive Body
            </Typography>
            
-           {curMemLoading ? <CircularProgress /> : (
+           {curMemLoading ? (
+             <Box sx={{ p: 2 }}>
+               {[1, 2, 3, 4, 5].map((i) => (
+                 <Skeleton key={i} height={60} sx={{ mb: 1 }} />
+               ))}
+             </Box>
+           ) : (
               <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #e2e8f0', borderRadius: 4 }}>
                  <Table>
                     <TableHead sx={{ bgcolor: '#f8fafc' }}>
@@ -281,7 +302,13 @@ export default function SocietyDetailsPage() {
                Former Executive Members
             </Typography>
 
-            {formerMemLoading ? <CircularProgress /> : (
+            {formerMemLoading ? (
+               <Box sx={{ p: 2 }}>
+                 {[1, 2, 3, 4, 5].map((i) => (
+                   <Skeleton key={i} height={60} sx={{ mb: 1 }} />
+                 ))}
+               </Box>
+             ) : (
                <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid #e2e8f0', borderRadius: 4 }}>
                   <Table>
                      <TableHead sx={{ bgcolor: '#f8fafc' }}>

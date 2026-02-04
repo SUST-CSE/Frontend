@@ -9,10 +9,10 @@ import {
   Stack, 
   Paper, 
   Button, 
-  CircularProgress,
   Chip,
   Breadcrumbs,
-  Grid
+  Grid,
+  Skeleton
 } from '@mui/material';
 import { LucideCalendar, LucideArrowLeft, LucideMapPin, LucideBriefcase, LucideExternalLink, LucideFileText } from 'lucide-react';
 import Link from 'next/link';
@@ -25,8 +25,43 @@ export default function EventDetails() {
 
   if (isLoading) {
     return (
-      <Box sx={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <CircularProgress color="primary" />
+      <Box sx={{ py: 8 }}>
+        <Container maxWidth="lg">
+          <Skeleton width={300} height={24} sx={{ mb: 4 }} />
+          <Grid container spacing={4}>
+            <Grid size={{ xs: 12, md: 8 }}>
+              <Paper elevation={0} sx={{ p: { xs: 4, md: 6 }, borderRadius: 6, border: '1px solid #e2e8f0', bgcolor: '#ffffff' }}>
+                <Stack spacing={4}>
+                  <Box>
+                    <Skeleton width={100} height={32} sx={{ mb: 2 }} />
+                    <Skeleton width="80%" height={60} sx={{ mb: 3 }} />
+                    <Stack direction="row" spacing={3}>
+                      <Skeleton width={150} height={20} />
+                      <Skeleton width={150} height={20} />
+                    </Stack>
+                  </Box>
+                  <Skeleton variant="rectangular" height={400} sx={{ borderRadius: 4 }} />
+                  <Box>
+                    <Skeleton width="100%" height={20} />
+                    <Skeleton width="100%" height={20} />
+                    <Skeleton width="100%" height={20} />
+                    <Skeleton width="60%" height={20} />
+                  </Box>
+                </Stack>
+              </Paper>
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <Paper elevation={0} sx={{ p: 4, borderRadius: 6, border: '1px solid #e2e8f0', bgcolor: '#ffffff' }}>
+                <Skeleton width="40%" height={32} sx={{ mb: 3 }} />
+                <Stack spacing={3}>
+                  <Skeleton width="100%" height={50} />
+                  <Skeleton width="100%" height={50} />
+                  <Skeleton width="100%" height={60} sx={{ borderRadius: 3 }} />
+                </Stack>
+              </Paper>
+            </Grid>
+          </Grid>
+        </Container>
       </Box>
     );
   }

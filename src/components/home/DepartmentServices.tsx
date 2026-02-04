@@ -3,6 +3,13 @@
 import { Box, Container, Grid, Typography, Card, CardMedia, Button } from '@mui/material';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import { useEffect, useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 const services = [
   {
@@ -26,12 +33,31 @@ const services = [
 ];
 
 export default function DepartmentServices() {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.from('.service-card', {
+        y: 40,
+        opacity: 0,
+        duration: 0.8,
+        stagger: 0.2,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: 'top 80%',
+        }
+      });
+    }, containerRef);
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <Box sx={{ py: { xs: 8, md: 10 }, bgcolor: '#f8fafc' }}>
+    <Box ref={containerRef} sx={{ py: { xs: 8, md: 10 }, bgcolor: '#f8fafc' }}>
       <Container maxWidth="lg">
         <Grid container spacing={4}>
           {services.map((service, index) => (
-            <Grid size={{ xs: 12, md: 4 }} key={index}>
+            <Grid size={{ xs: 12, md: 4 }} key={index} className="service-card">
               <Card 
                 sx={{ 
                   height: '100%', 

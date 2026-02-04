@@ -7,19 +7,20 @@ import {
   Container,
   Typography,
   Grid,
+  Paper,
   Card,
   CardContent,
   CardMedia,
   Chip,
   TextField,
   InputAdornment,
-  CircularProgress,
   Stack,
   Button,
   Divider,
   Pagination,
   Tooltip,
   IconButton,
+  Skeleton,
 } from '@mui/material';
 import { LucideSearch, LucideBuilding, LucideBriefcase, LucideExternalLink } from 'lucide-react';
 import Link from 'next/link';
@@ -47,8 +48,35 @@ export default function AlumniPage() {
 
   if (isLoading) {
     return (
-      <Box sx={{ py: 20, textAlign: 'center' }}>
-        <CircularProgress color="primary" />
+      <Box sx={{ py: 10, bgcolor: '#f8fafc', minHeight: '100vh' }}>
+        <Container maxWidth="lg">
+          <Stack direction="row" justifyContent="space-between" alignItems="flex-end" sx={{ mb: 6 }}>
+            <Box>
+              <Skeleton width={150} height={20} sx={{ mb: 1 }} />
+              <Skeleton width={300} height={48} />
+            </Box>
+            <Skeleton width={300} height={48} sx={{ borderRadius: 3 }} />
+          </Stack>
+          <Grid container spacing={2}>
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+              <Grid size={{ xs: 12, sm: 6, md: 3 }} key={i}>
+                <Paper sx={{ borderRadius: 4, overflow: 'hidden', border: '1px solid #e2e8f0', bgcolor: '#ffffff' }}>
+                  <Skeleton variant="rectangular" height={200} />
+                  <Box sx={{ p: 3 }}>
+                    <Skeleton width="80%" height={24} sx={{ mb: 1.5 }} />
+                    <Skeleton width="60%" height={16} sx={{ mb: 1 }} />
+                    <Skeleton width="50%" height={16} sx={{ mb: 3 }} />
+                    <Skeleton width="100%" height={60} sx={{ mb: 3 }} />
+                    <Box sx={{ pt: 2, borderTop: '1px dashed #e2e8f0', display: 'flex', justifyContent: 'space-between' }}>
+                      <Skeleton width="40%" height={16} />
+                      <Skeleton variant="circular" width={32} height={32} />
+                    </Box>
+                  </Box>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
       </Box>
     );
   }

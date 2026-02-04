@@ -18,10 +18,12 @@ import {
   Chip,
   MenuItem,
   CircularProgress,
-  Alert
+  Alert,
+  Skeleton
 } from '@mui/material';
 import { LucideHistory, LucideWallet, LucideLock } from 'lucide-react';
 import { useGetPaymentHistoryQuery, useInitiatePaymentMutation } from '@/features/payment/paymentApi';
+import toast from 'react-hot-toast';
 
 const PAYMENT_PURPOSES = [
   'ADMISSION_FEE',
@@ -41,7 +43,7 @@ export default function PaymentSection() {
   const handlePayment = async () => {
     try {
       const result = await initiatePayment({ amount: Number(amount), category: purpose, method: 'BKASH' }).unwrap();
-      window.alert('Payment initiated! Transaction ID: ' + result.data.transactionId);
+      toast.success('Payment initiated! Transaction ID: ' + result.data.transactionId);
     } catch (err) {}
   };
 
@@ -131,8 +133,10 @@ export default function PaymentSection() {
             </Stack>
 
             {historyLoading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
-                <CircularProgress sx={{ color: '#16a34a' }} />
+              <Box sx={{ width: '100%' }}>
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Skeleton key={i} height={60} sx={{ mb: 1 }} />
+                ))}
               </Box>
             ) : (
               <TableContainer sx={{ overflowX: 'auto' }}>

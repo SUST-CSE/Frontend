@@ -4,21 +4,21 @@ import {
   Box, 
   Container, 
   Typography, 
-  Grid, 
   Paper, 
   Avatar, 
   Button,
   Stack,
-  CircularProgress,
-  Chip
+  Chip,
+  Skeleton
 } from '@mui/material';
-import { LucideLayoutDashboard, LucideLogOut, LucideSettings, LucideUser, LucideMail, LucideShield } from 'lucide-react';
+import { LucideLayoutDashboard, LucideLogOut, LucideUser, LucideMail } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { useGetMeQuery, useLogoutUserMutation } from '@/features/auth/authApi';
 import { logout } from '@/features/auth/authSlice';
 import { RootState } from '@/store';
 import { useEffect } from 'react';
+import toast from 'react-hot-toast';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -53,8 +53,7 @@ export default function ProfilePage() {
     const role = user?.role?.toUpperCase();
     
     if (!role) {
-      console.error('Role missing in user object:', user);
-      alert(`User role not found. Please try logging in again. (User ID: ${user?._id || 'unknown'})`);
+      toast.error(`User role not found. Please try logging in again.`);
       return;
     }
 
@@ -62,7 +61,7 @@ export default function ProfilePage() {
     else if (role === 'TEACHER') router.push('/dashboard/teacher');
     else if (role === 'ADMIN') router.push('/admin/dashboard');
     else {
-      alert(`Dashboard not available for role: ${role}`);
+      toast.error(`Dashboard not available for role: ${role}`);
       router.push('/');
     }
   };
@@ -70,11 +69,28 @@ export default function ProfilePage() {
   if (!isAuthenticated) return null;
 
   if (isLoading) {
-     return (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-           <CircularProgress size={60} thickness={4} sx={{ color: '#000000' }} />
-        </Box>
-     );
+    return (
+      <Box sx={{ py: 8, bgcolor: '#ffffff', minHeight: '100vh' }}>
+        <Container maxWidth="md">
+          <Skeleton width={300} height={60} sx={{ mb: 4 }} />
+          <Paper elevation={0} sx={{ p: 6, borderRadius: 6, border: '1px solid #e5e7eb', mt: 4 }}>
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={6} alignItems="center">
+              <Skeleton variant="circular" width={150} height={150} />
+              <Box sx={{ flexGrow: 1, width: '100%' }}>
+                <Skeleton width="60%" height={40} sx={{ mb: 1 }} />
+                <Skeleton width="40%" height={24} sx={{ mb: 4 }} />
+                <Stack direction="row" spacing={2} justifyContent={{ xs: 'center', md: 'flex-start' }}>
+                  <Skeleton width={150} height={48} />
+                  <Skeleton width={150} height={48} />
+                </Stack>
+              </Box>
+            </Stack>
+            <Skeleton width="30%" height={32} sx={{ mt: 8, mb: 2 }} />
+            <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 4 }} />
+          </Paper>
+        </Container>
+      </Box>
+    );
   }
 
   return (

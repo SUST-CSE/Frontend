@@ -42,7 +42,9 @@ import {
   LucideShieldAlert,
   LucideRefreshCcw,
   LucideTrash2,
-  LucideShieldCheck
+  LucideShieldCheck,
+  LucideUserPlus, 
+  LucideEdit
 } from 'lucide-react';
 import { 
   useGetAllUsersQuery, 
@@ -51,7 +53,7 @@ import {
   useDeleteUserMutation,
   useBulkCreateUsersMutation
 } from '@/features/user/userApi';
-import { LucideUserPlus, LucideEdit } from 'lucide-react';
+import ConfirmDialog from '@/components/common/ConfirmDialog';
 import toast from 'react-hot-toast';
 
 const STATUS_COLORS: Record<string, any> = {
@@ -80,6 +82,7 @@ const PERMISSIONS = [
   'MANAGE_RESEARCH',
   'MANAGE_BLOGS',
   'MANAGE_WORK',
+  'MANAGE_IMPORTANT_DATA',
 ];
 
 export default function UsersManagementPage() {
@@ -104,20 +107,33 @@ export default function UsersManagementPage() {
   const [bulkData, setBulkData] = useState('');
   const [bulkRole, setBulkRole] = useState('STUDENT');
 
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<string | null>(null);
+
   const handleStatusUpdate = async (id: string, newStatus: string) => {
     try {
       await updateStatus({ id, status: newStatus }).unwrap();
+      toast.success(`User marked as ${newStatus.toLowerCase()}`);
     } catch (err) {
-      console.error('Failed to update status:', err);
+      toast.error('Failed to update status');
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+  const handleDeleteClick = (id: string) => {
+    setUserToDelete(id);
+    setOpenConfirmDialog(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (userToDelete) {
       try {
-        await deleteUser(id).unwrap();
+        await deleteUser(userToDelete).unwrap();
+        toast.success('User deleted successfully');
       } catch (err) {
-        console.error('Failed to delete user:', err);
+        toast.error('Failed to delete user');
+      } finally {
+        setOpenConfirmDialog(false);
+        setUserToDelete(null);
       }
     }
   };
@@ -347,7 +363,8 @@ export default function UsersManagementPage() {
                           <IconButton
                             size="small"
                             color="error"
-                            onClick={() => handleDelete(user._id)}
+                            onClick={() => handleDeleteClick(user._id)}
+                            sx={{ '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.1)' } }}
                           >
                             <LucideTrash2 size={18} />
                           </IconButton>
@@ -554,6 +571,14 @@ export default function UsersManagementPage() {
           </Button>
         </DialogActions>
       </Dialog>
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        open={openConfirmDialog}
+        title="Delete User"
+        message="Are you sure you want to delete this user? This action cannot be undone and will remove all associated data."
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setOpenConfirmDialog(false)}
+      />
     </Container>
   );
 }
