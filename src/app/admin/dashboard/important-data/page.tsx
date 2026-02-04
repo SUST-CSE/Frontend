@@ -75,7 +75,7 @@ export default function ImportantDataPage() {
     data.append('title', formData.title);
     data.append('category', formData.category);
     data.append('description', formData.description);
-    data.append('file', selectedFile);
+    data.append('files', selectedFile);
 
     try {
       await createData(data).unwrap();

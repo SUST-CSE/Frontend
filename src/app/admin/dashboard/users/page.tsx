@@ -83,6 +83,10 @@ const PERMISSIONS = [
   'MANAGE_BLOGS',
   'MANAGE_WORK',
   'MANAGE_IMPORTANT_DATA',
+  'SUBMIT_COST',
+  'APPROVE_COST_L1',
+  'APPROVE_COST_L2',
+  'APPROVE_COST_FINAL',
 ];
 
 export default function UsersManagementPage() {
