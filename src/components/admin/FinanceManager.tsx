@@ -22,6 +22,7 @@ import {
   DialogActions,
   TextField,
   MenuItem,
+  Divider,
   CircularProgress,
   Tabs,
   Tab,
@@ -77,6 +78,7 @@ export default function FinanceManager() {
     date: new Date().toISOString().split('T')[0],
   });
   const [proofFile, setProofFile] = useState<File | null>(null);
+  const [selectedTx, setSelectedTx] = useState<any>(null);
 
   const { data: summaryData, error: summaryError } = useGetFinancialSummaryQuery({});
   const { data: transactionsData, isLoading: isTXLoading, error: txError } = useGetTransactionsQuery({});
@@ -202,94 +204,144 @@ export default function FinanceManager() {
           {/* Overview Cards with Gradients */}
           <Grid container spacing={3} sx={{ mb: 4 }}>
             {[
-              { label: 'Current Balance', value: summary.balance, icon: <LucideWallet size={24} />, grad: 'linear-gradient(135deg, #002147 0%, #003366 100%)', color: '#fff' },
-              { label: 'Total Income', value: summary.totalIncome, icon: <LucideTrendingUp size={24} />, grad: 'linear-gradient(135deg, #065f46 0%, #10b981 100%)', color: '#fff' },
-              { label: 'Total Expense', value: summary.totalExpense, icon: <LucideTrendingDown size={24} />, grad: 'linear-gradient(135deg, #9f1239 0%, #f43f5e 100%)', color: '#fff' },
+              { 
+                label: 'Departmental Balance', 
+                value: summary.balance, 
+                icon: <LucideWallet size={24} />, 
+                grad: 'linear-gradient(135deg, #002147 0%, #004080 100%)', 
+                color: '#fff',
+                sub: 'Available Funds'
+              },
+              { 
+                label: 'Cumulative Income', 
+                value: summary.totalIncome, 
+                icon: <LucideTrendingUp size={24} />, 
+                grad: 'linear-gradient(135deg, #064e3b 0%, #059669 100%)', 
+                color: '#fff',
+                sub: 'Total Inflow'
+              },
+              { 
+                label: 'Cumulative Expense', 
+                value: summary.totalExpense, 
+                icon: <LucideTrendingDown size={24} />, 
+                grad: 'linear-gradient(135deg, #7f1d1d 0%, #dc2626 100%)', 
+                color: '#fff',
+                sub: 'Total Outgo'
+              },
             ].map((card, i) => (
               <Grid size={{ xs: 12, md: 4 }} key={i}>
                 <Paper 
                   elevation={0} 
                   sx={{ 
                     p: 3, 
-                    borderRadius: 4, 
+                    borderRadius: 5, 
                     background: card.grad, 
                     color: card.color,
-                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
                     position: 'relative',
-                    overflow: 'hidden'
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    minHeight: 140
                   }}
                 >
-                  <Box sx={{ position: 'absolute', top: -20, right: -20, opacity: 0.1, transform: 'scale(1.5)' }}>
+                  <Box sx={{ position: 'absolute', top: -10, right: -10, opacity: 0.15, transform: 'scale(1.8)' }}>
                     {card.icon}
                   </Box>
-                  <Stack direction="row" spacing={2} alignItems="center">
-                    <Box sx={{ p: 1.5, borderRadius: 3, bgcolor: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)' }}>
-                      {card.icon}
-                    </Box>
-                    <Box>
-                      <Typography variant="caption" fontWeight={700} sx={{ opacity: 0.8, textTransform: 'uppercase', letterSpacing: 1 }}>
-                        {card.label}
-                      </Typography>
-                      <Typography variant="h4" fontWeight={900}>
-                        ৳{card.value.toLocaleString()}
-                      </Typography>
-                    </Box>
-                  </Stack>
+                  
+                  <Box sx={{ position: 'relative', zIndex: 1 }}>
+                    <Typography variant="caption" fontWeight={800} sx={{ opacity: 0.9, textTransform: 'uppercase', letterSpacing: 1.5, fontSize: '0.65rem' }}>
+                      {card.label}
+                    </Typography>
+                    <Typography variant="h3" fontWeight={900} sx={{ mt: 1, letterSpacing: -1 }}>
+                      ৳{card.value.toLocaleString()}
+                    </Typography>
+                  </Box>
+
+                  <Box sx={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 1, mt: 2 }}>
+                    <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.5)' }} />
+                    <Typography variant="caption" sx={{ opacity: 0.8, fontWeight: 700 }}>
+                      {card.sub}
+                    </Typography>
+                  </Box>
                 </Paper>
               </Grid>
             ))}
           </Grid>
 
-          {/* Detailed Breakdown with Progress Bars */}
-          <Paper elevation={0} sx={{ p: 4, mb: 4, borderRadius: 4, border: '1px solid #e2e8f0', bgcolor: '#fff' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+          <Paper elevation={0} sx={{ p: 4, mb: 4, borderRadius: 5, border: '1px solid #e2e8f0', bgcolor: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}>
               <Box>
-                <Typography variant="h6" fontWeight={800} color="#002147" sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <LucideTrendingUp size={24} color="#10b981" />
-                  Budget Distribution Analysis
+                <Typography variant="h6" fontWeight={900} color="#002147" sx={{ display: 'flex', alignItems: 'center', gap: 1.5, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                  <LucideTrendingUp size={20} color="#002147" />
+                  Budget Utilization Report
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Visual breakdown of departmental spending and income sources
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                  Detailed analysis of departmental expenditure across various functional categories
                 </Typography>
               </Box>
-              <Chip label="All Time Data" size="small" variant="outlined" sx={{ fontWeight: 700 }} />
+              <Chip label="Real-time Analytics" size="small" variant="filled" sx={{ fontWeight: 800, bgcolor: '#f1f5f9', color: '#475569' }} />
             </Box>
 
             {!summary.categoryBreakdown || Object.keys(summary.categoryBreakdown).length === 0 ? (
-              <Box sx={{ py: 4, textAlign: 'center', border: '2px dashed #f1f5f9', borderRadius: 3 }}>
-                 <Typography color="text.disabled">No categorized transactions found to display breakdown</Typography>
+              <Box sx={{ py: 6, textAlign: 'center', border: '2px dashed #f1f5f9', borderRadius: 4 }}>
+                 <Typography color="text.disabled" fontWeight={600}>No transaction metadata available for visualization</Typography>
               </Box>
             ) : (
-              <Grid container spacing={4}>
+              <Grid container spacing={5}>
                 {Object.entries(summary.categoryBreakdown).map(([cat, values]: [string, any]) => {
                   const expensePercent = summary.totalExpense > 0 ? (values.expense / summary.totalExpense) * 100 : 0;
+                  const incomePercent = summary.totalIncome > 0 ? (values.income / summary.totalIncome) * 100 : 0;
                   const isCostManagement = cat === 'COST_MANAGEMENT';
 
                   return (
                     <Grid size={{ xs: 12, md: 6 }} key={cat}>
-                      <Box sx={{ mb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                        <Box>
-                          <Typography variant="subtitle2" fontWeight={800} color={isCostManagement ? 'primary' : 'inherit'}>
-                            {TRANSACTION_CATEGORY[cat] || cat}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            ৳{values.expense.toLocaleString()} spent • {expensePercent.toFixed(1)}% of total budget
-                          </Typography>
+                      <Box sx={{ mb: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                          <Box sx={{ 
+                            width: 32, 
+                            height: 32, 
+                            borderRadius: 1, 
+                            bgcolor: isCostManagement ? '#eff6ff' : '#f8fafc',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: isCostManagement ? '#2563eb' : '#64748b',
+                            border: '1px solid',
+                            borderColor: isCostManagement ? '#dbeafe' : '#f1f5f9'
+                          }}>
+                            {isCostManagement ? <LucideLayers size={16} /> : <LucideFileText size={16} />}
+                          </Box>
+                          <Box>
+                            <Typography variant="subtitle2" fontWeight={800} color="#1e293b" sx={{ lineHeight: 1 }}>
+                              {TRANSACTION_CATEGORY[cat] || cat}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                              Spending Impact: {expensePercent.toFixed(1)}%
+                            </Typography>
+                          </Box>
                         </Box>
-                        {values.income > 0 && (
-                          <Typography variant="caption" fontWeight={700} color="success.main">
-                            +৳{values.income.toLocaleString()} inflow
+                        <Box sx={{ textAlign: 'right' }}>
+                          <Typography variant="subtitle2" fontWeight={900} color={values.expense > 0 ? '#1e293b' : 'text.disabled'}>
+                            ৳{values.expense.toLocaleString()}
                           </Typography>
-                        )}
+                          {values.income > 0 && (
+                            <Typography variant="caption" fontWeight={800} color="#10b981">
+                              IN: ৳{values.income.toLocaleString()}
+                            </Typography>
+                          )}
+                        </Box>
                       </Box>
-                      <Box sx={{ height: 10, bgcolor: '#f1f5f9', borderRadius: 5, overflow: 'hidden' }}>
+                      <Box sx={{ height: 8, bgcolor: '#f1f5f9', borderRadius: 4, overflow: 'hidden', position: 'relative' }}>
                         <Box 
                           sx={{ 
                             height: '100%', 
                             width: `${expensePercent}%`, 
-                            background: isCostManagement ? 'linear-gradient(90deg, #3b82f6, #8b5cf6)' : '#64748b',
-                            borderRadius: 5,
-                            transition: 'width 1s ease-in-out'
+                            background: isCostManagement ? 'linear-gradient(90deg, #002147, #3b82f6)' : '#94a3b8',
+                            borderRadius: 4,
+                            transition: 'width 1.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                            zIndex: 2
                           }} 
                         />
                       </Box>
@@ -342,100 +394,110 @@ export default function FinanceManager() {
                     {transactions.map((tx: any) => {
                       const getCategoryIcon = (cat: string) => {
                         switch (cat) {
-                          case 'SOCIETY_FUND': return <LucideUsers size={16} />;
-                          case 'EVENT_SPONSORSHIP': return <LucideTrendingUp size={16} />;
-                          case 'EQUIPMENT_PURCHASE': return <LucideHardDrive size={16} />;
-                          case 'MAINTENANCE': return <LucideSettings size={16} />;
-                          case 'REFRESHMENT': return <LucideCoffee size={16} />;
-                          case 'COST_MANAGEMENT': return <LucideLayers size={16} />;
-                          default: return <LucideFileText size={16} />;
+                          case 'SOCIETY_FUND': return <LucideUsers size={14} />;
+                          case 'EVENT_SPONSORSHIP': return <LucideTrendingUp size={14} />;
+                          case 'EQUIPMENT_PURCHASE': return <LucideHardDrive size={14} />;
+                          case 'MAINTENANCE': return <LucideSettings size={14} />;
+                          case 'REFRESHMENT': return <LucideCoffee size={14} />;
+                          case 'COST_MANAGEMENT': return <LucideLayers size={14} />;
+                          default: return <LucideFileText size={14} />;
                         }
                       };
 
                       return (
-                        <TableRow key={tx._id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                          <TableCell sx={{ whiteSpace: 'nowrap', fontSize: '0.75rem', fontWeight: 600, color: '#64748b' }}>
-                            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                              <Typography variant="caption" sx={{ fontWeight: 800, color: '#1e293b' }}>
-                                {new Date(tx.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}
-                              </Typography>
-                              <Typography variant="caption" sx={{ color: '#94a3b8' }}>
-                                {new Date(tx.date).getFullYear()}
-                              </Typography>
-                            </Box>
+                        <TableRow 
+                          key={tx._id} 
+                          hover 
+                          onClick={() => setSelectedTx(tx)}
+                          sx={{ 
+                            cursor: 'pointer',
+                            '&:last-child td, &:last-child th': { border: 0 },
+                            '&:hover': { bgcolor: '#f8fafc !important' }
+                          }}
+                        >
+                          <TableCell sx={{ py: 2.5 }}>
+                            <Typography variant="caption" sx={{ fontWeight: 800, color: '#1e293b', display: 'block' }}>
+                              {new Date(tx.date).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            </Typography>
                           </TableCell>
-                          <TableCell>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                          <TableCell sx={{ py: 2.5 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                               <Box sx={{ 
-                                p: 1, 
+                                width: 36,
+                                height: 36,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
                                 borderRadius: 2, 
                                 bgcolor: tx.type === 'INCOME' ? '#f0fdf4' : '#fff1f2',
-                                color: tx.type === 'INCOME' ? '#166534' : '#9f1239'
+                                color: tx.type === 'INCOME' ? '#16a34a' : '#ef4444',
+                                border: '1px solid',
+                                borderColor: tx.type === 'INCOME' ? '#dcfce7' : '#fee2e2'
                               }}>
                                 {tx.type === 'INCOME' ? <LucideArrowUpRight size={18} /> : <LucideArrowDownRight size={18} />}
                               </Box>
                               <Box>
-                                <Typography variant="subtitle2" fontWeight={800} sx={{ fontSize: '0.85rem', color: '#1e293b' }}>{tx.title}</Typography>
-                                <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block', maxWidth: 250 }}>{tx.description}</Typography>
+                                <Typography variant="subtitle2" fontWeight={800} sx={{ fontSize: '0.85rem', color: '#1e293b', lineHeight: 1.2 }}>{tx.title}</Typography>
+                                <Typography variant="caption" color="text.secondary" component="div" sx={{ mt: 0.5 }}>
+                                  Ref: #{tx._id.slice(-6).toUpperCase()}
+                                </Typography>
                               </Box>
                             </Box>
                           </TableCell>
-                          <TableCell>
+                          <TableCell sx={{ py: 2.5 }}>
                             <Chip 
                               icon={getCategoryIcon(tx.category)}
                               label={TRANSACTION_CATEGORY[tx.category] || tx.category} 
                               size="small" 
-                              variant="outlined" 
+                              variant="filled" 
                               sx={{ 
-                                fontWeight: 700, 
+                                fontWeight: 800, 
                                 fontSize: '0.65rem', 
                                 height: 24, 
-                                borderRadius: 1.5, 
-                                px: 0.5,
-                                bgcolor: tx.category === 'COST_MANAGEMENT' ? '#eff6ff' : '#f8fafc', 
-                                color: tx.category === 'COST_MANAGEMENT' ? '#1d4ed8' : '#475569', 
-                                borderColor: tx.category === 'COST_MANAGEMENT' ? '#bfdbfe' : '#e2e8f0',
-                                '& .MuiChip-icon': { color: 'inherit' }
+                                borderRadius: 1.5,
+                                bgcolor: tx.category === 'COST_MANAGEMENT' ? '#002147' : '#f1f5f9', 
+                                color: tx.category === 'COST_MANAGEMENT' ? '#fff' : '#475569',
+                                '& .MuiChip-icon': { color: 'inherit', ml: '4px !important' }
                               }} 
                             />
                           </TableCell>
-                          <TableCell>
-                            <Chip 
-                              label={tx.type} 
-                              size="small" 
-                              sx={{ 
-                                fontWeight: 900, 
-                                fontSize: '0.6rem', 
-                                height: 20, 
-                                borderRadius: 1,
-                                bgcolor: tx.type === 'INCOME' ? '#dcfce7' : '#fee2e2',
-                                color: tx.type === 'INCOME' ? '#15803d' : '#b91c1c'
-                              }} 
-                            />
+                          <TableCell sx={{ py: 2.5 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: tx.type === 'INCOME' ? '#10b981' : '#f43f5e' }} />
+                              <Typography variant="caption" fontWeight={900} color={tx.type === 'INCOME' ? '#059669' : '#dc2626'}>
+                                {tx.type}
+                              </Typography>
+                            </Box>
                           </TableCell>
-                          <TableCell align="right">
-                            <Typography variant="subtitle2" fontWeight={900} color={tx.type === 'INCOME' ? '#10b981' : '#f43f5e'} sx={{ fontSize: '0.95rem' }}>
-                              {tx.type === 'INCOME' ? '+' : '-'}৳{tx.amount.toLocaleString()}
+                          <TableCell align="right" sx={{ py: 2.5 }}>
+                            <Typography variant="subtitle1" fontWeight={900} color={tx.type === 'INCOME' ? '#059669' : '#1e293b'} sx={{ letterSpacing: -0.5 }}>
+                              {tx.type === 'INCOME' ? '+' : ''}৳{tx.amount.toLocaleString()}
                             </Typography>
                           </TableCell>
-                          <TableCell align="right">
-                            <Stack direction="row" spacing={1} justifyContent="flex-end">
-                              {tx.proofUrl && (
+                          <TableCell align="right" sx={{ py: 2.5 }}>
+                            <Stack direction="row" spacing={1} justifyContent="flex-end" onClick={(e) => e.stopPropagation()}>
+                              {tx.proofUrls && tx.proofUrls.length > 0 && (
                                 <IconButton 
                                   size="small" 
-                                  component="a" 
-                                  href={tx.proofUrl} 
-                                  target="_blank" 
-                                  sx={{ bgcolor: '#f1f5f9', color: '#475569', '&:hover': { bgcolor: '#e2e8f0' } }}
+                                  sx={{ 
+                                    bgcolor: '#fff', 
+                                    color: '#002147', 
+                                    border: '1px solid #e2e8f0',
+                                    '&:hover': { bgcolor: '#f8fafc', borderColor: '#002147' } 
+                                  }}
                                 >
                                   <LucideFileText size={16} />
                                 </IconButton>
                               )}
                               <IconButton 
                                 size="small" 
-                                color="error" 
                                 onClick={() => handleDelete(tx._id)} 
-                                sx={{ bgcolor: '#fff1f2', color: '#e11d48', '&:hover': { bgcolor: '#ffe4e6' } }}
+                                sx={{ 
+                                  bgcolor: '#fff', 
+                                  color: '#dc2626', 
+                                  border: '1px solid #fee2e2',
+                                  '&:hover': { bgcolor: '#fef2f2', borderColor: '#dc2626' } 
+                                }}
                               >
                                 <LucideTrash2 size={16} />
                               </IconButton>
@@ -571,6 +633,128 @@ export default function FinanceManager() {
           />
         </Box>
       )}
+
+      {/* Transaction Details Dialog */}
+      <Dialog 
+        open={!!selectedTx} 
+        onClose={() => setSelectedTx(null)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 4, overflow: 'hidden' } }}
+      >
+        {selectedTx && (
+          <>
+            <DialogTitle sx={{ 
+              bgcolor: selectedTx.type === 'INCOME' ? '#f0fdf4' : '#fff1f2', 
+              color: selectedTx.type === 'INCOME' ? '#166534' : '#9f1239',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              pt: 3,
+              pb: 2
+            }}>
+              <Box>
+                <Typography variant="h6" fontWeight={900}>{selectedTx.title}</Typography>
+                <Typography variant="caption" sx={{ opacity: 0.7, fontWeight: 700 }}>
+                  REF ID: {selectedTx._id}
+                </Typography>
+              </Box>
+              <Chip 
+                label={selectedTx.type} 
+                size="small" 
+                sx={{ 
+                  fontWeight: 900, 
+                  bgcolor: selectedTx.type === 'INCOME' ? '#166534' : '#9f1239', 
+                  color: '#fff' 
+                }} 
+              />
+            </DialogTitle>
+            <DialogContent sx={{ pt: 3 }}>
+              <Stack spacing={3}>
+                <Box>
+                  <Typography variant="caption" fontWeight={800} color="text.secondary" gutterBottom display="block">DESCRIPTION</Typography>
+                  <Typography variant="body1" sx={{ color: '#1e293b', lineHeight: 1.6 }}>{selectedTx.description || 'No description provided.'}</Typography>
+                </Box>
+
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 6 }}>
+                    <Typography variant="caption" fontWeight={800} color="text.secondary" display="block">AMOUNT</Typography>
+                    <Typography variant="h6" fontWeight={900}>৳{selectedTx.amount.toLocaleString()}</Typography>
+                  </Grid>
+                  <Grid size={{ xs: 6 }}>
+                    <Typography variant="caption" fontWeight={800} color="text.secondary" display="block">CATEGORY</Typography>
+                    <Chip 
+                      label={TRANSACTION_CATEGORY[selectedTx.category] || selectedTx.category} 
+                      size="small"
+                      sx={{ fontWeight: 800, mt: 0.5 }}
+                    />
+                  </Grid>
+                </Grid>
+
+                <Divider />
+
+                <Box>
+                  <Typography variant="caption" fontWeight={800} color="text.secondary" gutterBottom display="block">AUDIT METADATA</Typography>
+                  <Box sx={{ p: 2, bgcolor: '#f8fafc', borderRadius: 3, border: '1px solid #f1f5f9' }}>
+                    <Grid container spacing={2}>
+                      <Grid size={{ xs: 12 }}>
+                        <Typography variant="caption" display="block" color="text.secondary">Recorded On</Typography>
+                        <Typography variant="body2" fontWeight={700}>{new Date(selectedTx.date).toLocaleString(undefined, { dateStyle: 'long', timeStyle: 'short' })}</Typography>
+                      </Grid>
+                    </Grid>
+                  </Box>
+                </Box>
+
+                {selectedTx.proofUrls && selectedTx.proofUrls.length > 0 && (
+                  <Box>
+                    <Typography variant="caption" fontWeight={800} color="text.secondary" gutterBottom display="block">DOCUMENTATION / PROOF ({selectedTx.proofUrls.length})</Typography>
+                    <Stack spacing={1}>
+                      {selectedTx.proofUrls.map((url: string, idx: number) => (
+                        <Button 
+                          key={idx}
+                          fullWidth 
+                          variant="outlined" 
+                          startIcon={<LucideFileText size={18} />}
+                          component="a"
+                          href={url}
+                          target="_blank"
+                          sx={{ 
+                            borderRadius: 3, 
+                            py: 1, 
+                            borderColor: '#e2e8f0', 
+                            color: '#002147',
+                            fontWeight: 700,
+                            justifyContent: 'flex-start',
+                            textTransform: 'none',
+                            '&:hover': { bgcolor: '#f8fafc', borderColor: '#002147' }
+                          }}
+                        >
+                          Document {idx + 1}
+                        </Button>
+                      ))}
+                    </Stack>
+                  </Box>
+                )}
+              </Stack>
+            </DialogContent>
+            <DialogActions sx={{ p: 2.5, bgcolor: '#f8fafc' }}>
+              <Button onClick={() => setSelectedTx(null)} sx={{ color: '#64748b', fontWeight: 800 }}>Close Archive</Button>
+              <Button 
+                variant="contained" 
+                color="error"
+                startIcon={<LucideTrash2 size={16} />}
+                onClick={() => {
+                  handleDelete(selectedTx._id);
+                  setSelectedTx(null);
+                }}
+                sx={{ borderRadius: 2, fontWeight: 800 }}
+              >
+                Delete Record
+              </Button>
+            </DialogActions>
+          </>
+        )}
+      </Dialog>
     </Box>
   );
 }
