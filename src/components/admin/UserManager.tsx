@@ -80,6 +80,12 @@ const PERMISSIONS = [
   'MANAGE_RESEARCH',
   'MANAGE_BLOGS',
   'MANAGE_WORK',
+  'MANAGE_ACCOUNTS',
+  'SUBMIT_COST',
+  'APPROVE_COST_L1',
+  'APPROVE_COST_L2',
+  'APPROVE_COST_FINAL',
+  'MANAGE_IMPORTANT_DATA',
 ];
 
 export default function UserManager() {

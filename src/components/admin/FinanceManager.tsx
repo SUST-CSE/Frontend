@@ -22,7 +22,6 @@ import {
   DialogActions,
   TextField,
   MenuItem,
-  Divider,
   CircularProgress,
   Tabs,
   Tab,
@@ -41,10 +40,6 @@ import {
   LucideCreditCard,
   LucideArrowUpRight,
   LucideArrowDownRight,
-  LucideCoffee,
-  LucideHardDrive,
-  LucideSettings,
-  LucideUsers,
   LucideLayers
 } from 'lucide-react';
 import {
@@ -63,6 +58,7 @@ import toast from 'react-hot-toast';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import CostManager from '../dashboard/CostManager';
+import TransactionDetailsDialog from '../dashboard/TransactionDetailsDialog';
 
 export default function FinanceManager() {
   const [activeTab, setActiveTab] = useState(0);
@@ -380,30 +376,17 @@ export default function FinanceManager() {
                 <Box sx={{ p: 5, textAlign: 'center' }}><CircularProgress size={24} /></Box>
               ) : (
                 <Table>
-                  <TableHead sx={{ bgcolor: '#f8fafc' }}>
-                    <TableRow>
-                      <TableCell sx={{ fontWeight: 800, color: '#64748b', textTransform: 'uppercase', fontSize: '0.7rem' }}>Date</TableCell>
-                      <TableCell sx={{ fontWeight: 800, color: '#64748b', textTransform: 'uppercase', fontSize: '0.7rem' }}>Details</TableCell>
-                      <TableCell sx={{ fontWeight: 800, color: '#64748b', textTransform: 'uppercase', fontSize: '0.7rem' }}>Category</TableCell>
-                      <TableCell sx={{ fontWeight: 800, color: '#64748b', textTransform: 'uppercase', fontSize: '0.7rem' }}>Status</TableCell>
-                      <TableCell sx={{ fontWeight: 800, color: '#64748b', textTransform: 'uppercase', fontSize: '0.7rem', textAlign: 'right' }}>Amount</TableCell>
-                      <TableCell sx={{ fontWeight: 800, color: '#64748b', textTransform: 'uppercase', fontSize: '0.7rem', textAlign: 'right' }}>Actions</TableCell>
+                  <TableHead>
+                    <TableRow sx={{ bgcolor: '#fff', borderBottom: '2px solid #f1f5f9' }}>
+                      <TableCell sx={{ fontWeight: 800, color: '#64748b', textTransform: 'uppercase', fontSize: '0.65rem', letterSpacing: 1 }}>DATE</TableCell>
+                      <TableCell sx={{ fontWeight: 800, color: '#64748b', textTransform: 'uppercase', fontSize: '0.65rem', letterSpacing: 1 }}>TRANSACTION DETAILS</TableCell>
+                      <TableCell sx={{ fontWeight: 800, color: '#64748b', textTransform: 'uppercase', fontSize: '0.65rem', letterSpacing: 1 }}>CATEGORY</TableCell>
+                      <TableCell sx={{ fontWeight: 800, color: '#64748b', textTransform: 'uppercase', fontSize: '0.65rem', letterSpacing: 1, textAlign: 'right' }}>AMOUNT</TableCell>
+                      <TableCell sx={{ fontWeight: 800, color: '#64748b', textTransform: 'uppercase', fontSize: '0.65rem', letterSpacing: 1, textAlign: 'right' }}>ACTIONS</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {transactions.map((tx: any) => {
-                      const getCategoryIcon = (cat: string) => {
-                        switch (cat) {
-                          case 'SOCIETY_FUND': return <LucideUsers size={14} />;
-                          case 'EVENT_SPONSORSHIP': return <LucideTrendingUp size={14} />;
-                          case 'EQUIPMENT_PURCHASE': return <LucideHardDrive size={14} />;
-                          case 'MAINTENANCE': return <LucideSettings size={14} />;
-                          case 'REFRESHMENT': return <LucideCoffee size={14} />;
-                          case 'COST_MANAGEMENT': return <LucideLayers size={14} />;
-                          default: return <LucideFileText size={14} />;
-                        }
-                      };
-
                       return (
                         <TableRow 
                           key={tx._id} 
@@ -411,67 +394,71 @@ export default function FinanceManager() {
                           onClick={() => setSelectedTx(tx)}
                           sx={{ 
                             cursor: 'pointer',
-                            '&:last-child td, &:last-child th': { border: 0 },
-                            '&:hover': { bgcolor: '#f8fafc !important' }
+                            transition: 'all 0.2s',
+                            position: 'relative',
+                            '&:hover': { bgcolor: '#f8fafc !important' },
+                            '&:hover .action-btn': { opacity: 1, transform: 'translateX(0)' }
                           }}
                         >
-                          <TableCell sx={{ py: 2.5 }}>
-                            <Typography variant="caption" sx={{ fontWeight: 800, color: '#1e293b', display: 'block' }}>
-                              {new Date(tx.date).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}
+                          <TableCell sx={{ py: 2.5, width: 120 }}>
+                            <Box sx={{ 
+                              position: 'absolute', 
+                              left: 0, 
+                              top: 0, 
+                              bottom: 0, 
+                              width: 3, 
+                              bgcolor: tx.type === 'INCOME' ? '#22c55e' : '#ef4444',
+                              borderRadius: '0 4px 4px 0'
+                            }} />
+                            <Typography variant="body2" sx={{ fontWeight: 700, color: '#475569' }}>
+                              {new Date(tx.date).toLocaleDateString('en-US', { day: '2-digit', month: 'short' })}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                              {new Date(tx.date).getFullYear()}
                             </Typography>
                           </TableCell>
                           <TableCell sx={{ py: 2.5 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                               <Box sx={{ 
-                                width: 36,
-                                height: 36,
+                                width: 32,
+                                height: 32,
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                borderRadius: 2, 
+                                borderRadius: 1.5, 
                                 bgcolor: tx.type === 'INCOME' ? '#f0fdf4' : '#fff1f2',
                                 color: tx.type === 'INCOME' ? '#16a34a' : '#ef4444',
                                 border: '1px solid',
                                 borderColor: tx.type === 'INCOME' ? '#dcfce7' : '#fee2e2'
                               }}>
-                                {tx.type === 'INCOME' ? <LucideArrowUpRight size={18} /> : <LucideArrowDownRight size={18} />}
+                                {tx.type === 'INCOME' ? <LucideArrowUpRight size={16} /> : <LucideArrowDownRight size={16} />}
                               </Box>
                               <Box>
-                                <Typography variant="subtitle2" fontWeight={800} sx={{ fontSize: '0.85rem', color: '#1e293b', lineHeight: 1.2 }}>{tx.title}</Typography>
-                                <Typography variant="caption" color="text.secondary" component="div" sx={{ mt: 0.5 }}>
-                                  Ref: #{tx._id.slice(-6).toUpperCase()}
-                                </Typography>
+                                <Typography variant="subtitle2" fontWeight={800} sx={{ fontSize: '0.85rem', color: '#0f172a', lineHeight: 1.2 }}>{tx.title}</Typography>
+                                {tx.relatedCostRequest && (
+                                  <Typography variant="caption" sx={{ color: '#16a34a', fontWeight: 800, fontSize: '0.65rem' }}>
+                                    AUTHENTICATED COST
+                                  </Typography>
+                                )}
                               </Box>
                             </Box>
                           </TableCell>
                           <TableCell sx={{ py: 2.5 }}>
                             <Chip 
-                              icon={getCategoryIcon(tx.category)}
                               label={TRANSACTION_CATEGORY[tx.category] || tx.category} 
-                              size="small" 
-                              variant="filled" 
+                              size="small"
                               sx={{ 
-                                fontWeight: 800, 
-                                fontSize: '0.65rem', 
-                                height: 24, 
-                                borderRadius: 1.5,
-                                bgcolor: tx.category === 'COST_MANAGEMENT' ? '#002147' : '#f1f5f9', 
-                                color: tx.category === 'COST_MANAGEMENT' ? '#fff' : '#475569',
-                                '& .MuiChip-icon': { color: 'inherit', ml: '4px !important' }
-                              }} 
+                                fontWeight: 700, 
+                                fontSize: '0.7rem',
+                                bgcolor: '#f1f5f9',
+                                color: '#475569',
+                                height: 24
+                              }}
                             />
                           </TableCell>
-                          <TableCell sx={{ py: 2.5 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: tx.type === 'INCOME' ? '#10b981' : '#f43f5e' }} />
-                              <Typography variant="caption" fontWeight={900} color={tx.type === 'INCOME' ? '#059669' : '#dc2626'}>
-                                {tx.type}
-                              </Typography>
-                            </Box>
-                          </TableCell>
-                          <TableCell align="right" sx={{ py: 2.5 }}>
-                            <Typography variant="subtitle1" fontWeight={900} color={tx.type === 'INCOME' ? '#059669' : '#1e293b'} sx={{ letterSpacing: -0.5 }}>
-                              {tx.type === 'INCOME' ? '+' : ''}৳{tx.amount.toLocaleString()}
+                          <TableCell sx={{ py: 2.5, textAlign: 'right' }}>
+                            <Typography variant="subtitle1" fontWeight={900} color={tx.type === 'INCOME' ? '#15803d' : '#b91c1c'}>
+                              {tx.type === 'INCOME' ? '+' : '-'}৳{tx.amount.toLocaleString()}
                             </Typography>
                           </TableCell>
                           <TableCell align="right" sx={{ py: 2.5 }}>
@@ -635,126 +622,13 @@ export default function FinanceManager() {
       )}
 
       {/* Transaction Details Dialog */}
-      <Dialog 
-        open={!!selectedTx} 
+      <TransactionDetailsDialog 
+        open={!!selectedTx}
         onClose={() => setSelectedTx(null)}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{ sx: { borderRadius: 4, overflow: 'hidden' } }}
-      >
-        {selectedTx && (
-          <>
-            <DialogTitle sx={{ 
-              bgcolor: selectedTx.type === 'INCOME' ? '#f0fdf4' : '#fff1f2', 
-              color: selectedTx.type === 'INCOME' ? '#166534' : '#9f1239',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              pt: 3,
-              pb: 2
-            }}>
-              <Box>
-                <Typography variant="h6" fontWeight={900}>{selectedTx.title}</Typography>
-                <Typography variant="caption" sx={{ opacity: 0.7, fontWeight: 700 }}>
-                  REF ID: {selectedTx._id}
-                </Typography>
-              </Box>
-              <Chip 
-                label={selectedTx.type} 
-                size="small" 
-                sx={{ 
-                  fontWeight: 900, 
-                  bgcolor: selectedTx.type === 'INCOME' ? '#166534' : '#9f1239', 
-                  color: '#fff' 
-                }} 
-              />
-            </DialogTitle>
-            <DialogContent sx={{ pt: 3 }}>
-              <Stack spacing={3}>
-                <Box>
-                  <Typography variant="caption" fontWeight={800} color="text.secondary" gutterBottom display="block">DESCRIPTION</Typography>
-                  <Typography variant="body1" sx={{ color: '#1e293b', lineHeight: 1.6 }}>{selectedTx.description || 'No description provided.'}</Typography>
-                </Box>
-
-                <Grid container spacing={2}>
-                  <Grid size={{ xs: 6 }}>
-                    <Typography variant="caption" fontWeight={800} color="text.secondary" display="block">AMOUNT</Typography>
-                    <Typography variant="h6" fontWeight={900}>৳{selectedTx.amount.toLocaleString()}</Typography>
-                  </Grid>
-                  <Grid size={{ xs: 6 }}>
-                    <Typography variant="caption" fontWeight={800} color="text.secondary" display="block">CATEGORY</Typography>
-                    <Chip 
-                      label={TRANSACTION_CATEGORY[selectedTx.category] || selectedTx.category} 
-                      size="small"
-                      sx={{ fontWeight: 800, mt: 0.5 }}
-                    />
-                  </Grid>
-                </Grid>
-
-                <Divider />
-
-                <Box>
-                  <Typography variant="caption" fontWeight={800} color="text.secondary" gutterBottom display="block">AUDIT METADATA</Typography>
-                  <Box sx={{ p: 2, bgcolor: '#f8fafc', borderRadius: 3, border: '1px solid #f1f5f9' }}>
-                    <Grid container spacing={2}>
-                      <Grid size={{ xs: 12 }}>
-                        <Typography variant="caption" display="block" color="text.secondary">Recorded On</Typography>
-                        <Typography variant="body2" fontWeight={700}>{new Date(selectedTx.date).toLocaleString(undefined, { dateStyle: 'long', timeStyle: 'short' })}</Typography>
-                      </Grid>
-                    </Grid>
-                  </Box>
-                </Box>
-
-                {selectedTx.proofUrls && selectedTx.proofUrls.length > 0 && (
-                  <Box>
-                    <Typography variant="caption" fontWeight={800} color="text.secondary" gutterBottom display="block">DOCUMENTATION / PROOF ({selectedTx.proofUrls.length})</Typography>
-                    <Stack spacing={1}>
-                      {selectedTx.proofUrls.map((url: string, idx: number) => (
-                        <Button 
-                          key={idx}
-                          fullWidth 
-                          variant="outlined" 
-                          startIcon={<LucideFileText size={18} />}
-                          component="a"
-                          href={url}
-                          target="_blank"
-                          sx={{ 
-                            borderRadius: 3, 
-                            py: 1, 
-                            borderColor: '#e2e8f0', 
-                            color: '#002147',
-                            fontWeight: 700,
-                            justifyContent: 'flex-start',
-                            textTransform: 'none',
-                            '&:hover': { bgcolor: '#f8fafc', borderColor: '#002147' }
-                          }}
-                        >
-                          Document {idx + 1}
-                        </Button>
-                      ))}
-                    </Stack>
-                  </Box>
-                )}
-              </Stack>
-            </DialogContent>
-            <DialogActions sx={{ p: 2.5, bgcolor: '#f8fafc' }}>
-              <Button onClick={() => setSelectedTx(null)} sx={{ color: '#64748b', fontWeight: 800 }}>Close Archive</Button>
-              <Button 
-                variant="contained" 
-                color="error"
-                startIcon={<LucideTrash2 size={16} />}
-                onClick={() => {
-                  handleDelete(selectedTx._id);
-                  setSelectedTx(null);
-                }}
-                sx={{ borderRadius: 2, fontWeight: 800 }}
-              >
-                Delete Record
-              </Button>
-            </DialogActions>
-          </>
-        )}
-      </Dialog>
+        transaction={selectedTx}
+        onDelete={handleDelete}
+        isAdmin={true}
+      />
     </Box>
   );
 }

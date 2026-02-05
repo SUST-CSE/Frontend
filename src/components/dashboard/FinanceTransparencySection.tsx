@@ -13,14 +13,17 @@ import {
   TableHead, 
   TableRow, 
   Chip, 
-  Button, 
   CircularProgress 
 } from '@mui/material';
-import { LucideWallet, LucideTrendingUp, LucideTrendingDown, LucideFileText, LucideImage } from 'lucide-react';
+import { LucideWallet, LucideTrendingUp, LucideTrendingDown } from 'lucide-react';
 import { useGetTransactionsQuery, useGetFinancialSummaryQuery } from '@/features/finance/financeApi';
-import { TRANSACTION_CATEGORY, TX_TYPE_COLORS } from '@/features/finance/financeConstants';
+import { TRANSACTION_CATEGORY } from '@/features/finance/financeConstants';
+import { useState } from 'react';
+import TransactionDetailsDialog from './TransactionDetailsDialog';
+import { LucideArrowUpRight, LucideArrowDownRight } from 'lucide-react';
 
 export default function FinanceTransparencySection() {
+  const [selectedTx, setSelectedTx] = useState<any>(null);
   const { data: summaryResponse, isLoading: summaryLoading } = useGetFinancialSummaryQuery(undefined);
   const { data: transactionsResponse, isLoading: transactionsLoading } = useGetTransactionsQuery({});
 
@@ -69,70 +72,92 @@ export default function FinanceTransparencySection() {
         ))}
       </Grid>
 
-      {/* Detailed Transactions */}
-      <Paper elevation={0} sx={{ p: 4, borderRadius: 4, border: '1px solid #e2e8f0', bgcolor: '#fff' }}>
-        <Typography variant="h6" fontWeight={800} sx={{ mb: 4 }}>Recent Transactions</Typography>
+      <Paper elevation={0} sx={{ borderRadius: 5, border: '1px solid #e2e8f0', bgcolor: '#fff', overflow: 'hidden' }}>
+        <Box sx={{ p: 3, borderBottom: '1px solid #f1f5f9' }}>
+          <Typography variant="h6" fontWeight={800} color="#002147">Financial Audit Log</Typography>
+        </Box>
         
         <TableContainer>
-          <Table size="small">
-            <TableHead sx={{ bgcolor: '#f8fafc' }}>
-              <TableRow>
-                <TableCell sx={{ fontWeight: 800 }}>Date</TableCell>
-                <TableCell sx={{ fontWeight: 800 }}>Title</TableCell>
-                <TableCell sx={{ fontWeight: 800 }}>Category</TableCell>
-                <TableCell sx={{ fontWeight: 800 }}>Type</TableCell>
-                <TableCell sx={{ fontWeight: 800 }}>Proof</TableCell>
-                <TableCell sx={{ fontWeight: 800, textAlign: 'right' }}>Amount</TableCell>
+          <Table>
+            <TableHead>
+              <TableRow sx={{ bgcolor: '#fff', borderBottom: '2px solid #f1f5f9' }}>
+                <TableCell sx={{ fontWeight: 800, color: '#64748b', textTransform: 'uppercase', fontSize: '0.65rem', letterSpacing: 1 }}>DATE</TableCell>
+                <TableCell sx={{ fontWeight: 800, color: '#64748b', textTransform: 'uppercase', fontSize: '0.65rem', letterSpacing: 1 }}>DETAILS</TableCell>
+                <TableCell sx={{ fontWeight: 800, color: '#64748b', textTransform: 'uppercase', fontSize: '0.65rem', letterSpacing: 1 }}>CATEGORY</TableCell>
+                <TableCell sx={{ fontWeight: 800, color: '#64748b', textTransform: 'uppercase', fontSize: '0.65rem', letterSpacing: 1, textAlign: 'right' }}>AMOUNT</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {transactions.map((tx: { 
-                _id: string; 
-                date: string; 
-                title: string; 
-                description: string; 
-                category: string; 
-                type: 'INCOME' | 'EXPENSE'; 
-                proofUrl?: string; 
-                proofType?: string; 
-                amount: number 
-              }) => (
-                <TableRow key={tx._id} hover>
-                  <TableCell sx={{ whiteSpace: 'nowrap', fontSize: '0.875rem' }}>{new Date(tx.date).toLocaleDateString()}</TableCell>
-                  <TableCell>
-                    <Typography variant="subtitle2" fontWeight={700} sx={{ fontSize: '0.875rem' }}>{tx.title}</Typography>
-                    <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block', maxWidth: 200 }}>
-                      {tx.description}
+              {transactions.map((tx: any) => (
+                <TableRow 
+                  key={tx._id} 
+                  hover 
+                  onClick={() => setSelectedTx(tx)}
+                  sx={{ 
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    position: 'relative',
+                    '&:hover': { bgcolor: '#f8fafc !important' }
+                  }}
+                >
+                  <TableCell sx={{ py: 2.5, width: 120 }}>
+                    <Box sx={{ 
+                      position: 'absolute', 
+                      left: 0, 
+                      top: 0, 
+                      bottom: 0, 
+                      width: 3, 
+                      bgcolor: tx.type === 'INCOME' ? '#22c55e' : '#ef4444',
+                      borderRadius: '0 4px 4px 0'
+                    }} />
+                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#475569' }}>
+                      {new Date(tx.date).toLocaleDateString('en-US', { day: '2-digit', month: 'short' })}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                      {new Date(tx.date).getFullYear()}
                     </Typography>
                   </TableCell>
-                  <TableCell>
-                    <Chip label={TRANSACTION_CATEGORY[tx.category] || tx.category} size="small" variant="outlined" sx={{ fontWeight: 600, fontSize: '0.7rem' }} />
+                  <TableCell sx={{ py: 2.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Box sx={{ 
+                        width: 32,
+                        height: 32,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: 1.5, 
+                        bgcolor: tx.type === 'INCOME' ? '#f0fdf4' : '#fff1f2',
+                        color: tx.type === 'INCOME' ? '#16a34a' : '#ef4444',
+                        border: '1px solid',
+                        borderColor: tx.type === 'INCOME' ? '#dcfce7' : '#fee2e2'
+                      }}>
+                        {tx.type === 'INCOME' ? <LucideArrowUpRight size={16} /> : <LucideArrowDownRight size={16} />}
+                      </Box>
+                      <Box>
+                        <Typography variant="subtitle2" fontWeight={800} sx={{ fontSize: '0.85rem', color: '#0f172a', lineHeight: 1.2 }}>{tx.title}</Typography>
+                        {tx.relatedCostRequest && (
+                          <Typography variant="caption" sx={{ color: '#16a34a', fontWeight: 800, fontSize: '0.65rem' }}>
+                            AUTHENTICATED COST
+                          </Typography>
+                        )}
+                      </Box>
+                    </Box>
                   </TableCell>
-                  <TableCell>
+                  <TableCell sx={{ py: 2.5 }}>
                     <Chip 
-                      label={tx.type} 
-                      size="small" 
-                      color={TX_TYPE_COLORS[tx.type]} 
-                      sx={{ fontWeight: 800, fontSize: '0.65rem' }} 
+                      label={TRANSACTION_CATEGORY[tx.category] || tx.category} 
+                      size="small"
+                      sx={{ 
+                        fontWeight: 700, 
+                        fontSize: '0.7rem',
+                        bgcolor: '#f1f5f9',
+                        color: '#475569',
+                        height: 24
+                      }}
                     />
                   </TableCell>
-                  <TableCell>
-                    {tx.proofUrl ? (
-                      <Button 
-                        size="small" 
-                        startIcon={tx.proofType === 'pdf' ? <LucideFileText size={14} /> : <LucideImage size={14} />}
-                        href={tx.proofUrl}
-                        target="_blank"
-                        sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.75rem', p: 0.5 }}
-                      >
-                        View
-                      </Button>
-                    ) : (
-                      <Typography variant="caption" color="text.disabled">None</Typography>
-                    )}
-                  </TableCell>
-                  <TableCell align="right">
-                    <Typography variant="subtitle2" fontWeight={800} color={tx.type === 'INCOME' ? 'success.main' : 'error.main'}>
+                  <TableCell sx={{ py: 2.5, textAlign: 'right' }}>
+                    <Typography variant="subtitle1" fontWeight={900} color={tx.type === 'INCOME' ? '#15803d' : '#b91c1c'}>
                       {tx.type === 'INCOME' ? '+' : '-'}৳{tx.amount.toLocaleString()}
                     </Typography>
                   </TableCell>
@@ -140,7 +165,7 @@ export default function FinanceTransparencySection() {
               ))}
               {transactions.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} sx={{ py: 10, textAlign: 'center' }}>
+                  <TableCell colSpan={4} sx={{ py: 10, textAlign: 'center' }}>
                     <Typography color="text.secondary">No transactions recorded yet.</Typography>
                   </TableCell>
                 </TableRow>
@@ -149,6 +174,13 @@ export default function FinanceTransparencySection() {
           </Table>
         </TableContainer>
       </Paper>
+
+      <TransactionDetailsDialog 
+        open={!!selectedTx}
+        onClose={() => setSelectedTx(null)}
+        transaction={selectedTx}
+        isAdmin={false}
+      />
     </Box>
   );
 }
