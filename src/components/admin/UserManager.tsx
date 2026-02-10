@@ -29,6 +29,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  ListSubheader,
   TextField,
   Pagination
 } from '@mui/material';
@@ -86,6 +87,9 @@ const PERMISSIONS = [
   'APPROVE_COST_L2',
   'APPROVE_COST_FINAL',
   'MANAGE_IMPORTANT_DATA',
+  'APPROVE_APPLICATION_L0',
+  'APPROVE_APPLICATION_L1',
+  'APPROVE_APPLICATION_L2',
 ];
 
 export default function UserManager() {
@@ -465,9 +469,29 @@ export default function UserManager() {
                   </Box>
                 )}
               >
-                {PERMISSIONS.map((p) => (
-                  <MenuItem key={p} value={p}>{p}</MenuItem>
-                ))}
+                <ListSubheader>Application Workflow</ListSubheader>
+                <MenuItem value="APPROVE_APPLICATION_L0">L0 Approver (Advisor/First Stage)</MenuItem>
+                <MenuItem value="APPROVE_APPLICATION_L1">L1 Approver (Head/Second Stage)</MenuItem>
+                <MenuItem value="APPROVE_APPLICATION_L2">L2 Approver (Final Stage)</MenuItem>
+
+                <ListSubheader>Finance & Cost</ListSubheader>
+                <MenuItem value="SUBMIT_COST">Submit Cost Proposals</MenuItem>
+                <MenuItem value="APPROVE_COST_L1">Finance L1 Approver (GS)</MenuItem>
+                <MenuItem value="APPROVE_COST_L2">Finance L2 Approver (Treasurer)</MenuItem>
+                <MenuItem value="APPROVE_COST_FINAL">Finance Final Approver (Head)</MenuItem>
+
+                <ListSubheader>General Management</ListSubheader>
+                <MenuItem value="MANAGE_USERS">Manage Users</MenuItem>
+                <MenuItem value="MANAGE_CONTENT">Manage Content</MenuItem>
+                <MenuItem value="MANAGE_NOTICES">Manage Notices</MenuItem>
+                <MenuItem value="MANAGE_EVENTS">Manage Events</MenuItem>
+                <MenuItem value="MANAGE_RESEARCH">Manage Research</MenuItem>
+                <MenuItem value="MANAGE_ACHIEVEMENTS">Manage Achievements</MenuItem>
+                <MenuItem value="MANAGE_BLOGS">Manage Blogs</MenuItem>
+                <MenuItem value="MANAGE_SOCIETIES">Manage Societies</MenuItem>
+                <MenuItem value="MANAGE_WORK">Manage Work Assignments</MenuItem>
+                <MenuItem value="MANAGE_IMPORTANT_DATA">Manage Important Data</MenuItem>
+                <MenuItem value="VIEW_EMAIL_LOGS">View Email Logs</MenuItem>
               </Select>
             </FormControl>
           </Stack>
@@ -480,11 +504,14 @@ export default function UserManager() {
             disabled={isUpdatingUser}
             onClick={async () => {
               try {
-                await updateUser({ id: selectedUser._id, data: selectedUser }).unwrap();
+                // Sanitize payload to remove immutable fields
+                const { _id, createdAt, updatedAt, ...updateData } = selectedUser;
+                await updateUser({ id: selectedUser._id, data: updateData }).unwrap();
                 toast.success('User updated successfully');
                 setOpenEditDialog(false);
                 refetch();
               } catch (err) {
+                console.error(err);
                 toast.error('Failed to update user');
               }
             }}

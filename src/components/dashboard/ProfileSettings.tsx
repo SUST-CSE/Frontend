@@ -32,6 +32,11 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
   const [preview, setPreview] = useState(user?.profileImage || '');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const [sigPreview, setSigPreview] = useState(user?.signatureUrl || '');
+  const [selectedSigFile, setSelectedSigFile] = useState<File | null>(null);
+  const sigInputRef = useRef<HTMLInputElement>(null);
+
   const [selectedNotices, setSelectedNotices] = useState<string[]>(user?.notificationPreferences?.notices || []);
   const [selectedEvents, setSelectedEvents] = useState<string[]>(user?.notificationPreferences?.events || []);
   
@@ -59,6 +64,18 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSigFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedSigFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSigPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
@@ -127,6 +144,9 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
     }
     if (selectedFile) {
       formData.append('profileImage', selectedFile);
+    }
+    if (selectedSigFile) {
+      formData.append('signatureUrl', selectedSigFile);
     }
     
     // Send as JSON string for multipart compatibility
@@ -207,6 +227,60 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
             </Typography>
           </Box>
         </Box>
+
+        {/* Digital Signature Upload (For L1/L2 Approvers) */}
+        {(user.role === 'TEACHER' || user.role === 'ADMIN') && (
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: 'center', gap: 4, textAlign: { xs: 'center', sm: 'left' } }}>
+            <Box sx={{ position: 'relative' }}>
+              <Box 
+                sx={{ 
+                  width: 200, 
+                  height: 100, 
+                  border: '2px dashed #cbd5e1', 
+                  borderRadius: 2, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  bgcolor: '#f8fafc',
+                  overflow: 'hidden'
+                }}
+              >
+                {sigPreview ? (
+                  <img src={sigPreview} alt="Signature" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                ) : (
+                  <Typography variant="caption" color="text.secondary">No Signature Uploaded</Typography>
+                )}
+              </Box>
+              <IconButton 
+                onClick={() => sigInputRef.current?.click()}
+                sx={{ 
+                  position: 'absolute', 
+                  bottom: -10, 
+                  right: -10, 
+                  bgcolor: '#002147', 
+                  color: '#fff',
+                  '&:hover': { bgcolor: '#003366' }
+                }}
+                size="small"
+              >
+                <LucideCamera size={16} />
+              </IconButton>
+              <input 
+                type="file" 
+                hidden 
+                ref={sigInputRef} 
+                accept="image/*"
+                onChange={handleSigFileChange}
+              />
+            </Box>
+            <Box>
+              <Typography variant="subtitle2" fontWeight={700}>Digital Signature</Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', maxWidth: 300 }}>
+                Upload a transparent signature image (PNG). This will be used to sign official applications (L1/L2).
+              </Typography>
+            </Box>
+          </Box>
+        )}
 
         <Stack spacing={3}>
           <TextField 

@@ -33,6 +33,14 @@ export const applicationApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Application'],
     }),
+    approveApplicationStage: builder.mutation({
+      query: ({ id, stage, status, feedback }) => ({
+        url: `/applications/${id}/approve-stage`,
+        method: 'POST',
+        body: { stage, status, feedback },
+      }),
+      invalidatesTags: ['Application'],
+    }),
   }),
 });
 
@@ -42,4 +50,5 @@ export const {
   useGetApplicationByIdQuery,
   useSubmitApplicationMutation,
   useUpdateApplicationStatusMutation,
+  useApproveApplicationStageMutation,
 } = applicationApi;

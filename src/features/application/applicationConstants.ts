@@ -1,5 +1,7 @@
 export const APPLICATION_STATUS = {
-  PENDING: 'PENDING',
+  PENDING_L0: 'PENDING_L0',
+  PENDING_L1: 'PENDING_L1',
+  PENDING_L2: 'PENDING_L2',
   APPROVED: 'APPROVED',
   REJECTED: 'REJECTED',
 };
@@ -13,7 +15,9 @@ export const APPLICATION_TYPE = {
 };
 
 export const APP_STATUS_COLORS: Record<string, "warning" | "success" | "error" | "default" | "primary" | "secondary" | "info"> = {
-  PENDING: 'warning',
+  PENDING_L0: 'warning',
+  PENDING_L1: 'info',
+  PENDING_L2: 'primary',
   APPROVED: 'success',
   REJECTED: 'error',
 };

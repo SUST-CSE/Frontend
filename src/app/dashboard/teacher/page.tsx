@@ -45,6 +45,9 @@ import { useRef, useMemo } from 'react';
 import ProfileSettings from '@/components/dashboard/ProfileSettings';
 import MyBlogsList from '@/components/dashboard/MyBlogsList';
 import ComposeBlog from '@/components/dashboard/ComposeBlog';
+import MyApplicationsSection from '@/components/dashboard/MyApplicationsSection';
+import ComposeApplication from '@/components/dashboard/ComposeApplication';
+import MyWorkSection from '@/components/dashboard/MyWorkSection';
 import FinanceTransparencySection from '@/components/dashboard/FinanceTransparencySection';
 import CostManager from '@/components/dashboard/CostManager';
 import FinanceManager from '@/components/admin/FinanceManager';
@@ -139,11 +142,16 @@ export default function TeacherDashboard() {
     );
   }, [activeTab]);
 
+// ... 
+
   const tabs: TabConfig[] = useMemo(() => [
     { id: 'overview', label: 'Overview', icon: <LucideLayoutDashboard size={18} />, component: null },
     { id: 'finance', label: 'Department Finance', icon: <LucideWallet size={18} />, component: <FinanceTransparencySection /> },
+    { id: 'work', label: 'Your Work', icon: <LucideBriefcase size={18} />, component: <MyWorkSection /> },
+    { id: 'applications', label: 'Applications', icon: <LucideFileText size={18} />, component: <MyApplicationsSection /> },
+    { id: 'write-app', label: 'Write Application', icon: <LucidePenTool size={18} />, component: <ComposeApplication onSuccess={() => setActiveTab(3)} /> },
     { id: 'blogs', label: 'My Blogs', icon: <LucideBookOpen size={18} />, component: <MyBlogsList /> },
-    { id: 'write', label: 'Write Blog', icon: <LucidePenTool size={18} />, component: <ComposeBlog onSuccess={() => setActiveTab(2)} /> },
+    { id: 'write', label: 'Write Blog', icon: <LucidePenTool size={18} />, component: <ComposeBlog onSuccess={() => setActiveTab(5)} /> },
   ], [setActiveTab]);
 
   const managementTabs = useMemo(() => {
@@ -151,7 +159,15 @@ export default function TeacherDashboard() {
     if (isAdmin || permissions.includes('MANAGE_ACCOUNTS')) {
       list.push({ id: 'manage-finance', label: 'Manage Finance', icon: <LucideWallet size={18} />, component: <FinanceManager /> });
     }
-    if (isAdmin || permissions.includes('MANAGE_APPLICATIONS')) {
+    
+    // Check for ANY application management or approval permission
+    const hasAppPermission = isAdmin || 
+      permissions.includes('MANAGE_APPLICATIONS') ||
+      permissions.includes('APPROVE_APPLICATION_L0') ||
+      permissions.includes('APPROVE_APPLICATION_L1') ||
+      permissions.includes('APPROVE_APPLICATION_L2');
+      
+    if (hasAppPermission) {
       list.push({ id: 'apps', label: 'Manage Apps', icon: <LucideClipboardList size={18} />, component: <ApplicationManager /> });
     }
     if (isAdmin || permissions.includes('MANAGE_WORK')) {

@@ -45,3 +45,27 @@ a {
 ::-webkit-scrollbar-thumb:hover {
   background: #16a34a;
 }
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #official-print-layout, #official-print-layout * {
+    visibility: visible;
+  }
+  #official-print-layout {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    display: block !important;
+  }
+  /* Force hide all MUI overlays */
+  .MuiDialog-root, .MuiBackdrop-root, .MuiPopover-root {
+    display: none !important;
+  }
+  /* Preserve colors and images */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

@@ -23,6 +23,8 @@ import {
   CircularProgress,
   Tabs,
   Tab,
+  MenuItem,
+  Alert,
 } from '@mui/material';
 import {
   LucideFileText,
@@ -31,17 +33,25 @@ import {
   LucideEye,
   LucideDownload,
   LucideMessageSquare,
+  LucideUser,
+  LucidePrinter,
 } from 'lucide-react';
 import {
   useGetApplicationsQuery,
   useUpdateApplicationStatusMutation,
+  useApproveApplicationStageMutation,
 } from '@/features/application/applicationApi';
+import { useGetApproversQuery, useGetUserByIdQuery } from '@/features/user/userApi';
 import { 
   APPLICATION_STATUS, 
   APP_STATUS_COLORS, 
   APP_TYPE_LABELS 
 } from '@/features/application/applicationConstants';
 import toast from 'react-hot-toast';
+import { Divider } from '@mui/material';
+
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/store';
 
 export default function ApplicationManager() {
   const [activeTab, setActiveTab] = useState(0);
@@ -49,9 +59,40 @@ export default function ApplicationManager() {
   const [openReviewDialog, setOpenReviewDialog] = useState(false);
   const [adminFeedback, setAdminFeedback] = useState('');
 
-  const statusFilter = activeTab === 0 ? APPLICATION_STATUS.PENDING : undefined;
-  const { data: appsData, isLoading } = useGetApplicationsQuery({ status: statusFilter });
+  const { user } = useSelector((state: RootState) => state.auth);
+  const { data: currentUserData } = useGetUserByIdQuery(user?.id, { skip: !user?.id });
+  const currentUser = currentUserData?.data || currentUserData; // Handle potential wrapper
+
+  const permissions = user?.permissions || [];
+  const isAdmin = user?.role === 'ADMIN';
+
+  const hasSignature = !!currentUser?.signatureUrl;
+  
+  // Check if user is assigned reviewer for the selected app
+  const isAssignedL0 = selectedApp?.l0Reviewer?._id === user?.id || selectedApp?.l0Reviewer === user?.id;
+  const isAssignedL1 = selectedApp?.medium?._id === user?.id || selectedApp?.medium === user?.id;
+  const isAssignedL2 = selectedApp?.to?._id === user?.id || selectedApp?.to === user?.id;
+
+  const canApproveL0 = isAdmin || permissions?.includes('APPROVE_APPLICATION_L0') || isAssignedL0;
+  const canApproveL1 = isAdmin || permissions?.includes('APPROVE_APPLICATION_L1') || isAssignedL1;
+  const canApproveL2 = isAdmin || permissions?.includes('APPROVE_APPLICATION_L2') || isAssignedL2;
+
+  // Show warning only if relevant to current stage and user can approve
+  const showSignatureWarning = selectedApp && !hasSignature && (
+    (selectedApp.status === APPLICATION_STATUS.PENDING_L1 && canApproveL1) ||
+    (selectedApp.status === APPLICATION_STATUS.PENDING_L2 && canApproveL2)
+  );
+
+  const { data: approversData } = useGetApproversQuery({ limit: 100 });
+  const approvers = approversData?.data?.users || approversData?.users || [];
+
+  const statusFilter = activeTab === 0 
+    ? { status: [APPLICATION_STATUS.PENDING_L0, APPLICATION_STATUS.PENDING_L1, APPLICATION_STATUS.PENDING_L2].join(',') } 
+    : undefined;
+    
+  const { data: appsData, isLoading } = useGetApplicationsQuery(statusFilter);
   const [updateStatus, { isLoading: isUpdating }] = useUpdateApplicationStatusMutation();
+  const [approveStage, { isLoading: isApprovingStage }] = useApproveApplicationStageMutation();
 
   const applications = appsData?.data || [];
 
@@ -62,12 +103,29 @@ export default function ApplicationManager() {
         status, 
         feedback: adminFeedback 
       }).unwrap();
-      toast.success(`Application ${status.toLowerCase()} successfully`);
+      toast.success(`Application status updated successfully`);
       setOpenReviewDialog(false);
       setSelectedApp(null);
       setAdminFeedback('');
-    } catch (err) {
-      toast.error('Failed to update application');
+    } catch (err: any) {
+      toast.error(err?.data?.message || 'Failed to update application');
+    }
+  };
+
+  const handleStageApproval = async (stage: string, status: 'APPROVED' | 'REJECTED') => {
+    try {
+      await approveStage({
+        id: selectedApp._id,
+        stage,
+        status,
+        feedback: adminFeedback
+      }).unwrap();
+      toast.success(`Stage ${stage.toUpperCase()} ${status.toLowerCase()} successfully`);
+      setOpenReviewDialog(false);
+      setSelectedApp(null);
+      setAdminFeedback('');
+    } catch (err: any) {
+      toast.error(err?.data?.message || 'Failed to process stage approval');
     }
   };
 
@@ -194,28 +252,232 @@ export default function ApplicationManager() {
                 </Typography>
               </Box>
 
+              {/* Official Signed Document - PRIORITIZED for Reviewers */}
+              {selectedApp.signedPdfUrl && (
+                <Box sx={{ p: 2, borderRadius: 3, bgcolor: '#f0f9ff', border: '1px solid #bae6fd' }}>
+                  <Stack direction="row" alignItems="center" spacing={2}>
+                    <Box sx={{ p: 1.5, bgcolor: '#fff', borderRadius: 2, boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+                      <LucideFileText size={24} color="#0369a1" />
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="subtitle2" fontWeight={800} color="#0369a1">Official Signed Document</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {selectedApp.status === 'APPROVED' ? 'Finalized document with all signatures' : 'Evolutionary document with current signatures'}
+                      </Typography>
+                    </Box>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      startIcon={<LucideEye size={16} />}
+                      onClick={() => window.open(selectedApp.signedPdfUrl, '_blank')}
+                      sx={{ borderRadius: 2, bgcolor: '#0369a1', fontWeight: 700 }}
+                    >
+                      View PDF
+                    </Button>
+                  </Stack>
+                </Box>
+              )}
+
+              {/* Signature Warning */}
+              {showSignatureWarning && (
+                <Alert severity="warning" sx={{ mb: 2, borderRadius: 2 }}>
+                  <Typography variant="subtitle2" fontWeight={700}>Missing Digital Signature</Typography>
+                  <Typography variant="body2">
+                    You need to upload a digital signature in your <strong>Account Settings</strong> before you can sign and approve applications.
+                  </Typography>
+                </Alert>
+              )}
+
               {selectedApp.attachments?.length > 0 && (
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700 }}>
                     Attachments
                   </Typography>
-                  <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
-                    {selectedApp.attachments.map((url: string, i: number) => (
-                      <Button 
-                        key={i} 
-                        variant="outlined" 
-                        size="small" 
-                        startIcon={<LucideDownload size={14} />}
-                        href={url}
-                        target="_blank"
-                        sx={{ fontSize: '0.7rem' }}
-                      >
-                        File {i + 1}
-                      </Button>
-                    ))}
+                  <Stack spacing={1} sx={{ mt: 0.5 }}>
+                    {selectedApp.attachments.map((url: string, i: number) => {
+                      const isPDF = url.toLowerCase().endsWith('.pdf') || url.includes('/upload/') && url.includes('.pdf');
+                      return (
+                        <Box key={i} sx={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: 1,
+                          p: 1.5,
+                          bgcolor: '#f8fafc',
+                          borderRadius: 2,
+                          border: '1px solid #e2e8f0'
+                        }}>
+                          <LucideFileText size={20} color="#475569" />
+                          <Typography variant="body2" sx={{ flex: 1, fontSize: '0.75rem' }}>
+                            {isPDF ? 'Document' : 'Attachment'} {i + 1}
+                          </Typography>
+                          <Button 
+                            size="small" 
+                            variant="outlined"
+                            startIcon={<LucideEye size={14} />}
+                            onClick={() => window.open(url, '_blank')}
+                            sx={{ fontSize: '0.7rem', minWidth: 'auto', px: 1.5 }}
+                          >
+                            View
+                          </Button>
+                          <Button 
+                            size="small" 
+                            variant="outlined"
+                            startIcon={<LucideDownload size={14} />}
+                            href={url}
+                            download
+                            target="_blank"
+                            sx={{ fontSize: '0.7rem', minWidth: 'auto', px: 1.5 }}
+                          >
+                            Download
+                          </Button>
+                        </Box>
+                      );
+                    })}
                   </Stack>
                 </Box>
               )}
+
+              <Divider />
+
+              <Divider />
+
+              {/* Reviewer Assignment (Admin only) */}
+              <Box sx={{ p: 2, bgcolor: '#fffbeb', borderRadius: 2, border: '1px solid #fef3c7' }}>
+                <Typography variant="caption" fontWeight={800} color="#92400e" display="block" gutterBottom>REVIEWER CHAIN CONFIGURATION</Typography>
+                <Stack spacing={2}>
+                  {/* L0 Reviewer */}
+                  <TextField
+                    select
+                    fullWidth
+                    size="small"
+                    label="L0 Reviewer (Initial Review)"
+                    value={selectedApp.l0Reviewer?._id || selectedApp.l0Reviewer || ''}
+                    onChange={async (e) => {
+                      try {
+                        await updateStatus({ 
+                          id: selectedApp._id, 
+                          l0Reviewer: e.target.value 
+                        }).unwrap();
+                        toast.success('L0 Reviewer assigned');
+                        // Optimistically update or refetch handled by tag invalidation
+                      } catch (err) {
+                        toast.error('Failed to assign L0 reviewer');
+                      }
+                    }}
+                  >
+                     <MenuItem value=""><em>None</em></MenuItem>
+                    {approvers.map((user: any) => (
+                      <MenuItem key={user._id} value={user._id}>{user.name}</MenuItem>
+                    ))}
+                  </TextField>
+
+                  {/* L1 Medium */}
+                  <TextField
+                    select
+                    fullWidth
+                    size="small"
+                    label="L1 / Medium (Intermediate)"
+                    value={selectedApp.medium?._id || selectedApp.medium || ''}
+                    onChange={async (e) => {
+                      try {
+                        await updateStatus({ 
+                          id: selectedApp._id, 
+                          medium: e.target.value 
+                        }).unwrap();
+                        toast.success('L1 Reviewer assigned');
+                      } catch (err) {
+                        toast.error('Failed to assign L1 reviewer');
+                      }
+                    }}
+                  >
+                    <MenuItem value=""><em>None</em></MenuItem>
+                    {approvers.map((user: any) => (
+                      <MenuItem key={user._id} value={user._id}>{user.name}</MenuItem>
+                    ))}
+                  </TextField>
+
+                  {/* L2 Final */}
+                  <TextField
+                    select
+                    fullWidth
+                    size="small"
+                    label="L2 / To (Final Approver)"
+                    value={selectedApp.to?._id || selectedApp.to || ''}
+                    onChange={async (e) => {
+                      try {
+                        await updateStatus({ 
+                          id: selectedApp._id, 
+                          to: e.target.value 
+                        }).unwrap();
+                        toast.success('L2 Reviewer assigned');
+                      } catch (err) {
+                        toast.error('Failed to assign L2 reviewer');
+                      }
+                    }}
+                  >
+                    {approvers.map((user: any) => (
+                      <MenuItem key={user._id} value={user._id}>{user.name}</MenuItem>
+                    ))}
+                  </TextField>
+                </Stack>
+              </Box>
+
+              <Box>
+                <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, mb: 1, display: 'block' }}>
+                  Approval Trail
+                </Typography>
+                <Stack spacing={2}>
+                  {/* L0 Trail */}
+                  <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: selectedApp.approvalTrail?.l0 ? '#f0fdf4' : '#f8fafc', border: '1px solid #e2e8f0' }}>
+                    <Typography variant="caption" fontWeight={800} color="#64748b">STAGE L0: REVIEW</Typography>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Typography variant="body2">{selectedApp.approvalTrail?.l0 ? `Reviewed by ${selectedApp.approvalTrail.l0.reviewer?.name || 'Authorized Reviewer'}` : 'Awaiting Review'}</Typography>
+                      {selectedApp.approvalTrail?.l0 && <Chip label="PASSED" size="small" color="success" sx={{ height: 16, fontSize: '0.6rem' }} />}
+                    </Stack>
+                  </Box>
+
+                  {/* L1 Trail */}
+                  <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: selectedApp.approvalTrail?.l1 ? '#f0fdf4' : '#f8fafc', border: '1px solid #e2e8f0' }}>
+                    <Typography variant="caption" fontWeight={800} color="#64748b">STAGE L1: MEDIUM ({selectedApp.medium?.name || 'N/A'})</Typography>
+                    <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                      <Box>
+                        <Typography variant="body2">{selectedApp.approvalTrail?.l1 ? `Signed by ${selectedApp.approvalTrail.l1.reviewer?.name || 'Authorized Reviewer'}` : 'Awaiting Signature'}</Typography>
+                        {selectedApp.approvalTrail?.l1?.date && <Typography variant="caption" color="text.secondary">{new Date(selectedApp.approvalTrail.l1.date).toLocaleDateString()}</Typography>}
+                      </Box>
+                      {selectedApp.approvalTrail?.l1?.signatureUrl && (
+                        <Box sx={{ textAlign: 'center' }}>
+                          <img src={selectedApp.approvalTrail.l1.signatureUrl} alt="L1 Sign" style={{ height: 30, display: 'block' }} />
+                          <Typography variant="caption" sx={{ fontSize: '0.5rem' }}>Digital Signature</Typography>
+                        </Box>
+                      )}
+                    </Stack>
+                  </Box>
+
+                  {/* L2 Trail */}
+                  <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: selectedApp.approvalTrail?.l2 ? '#f0fdf4' : '#f8fafc', border: '1px solid #e2e8f0' }}>
+                    <Typography variant="caption" fontWeight={800} color="#64748b">STAGE L2: TO ({selectedApp.to?.name})</Typography>
+                    <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                      <Box>
+                        <Typography variant="body2">{selectedApp.approvalTrail?.l2 ? `Signed by ${selectedApp.approvalTrail.l2.reviewer?.name || 'Authorized Reviewer'}` : 'Awaiting Final Signature'}</Typography>
+                        {selectedApp.approvalTrail?.l2?.date && <Typography variant="caption" color="text.secondary">{new Date(selectedApp.approvalTrail.l2.date).toLocaleDateString()}</Typography>}
+                      </Box>
+                      {selectedApp.approvalTrail?.l2?.signatureUrl && (
+                        <Box sx={{ textAlign: 'center' }}>
+                          <img src={selectedApp.approvalTrail.l2.signatureUrl} alt="L2 Sign" style={{ height: 30, display: 'block' }} />
+                          <Typography variant="caption" sx={{ fontSize: '0.5rem' }}>Digital Signature</Typography>
+                        </Box>
+                      )}
+                    </Stack>
+                  </Box>
+
+                  {selectedApp.uniqueCode && (
+                    <Box sx={{ p: 2, borderRadius: 2, bgcolor: '#eff6ff', border: '1px solid #bfdbfe', textAlign: 'center' }}>
+                      <Typography variant="caption" fontWeight={800} color="#1d4ed8" display="block">AUTHENTICATION CODE</Typography>
+                      <Typography variant="h6" fontWeight={900} color="#1e40af" sx={{ letterSpacing: 2 }}>{selectedApp.uniqueCode}</Typography>
+                    </Box>
+                  )}
+                </Stack>
+              </Box>
 
               <Box>
                 <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -237,9 +499,65 @@ export default function ApplicationManager() {
           )}
         </DialogContent>
         <DialogActions sx={{ p: 2, borderTop: '1px solid #f1f5f9', bgcolor: '#f8fafc' }}>
+          <Button 
+            startIcon={<LucidePrinter size={16} />} 
+            onClick={() => window.print()} 
+            size="small" 
+            sx={{ mr: 1, color: '#475569' }}
+          >
+            Print
+          </Button>
           <Button onClick={() => setOpenReviewDialog(false)} size="small" sx={{ color: '#64748b' }}>Cancel</Button>
           <Box sx={{ flexGrow: 1 }} />
-          {selectedApp?.status === APPLICATION_STATUS.PENDING && (
+          
+          {selectedApp && (
+            <>
+              {/* L0 Review Stage */}
+              {selectedApp.status === APPLICATION_STATUS.PENDING_L0 && canApproveL0 && (
+                <Stack direction="row" spacing={1}>
+                  <Button variant="outlined" color="error" size="small" onClick={() => handleStageApproval('l0', 'REJECTED')}>Reject L0</Button>
+                  <Button variant="contained" color="primary" size="small" onClick={() => handleStageApproval('l0', 'APPROVED')}>Approve L0</Button>
+                </Stack>
+              )}
+
+              {/* L1 Medium Stage */}
+              {selectedApp.status === APPLICATION_STATUS.PENDING_L1 && canApproveL1 && (
+                <Stack direction="row" spacing={1}>
+                  <Button variant="outlined" color="error" size="small" onClick={() => handleStageApproval('l1', 'REJECTED')}>Reject L1</Button>
+                  <Button 
+                    variant="contained" 
+                    color="primary" 
+                    size="small" 
+                    onClick={() => handleStageApproval('l1', 'APPROVED')} 
+                    startIcon={<LucideCheckCircle size={16} />}
+                    disabled={showSignatureWarning}
+                  >
+                    Sign & Approve L1
+                  </Button>
+                </Stack>
+              )}
+
+              {/* L2 Final Stage */}
+              {selectedApp.status === APPLICATION_STATUS.PENDING_L2 && canApproveL2 && (
+                <Stack direction="row" spacing={1}>
+                  <Button variant="outlined" color="error" size="small" onClick={() => handleStageApproval('l2', 'REJECTED')}>Reject L2</Button>
+                  <Button 
+                    variant="contained" 
+                    color="success" 
+                    size="small" 
+                    onClick={() => handleStageApproval('l2', 'APPROVED')} 
+                    startIcon={<LucideCheckCircle size={16} />}
+                    disabled={showSignatureWarning}
+                  >
+                    Final Sign & Approve
+                  </Button>
+                </Stack>
+              )}
+            </>
+          )}
+
+          {/* Legacy single-stage or admin override if needed (Optional) */}
+          {selectedApp?.status === 'PENDING' && (
             <>
               <Button 
                 variant="outlined" 
@@ -267,6 +585,118 @@ export default function ApplicationManager() {
           )}
         </DialogActions>
       </Dialog>
+
+      {/* Official Print Layout (Hidden on Screen) */}
+      <Box id="official-print-layout" sx={{ display: 'none', '@media print': { display: 'block', p: 4, bgcolor: '#fff', color: '#000' } }}>
+        <Box sx={{ textAlign: 'center', mb: 4, borderBottom: '2px solid #002147', pb: 2 }}>
+          <Typography variant="h4" fontWeight={900} color="#002147" sx={{ textTransform: 'uppercase' }}>
+            Department of Computer Science and Engineering
+          </Typography>
+          <Typography variant="subtitle1" fontWeight={700} color="#002147">
+            Shahjalal University of Science and Technology, Sylhet
+          </Typography>
+          <Typography variant="body2" sx={{ mt: 1 }}>
+            Official Application Record • {new Date().toLocaleDateString()}
+          </Typography>
+        </Box>
+
+        {selectedApp && (
+          <Box sx={{ mt: 2 }}>
+            <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <Box>
+                <Typography variant="caption" fontWeight={800} color="text.secondary">REF CODE</Typography>
+                <Typography variant="h6" fontWeight={800} color="primary">{selectedApp.uniqueCode || 'PENDING'}</Typography>
+              </Box>
+              <Box sx={{ textAlign: 'right' }}>
+                <Typography variant="caption" fontWeight={800} color="text.secondary">SUBMISSION DATE</Typography>
+                <Typography variant="body1" fontWeight={700}>{new Date(selectedApp.createdAt).toLocaleDateString()}</Typography>
+              </Box>
+            </Box>
+
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="h5" fontWeight={800} gutterBottom sx={{ borderBottom: '1px solid #e2e8f0', pb: 1 }}>
+                {selectedApp.title}
+              </Typography>
+              <Typography variant="body1" sx={{ mt: 2, whiteSpace: 'pre-line', lineHeight: 1.8 }}>
+                {selectedApp.description}
+              </Typography>
+            </Box>
+
+            <Divider sx={{ my: 4 }} />
+
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="subtitle2" fontWeight={800} sx={{ mb: 2, textTransform: 'uppercase', letterSpacing: 1 }}>
+                Applicant Information
+              </Typography>
+              <Typography variant="body1"><strong>Name:</strong> {selectedApp.submittedBy?.name}</Typography>
+              <Typography variant="body1"><strong>Student ID:</strong> {selectedApp.submittedBy?.studentId}</Typography>
+              <Typography variant="body1"><strong>Email:</strong> {selectedApp.submittedBy?.email}</Typography>
+            </Box>
+
+            <Box sx={{ mt: 8 }}>
+              <Typography variant="subtitle2" fontWeight={800} sx={{ mb: 4, textTransform: 'uppercase', letterSpacing: 1 }}>
+                Approval & Endorsement
+              </Typography>
+              
+              <Stack direction="row" spacing={4} justifyContent="space-between" sx={{ mt: 4 }}>
+                {/* L1 Signature */}
+                <Box sx={{ flex: 1, textAlign: 'center', p: 2, border: '1px solid #e2e8f0', borderRadius: 2 }}>
+                  <Typography variant="caption" fontWeight={800} color="text.secondary" display="block" sx={{ mb: 2 }}>
+                    RECOMMENDED BY (L1)
+                  </Typography>
+                  {selectedApp.approvalTrail?.l1?.signatureUrl ? (
+                    <Box sx={{ height: 80, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <img src={selectedApp.approvalTrail.l1.signatureUrl} alt="L1 Signature" style={{ maxHeight: '100%', maxWidth: '150px' }} />
+                    </Box>
+                  ) : (
+                    <Box sx={{ height: 80, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Typography variant="caption" color="text.secondary">Awaiting Signature</Typography>
+                    </Box>
+                  )}
+                  <Divider sx={{ my: 1 }} />
+                  <Typography variant="body2" fontWeight={700}>
+                    {selectedApp.approvalTrail?.l1?.reviewer?.name || selectedApp.medium?.name || 'Authorized Reviewer'}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {selectedApp.approvalTrail?.l1?.date ? new Date(selectedApp.approvalTrail.l1.date).toLocaleDateString() : 'Date Pending'}
+                  </Typography>
+                </Box>
+
+                {/* L2 Signature */}
+                <Box sx={{ flex: 1, textAlign: 'center', p: 2, border: '1px solid #e2e8f0', borderRadius: 2 }}>
+                  <Typography variant="caption" fontWeight={800} color="text.secondary" display="block" sx={{ mb: 2 }}>
+                    APPROVED BY (L2)
+                  </Typography>
+                  {selectedApp.approvalTrail?.l2?.signatureUrl ? (
+                    <Box sx={{ height: 80, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <img src={selectedApp.approvalTrail.l2.signatureUrl} alt="L2 Signature" style={{ maxHeight: '100%', maxWidth: '150px' }} />
+                    </Box>
+                  ) : (
+                    <Box sx={{ height: 80, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Typography variant="caption" color="text.secondary">Awaiting Signature</Typography>
+                    </Box>
+                  )}
+                  <Divider sx={{ my: 1 }} />
+                  <Typography variant="body2" fontWeight={700}>
+                    {selectedApp.approvalTrail?.l2?.reviewer?.name || selectedApp.to?.name || 'Authorized Reviewer'}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {selectedApp.approvalTrail?.l2?.date ? new Date(selectedApp.approvalTrail.l2.date).toLocaleDateString() : 'Date Pending'}
+                  </Typography>
+                </Box>
+              </Stack>
+            </Box>
+
+            <Box sx={{ mt: 10, pt: 2, borderTop: '1px dashed #cbd5e1', textAlign: 'center' }}>
+              <Typography variant="caption" color="text.secondary">
+                This is a digitally verified document from the SUST CSE Application Management System.
+                <br />
+                Verify authenticity at: <strong>{window.location.origin}/verify/application</strong> using code: <strong>{selectedApp.uniqueCode}</strong>
+              </Typography>
+            </Box>
+          </Box>
+        )}
+      </Box>
     </Box>
   );
 }

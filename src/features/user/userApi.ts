@@ -48,6 +48,13 @@ export const userApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['User'],
     }),
+    getApprovers: builder.query({
+      query: (params) => ({
+        url: '/users/approvers',
+        params,
+      }),
+      providesTags: ['User'],
+    }),
     getFaculty: builder.query({
       query: (params) => ({
         url: '/users/faculty',
@@ -76,6 +83,7 @@ export const {
   useUpdateMyProfileMutation,
   useDeleteUserMutation,
   useBulkCreateUsersMutation,
+  useGetApproversQuery,
   useGetFacultyQuery,
   useGetStudentsQuery,
   useGetUserByIdQuery,
