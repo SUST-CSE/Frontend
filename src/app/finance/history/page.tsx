@@ -1,35 +1,35 @@
 'use client';
 
-import { 
-  Box, 
-  Container, 
-  Typography, 
-  Paper, 
-  Grid, 
-  Stack, 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableContainer, 
-  TableHead, 
-  TableRow, 
-  Chip, 
+import {
+  Box,
+  Container,
+  Typography,
+  Paper,
+  Grid,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Chip,
   Button,
   CircularProgress
 } from '@mui/material';
-import { 
-  LucideWallet, 
-  LucideTrendingUp, 
+import {
+  LucideWallet,
+  LucideTrendingUp,
   LucideTrendingDown,
   LucideFileText,
   LucideImage
 } from 'lucide-react';
-import { 
-  useGetTransactionsQuery, 
-  useGetFinancialSummaryQuery 
+import {
+  useGetTransactionsQuery,
+  useGetFinancialSummaryQuery
 } from '@/features/finance/financeApi';
-import { 
-  TRANSACTION_CATEGORY, 
+import {
+  TRANSACTION_CATEGORY,
 } from '@/features/finance/financeConstants';
 
 export default function FinanceHistoryPage() {
@@ -55,8 +55,8 @@ export default function FinanceHistoryPage() {
       <Grid container spacing={3} sx={{ mb: 6 }}>
         {[
           { label: 'Total Balance', value: summary.balance, icon: <LucideWallet />, color: '#002147' },
-          { label: 'Monthly Income', value: summary.monthlyIncome, icon: <LucideTrendingUp />, color: '#16a34a' },
-          { label: 'Monthly Expense', value: summary.monthlyExpense, icon: <LucideTrendingDown />, color: '#dc2626' },
+          { label: 'Total Income', value: summary.monthlyIncome, icon: <LucideTrendingUp />, color: '#16a34a' },
+          { label: 'Total Expense', value: summary.monthlyExpense, icon: <LucideTrendingDown />, color: '#dc2626' },
         ].map((card, i) => (
           <Grid size={{ xs: 12, md: 4 }} key={i}>
             <Paper elevation={0} sx={{ p: 4, borderRadius: 4, border: '1px solid #e2e8f0', bgcolor: i === 0 ? '#f8fafc' : 'white' }}>
@@ -83,7 +83,7 @@ export default function FinanceHistoryPage() {
         <Box sx={{ p: 3, borderBottom: '1px solid #f1f5f9', bgcolor: '#f8fafc' }}>
           <Typography variant="h6" fontWeight={800}>Financial Transparency Report</Typography>
         </Box>
-        
+
         <TableContainer>
           {isLoading ? (
             <Box sx={{ p: 10, textAlign: 'center' }}><CircularProgress /></Box>
@@ -111,25 +111,25 @@ export default function FinanceHistoryPage() {
                       )}
                     </TableCell>
                     <TableCell>
-                      <Chip 
-                        label={TRANSACTION_CATEGORY[tx.category] || tx.category} 
-                        size="small" 
-                        variant="outlined" 
-                        sx={{ fontWeight: 700, borderRadius: 1 }} 
+                      <Chip
+                        label={TRANSACTION_CATEGORY[tx.category] || tx.category}
+                        size="small"
+                        variant="outlined"
+                        sx={{ fontWeight: 700, borderRadius: 1 }}
                       />
                     </TableCell>
                     <TableCell>
                       {tx.proofUrl ? (
-                         <Button 
-                          size="small" 
+                        <Button
+                          size="small"
                           variant="text"
                           startIcon={tx.proofType === 'pdf' ? <LucideFileText size={16} /> : <LucideImage size={16} />}
                           href={tx.proofUrl}
                           target="_blank"
                           sx={{ textTransform: 'none', fontWeight: 700 }}
-                         >
-                           View Proof
-                         </Button>
+                        >
+                          View Proof
+                        </Button>
                       ) : (
                         <Typography variant="caption" color="text.disabled">No attachment</Typography>
                       )}

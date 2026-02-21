@@ -48,18 +48,18 @@ export default function Stats() {
       const stats = document.querySelectorAll('.stat-number');
       stats.forEach((stat) => {
         const value = parseInt(stat.getAttribute('data-value') || '0');
-        gsap.fromTo(stat, 
+        gsap.fromTo(stat,
           { textContent: 0 },
-          { 
-            textContent: value, 
-            duration: 2, 
+          {
+            textContent: value,
+            duration: 2,
             ease: 'power3.out',
             scrollTrigger: {
               trigger: stat,
               start: 'top 95%',
             },
             snap: { textContent: 1 },
-            onUpdate: function() {
+            onUpdate: function () {
               const suffix = stat.getAttribute('data-suffix') || '';
               this.targets()[0].innerHTML = Math.ceil(this.targets()[0].textContent).toLocaleString() + suffix;
             }
@@ -90,7 +90,7 @@ export default function Stats() {
                   '&:hover': {
                     transform: 'translateY(-10px)',
                     boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02)',
-                    borderColor: '#3b82f6'
+                    borderColor: stat.color,
                   }
                 }}
               >
@@ -106,8 +106,8 @@ export default function Stats() {
                 >
                   <stat.icon size={28} />
                 </Box>
-                <Typography 
-                  variant="h3" 
+                <Typography
+                  variant="h3"
                   className="stat-number"
                   data-value={stat.value}
                   data-suffix={stat.suffix || ''}

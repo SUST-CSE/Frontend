@@ -6,7 +6,7 @@ import Link from 'next/link'; // Added import
 import { LucideArrowRight, LucideInfo } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -56,11 +56,11 @@ export default function AboutSection() {
   ];
 
   return (
-    <Box 
-      ref={containerRef} 
-      sx={{ 
-        py: { xs: 6, md: 10 }, 
-        bgcolor: '#ffffff', 
+    <Box
+      ref={containerRef}
+      sx={{
+        py: { xs: 6, md: 10 },
+        bgcolor: '#ffffff',
         overflow: 'hidden',
         position: 'relative'
       }}
@@ -71,22 +71,22 @@ export default function AboutSection() {
           <Grid size={{ xs: 12, md: 6 }}>
             <Box ref={leftRef}>
               <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 3 }}>
-                <Box 
-                  sx={{ 
-                    p: 0.8, 
-                    borderRadius: 1.5, 
-                    bgcolor: 'rgba(15, 23, 42, 0.04)', 
+                <Box
+                  sx={{
+                    p: 0.8,
+                    borderRadius: 1.5,
+                    bgcolor: 'rgba(15, 23, 42, 0.04)',
                     display: 'flex',
                     border: '1px solid rgba(15, 23, 42, 0.08)'
                   }}
                 >
                   <LucideInfo size={18} color="#0f172a" />
                 </Box>
-                <Typography 
-                  variant="overline" 
-                  sx={{ 
-                    fontWeight: 800, 
-                    letterSpacing: 3, 
+                <Typography
+                  variant="overline"
+                  sx={{
+                    fontWeight: 800,
+                    letterSpacing: 3,
                     color: '#64748b',
                     fontSize: '0.8rem'
                   }}
@@ -95,11 +95,11 @@ export default function AboutSection() {
                 </Typography>
               </Stack>
 
-              <Typography 
-                variant="h2" 
+              <Typography
+                variant="h2"
                 className="about-animate"
-                sx={{ 
-                  fontWeight: 950, 
+                sx={{
+                  fontWeight: 950,
                   color: '#0f172a',
                   lineHeight: 1.1,
                   mb: 4,
@@ -109,32 +109,32 @@ export default function AboutSection() {
                 }}
               >
                 Pioneering the <br />
-                <span style={{ 
-                  color: '#0f172a', 
+                <span style={{
+                  color: '#0f172a',
                   position: 'relative',
                   display: 'inline-block'
                 }}>
                   Digital Frontier
-                  <Box 
-                    sx={{ 
-                      position: 'absolute', 
-                      bottom: 8, 
-                      left: 0, 
-                      width: '100%', 
-                      height: '8px', 
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      bottom: 8,
+                      left: 0,
+                      width: '100%',
+                      height: '8px',
                       bgcolor: 'rgba(15, 23, 42, 0.06)',
-                      zIndex: -1 
-                    }} 
+                      zIndex: -1
+                    }}
                   />
                 </span>
               </Typography>
 
               <Stack spacing={4} sx={{ mb: 7 }} className="about-animate">
-                <Typography 
-                  variant="body1" 
-                  sx={{ 
-                    color: '#334155', 
-                    fontSize: { xs: '1rem', sm: '1.15rem', md: '1.25rem' }, 
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: '#334155',
+                    fontSize: { xs: '1rem', sm: '1.15rem', md: '1.25rem' },
                     lineHeight: 1.8,
                     fontWeight: 400,
                     textAlign: 'justify'
@@ -142,11 +142,11 @@ export default function AboutSection() {
                 >
                   Sustainable technical evolution starts here. As one of the premier institutions for Computer Science in the nation, we blend rigorous theoretical foundations with experimental research.
                 </Typography>
-                <Typography 
-                  variant="body1" 
-                  sx={{ 
-                    color: '#64748b', 
-                    fontSize: { xs: '0.95rem', sm: '1.05rem', md: '1.1rem' }, 
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: '#64748b',
+                    fontSize: { xs: '0.95rem', sm: '1.05rem', md: '1.1rem' },
                     lineHeight: 1.8,
                     fontWeight: 400,
                     textAlign: 'justify',
@@ -158,13 +158,13 @@ export default function AboutSection() {
                 </Typography>
               </Stack>
 
-              <Button 
+              <Button
                 component={Link} // Link added
                 href="/about"    // Href added
-                variant="contained" 
+                variant="contained"
                 size="large"
                 endIcon={<LucideArrowRight size={20} />}
-                sx={{ 
+                sx={{
                   bgcolor: '#0f172a',
                   color: '#ffffff',
                   px: { xs: 4, sm: 6 },
@@ -189,15 +189,15 @@ export default function AboutSection() {
 
           {/* Right Image Grid Column */}
           <Grid size={{ xs: 12, md: 6 }}>
-            <Box 
-              sx={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(2, 1fr)', 
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
                 gap: 2,
               }}
             >
               {images.map((img, idx) => (
-                 <Box
+                <Box
                   key={idx}
                   className="about-image"
                   sx={{
@@ -209,12 +209,12 @@ export default function AboutSection() {
                     border: '1px solid rgba(0,0,0,0.05)'
                   }}
                 >
-                  <Image 
-                    src={img.src} 
-                    alt={img.alt} 
-                    fill 
+                  <Image
+                    src={img.src}
+                    alt={img.alt}
+                    fill
                     unoptimized
-                    style={{ 
+                    style={{
                       objectFit: 'cover'
                     }}
                   />

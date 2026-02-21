@@ -10,6 +10,7 @@ export const TRANSACTION_CATEGORY: Record<string, string> = {
   MAINTENANCE: 'Maintenance',
   REFRESHMENT: 'Refreshment',
   COST_MANAGEMENT: 'Cost Management (Approved)',
+  BALANCE_ADJUSTMENT: 'Balance Override',
   OTHERS: 'Others',
 };
 

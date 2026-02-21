@@ -42,10 +42,10 @@ import {
   useApproveApplicationStageMutation,
 } from '@/features/application/applicationApi';
 import { useGetApproversQuery, useGetUserByIdQuery } from '@/features/user/userApi';
-import { 
-  APPLICATION_STATUS, 
-  APP_STATUS_COLORS, 
-  APP_TYPE_LABELS 
+import {
+  APPLICATION_STATUS,
+  APP_STATUS_COLORS,
+  APP_TYPE_LABELS
 } from '@/features/application/applicationConstants';
 import toast from 'react-hot-toast';
 import { Divider } from '@mui/material';
@@ -58,6 +58,7 @@ export default function ApplicationManager() {
   const [selectedApp, setSelectedApp] = useState<any>(null);
   const [openReviewDialog, setOpenReviewDialog] = useState(false);
   const [adminFeedback, setAdminFeedback] = useState('');
+  const [showPdfViewer, setShowPdfViewer] = useState(false);
 
   const { user } = useSelector((state: RootState) => state.auth);
   const { data: currentUserData } = useGetUserByIdQuery(user?.id, { skip: !user?.id });
@@ -67,7 +68,7 @@ export default function ApplicationManager() {
   const isAdmin = user?.role === 'ADMIN';
 
   const hasSignature = !!currentUser?.signatureUrl;
-  
+
   // Check if user is assigned reviewer for the selected app
   const isAssignedL0 = selectedApp?.l0Reviewer?._id === user?.id || selectedApp?.l0Reviewer === user?.id;
   const isAssignedL1 = selectedApp?.medium?._id === user?.id || selectedApp?.medium === user?.id;
@@ -86,10 +87,10 @@ export default function ApplicationManager() {
   const { data: approversData } = useGetApproversQuery({ limit: 100 });
   const approvers = approversData?.data?.users || approversData?.users || [];
 
-  const statusFilter = activeTab === 0 
-    ? { status: [APPLICATION_STATUS.PENDING_L0, APPLICATION_STATUS.PENDING_L1, APPLICATION_STATUS.PENDING_L2].join(',') } 
+  const statusFilter = activeTab === 0
+    ? { status: [APPLICATION_STATUS.PENDING_L0, APPLICATION_STATUS.PENDING_L1, APPLICATION_STATUS.PENDING_L2].join(',') }
     : undefined;
-    
+
   const { data: appsData, isLoading } = useGetApplicationsQuery(statusFilter);
   const [updateStatus, { isLoading: isUpdating }] = useUpdateApplicationStatusMutation();
   const [approveStage, { isLoading: isApprovingStage }] = useApproveApplicationStageMutation();
@@ -98,10 +99,10 @@ export default function ApplicationManager() {
 
   const handleStatusUpdate = async (status: string) => {
     try {
-      await updateStatus({ 
-        id: selectedApp._id, 
-        status, 
-        feedback: adminFeedback 
+      await updateStatus({
+        id: selectedApp._id,
+        status,
+        feedback: adminFeedback
       }).unwrap();
       toast.success(`Application status updated successfully`);
       setOpenReviewDialog(false);
@@ -142,8 +143,8 @@ export default function ApplicationManager() {
       </Box>
 
       <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid rgba(0,0,0,0.05)', overflow: 'hidden' }}>
-        <Tabs 
-          value={activeTab} 
+        <Tabs
+          value={activeTab}
           onChange={(_, v) => setActiveTab(v)}
           sx={{ px: 2, pt: 1, bgcolor: '#f8fafc', borderBottom: '1px solid rgba(0,0,0,0.05)' }}
         >
@@ -190,16 +191,16 @@ export default function ApplicationManager() {
                       <Typography variant="caption">{new Date(app.createdAt).toLocaleDateString()}</Typography>
                     </TableCell>
                     <TableCell>
-                      <Chip 
-                        label={app.status} 
-                        size="small" 
-                        color={APP_STATUS_COLORS[app.status]} 
+                      <Chip
+                        label={app.status}
+                        size="small"
+                        color={APP_STATUS_COLORS[app.status]}
                         sx={{ fontWeight: 800, fontSize: '0.6rem', height: 18 }}
                       />
                     </TableCell>
                     <TableCell align="right">
-                      <Button 
-                        size="small" 
+                      <Button
+                        size="small"
                         startIcon={<LucideEye size={14} />}
                         onClick={() => {
                           setSelectedApp(app);
@@ -252,10 +253,10 @@ export default function ApplicationManager() {
                 </Typography>
               </Box>
 
-              {/* Official Signed Document - PRIORITIZED for Reviewers */}
+              {/* Official Signed Document with Inline PDF Viewer */}
               {selectedApp.signedPdfUrl && (
-                <Box sx={{ p: 2, borderRadius: 3, bgcolor: '#f0f9ff', border: '1px solid #bae6fd' }}>
-                  <Stack direction="row" alignItems="center" spacing={2}>
+                <Box sx={{ borderRadius: 3, bgcolor: '#f0f9ff', border: '1px solid #bae6fd', overflow: 'hidden' }}>
+                  <Stack direction="row" alignItems="center" spacing={2} sx={{ p: 2 }}>
                     <Box sx={{ p: 1.5, bgcolor: '#fff', borderRadius: 2, boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
                       <LucideFileText size={24} color="#0369a1" />
                     </Box>
@@ -269,12 +270,60 @@ export default function ApplicationManager() {
                       variant="contained"
                       size="small"
                       startIcon={<LucideEye size={16} />}
-                      onClick={() => window.open(selectedApp.signedPdfUrl, '_blank')}
-                      sx={{ borderRadius: 2, bgcolor: '#0369a1', fontWeight: 700 }}
+                      onClick={() => setShowPdfViewer(!showPdfViewer)}
+                      sx={{ borderRadius: 2, bgcolor: showPdfViewer ? '#475569' : '#0369a1', fontWeight: 700 }}
                     >
-                      View PDF
+                      {showPdfViewer ? 'Hide PDF' : 'View PDF'}
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<LucideDownload size={16} />}
+                      href={selectedApp.signedPdfUrl}
+                      target="_blank"
+                      download
+                      sx={{ borderRadius: 2, fontWeight: 700 }}
+                    >
+                      Download
                     </Button>
                   </Stack>
+                  {showPdfViewer && (
+                    <Box sx={{ borderTop: '1px solid #bae6fd', bgcolor: '#e2e8f0', minHeight: 500 }}>
+                      <object
+                        data={`${selectedApp.signedPdfUrl}#toolbar=1&navpanes=0`}
+                        type="application/pdf"
+                        style={{ width: '100%', height: 600, display: 'block' }}
+                      >
+                        <iframe
+                          src={`${selectedApp.signedPdfUrl}#toolbar=1&navpanes=0`}
+                          style={{ width: '100%', height: 600, border: 'none', display: 'block' }}
+                          title="Application PDF"
+                        >
+                          <Box sx={{ p: 4, textAlign: 'center' }}>
+                            <Typography variant="body2" color="text.secondary" gutterBottom>
+                              Your browser doesn't support PDF viewing.
+                            </Typography>
+                            <Button
+                              variant="contained"
+                              href={selectedApp.signedPdfUrl}
+                              target="_blank"
+                              startIcon={<LucideDownload size={16} />}
+                            >
+                              Download PDF to View
+                            </Button>
+                          </Box>
+                        </iframe>
+                      </object>
+                      <Box sx={{ p: 1, textAlign: 'center', bgcolor: '#f1f5f9', borderTop: '1px solid #e2e8f0' }}>
+                        <Typography variant="caption" color="text.secondary">
+                          Can't see the document?{' '}
+                          <a href={selectedApp.signedPdfUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#0369a1', fontWeight: 700 }}>
+                            Open in new tab
+                          </a>
+                        </Typography>
+                      </Box>
+                    </Box>
+                  )}
                 </Box>
               )}
 
@@ -297,9 +346,9 @@ export default function ApplicationManager() {
                     {selectedApp.attachments.map((url: string, i: number) => {
                       const isPDF = url.toLowerCase().endsWith('.pdf') || url.includes('/upload/') && url.includes('.pdf');
                       return (
-                        <Box key={i} sx={{ 
-                          display: 'flex', 
-                          alignItems: 'center', 
+                        <Box key={i} sx={{
+                          display: 'flex',
+                          alignItems: 'center',
                           gap: 1,
                           p: 1.5,
                           bgcolor: '#f8fafc',
@@ -310,8 +359,8 @@ export default function ApplicationManager() {
                           <Typography variant="body2" sx={{ flex: 1, fontSize: '0.75rem' }}>
                             {isPDF ? 'Document' : 'Attachment'} {i + 1}
                           </Typography>
-                          <Button 
-                            size="small" 
+                          <Button
+                            size="small"
                             variant="outlined"
                             startIcon={<LucideEye size={14} />}
                             onClick={() => window.open(url, '_blank')}
@@ -319,8 +368,8 @@ export default function ApplicationManager() {
                           >
                             View
                           </Button>
-                          <Button 
-                            size="small" 
+                          <Button
+                            size="small"
                             variant="outlined"
                             startIcon={<LucideDownload size={14} />}
                             href={url}
@@ -354,9 +403,9 @@ export default function ApplicationManager() {
                     value={selectedApp.l0Reviewer?._id || selectedApp.l0Reviewer || ''}
                     onChange={async (e) => {
                       try {
-                        await updateStatus({ 
-                          id: selectedApp._id, 
-                          l0Reviewer: e.target.value 
+                        await updateStatus({
+                          id: selectedApp._id,
+                          l0Reviewer: e.target.value
                         }).unwrap();
                         toast.success('L0 Reviewer assigned');
                         // Optimistically update or refetch handled by tag invalidation
@@ -365,7 +414,7 @@ export default function ApplicationManager() {
                       }
                     }}
                   >
-                     <MenuItem value=""><em>None</em></MenuItem>
+                    <MenuItem value=""><em>None</em></MenuItem>
                     {approvers.map((user: any) => (
                       <MenuItem key={user._id} value={user._id}>{user.name}</MenuItem>
                     ))}
@@ -380,9 +429,9 @@ export default function ApplicationManager() {
                     value={selectedApp.medium?._id || selectedApp.medium || ''}
                     onChange={async (e) => {
                       try {
-                        await updateStatus({ 
-                          id: selectedApp._id, 
-                          medium: e.target.value 
+                        await updateStatus({
+                          id: selectedApp._id,
+                          medium: e.target.value
                         }).unwrap();
                         toast.success('L1 Reviewer assigned');
                       } catch (err) {
@@ -405,9 +454,9 @@ export default function ApplicationManager() {
                     value={selectedApp.to?._id || selectedApp.to || ''}
                     onChange={async (e) => {
                       try {
-                        await updateStatus({ 
-                          id: selectedApp._id, 
-                          to: e.target.value 
+                        await updateStatus({
+                          id: selectedApp._id,
+                          to: e.target.value
                         }).unwrap();
                         toast.success('L2 Reviewer assigned');
                       } catch (err) {
@@ -484,10 +533,10 @@ export default function ApplicationManager() {
                   <LucideMessageSquare size={14} />
                   Admin Feedback
                 </Typography>
-                <TextField 
-                  fullWidth 
-                  multiline 
-                  rows={2} 
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={2}
                   size="small"
                   placeholder="Provide reasons for approval or rejection..."
                   sx={{ mt: 0.5 }}
@@ -499,17 +548,17 @@ export default function ApplicationManager() {
           )}
         </DialogContent>
         <DialogActions sx={{ p: 2, borderTop: '1px solid #f1f5f9', bgcolor: '#f8fafc' }}>
-          <Button 
-            startIcon={<LucidePrinter size={16} />} 
-            onClick={() => window.print()} 
-            size="small" 
+          <Button
+            startIcon={<LucidePrinter size={16} />}
+            onClick={() => window.print()}
+            size="small"
             sx={{ mr: 1, color: '#475569' }}
           >
             Print
           </Button>
           <Button onClick={() => setOpenReviewDialog(false)} size="small" sx={{ color: '#64748b' }}>Cancel</Button>
           <Box sx={{ flexGrow: 1 }} />
-          
+
           {selectedApp && (
             <>
               {/* L0 Review Stage */}
@@ -524,11 +573,11 @@ export default function ApplicationManager() {
               {selectedApp.status === APPLICATION_STATUS.PENDING_L1 && canApproveL1 && (
                 <Stack direction="row" spacing={1}>
                   <Button variant="outlined" color="error" size="small" onClick={() => handleStageApproval('l1', 'REJECTED')}>Reject L1</Button>
-                  <Button 
-                    variant="contained" 
-                    color="primary" 
-                    size="small" 
-                    onClick={() => handleStageApproval('l1', 'APPROVED')} 
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    size="small"
+                    onClick={() => handleStageApproval('l1', 'APPROVED')}
                     startIcon={<LucideCheckCircle size={16} />}
                     disabled={showSignatureWarning}
                   >
@@ -541,11 +590,11 @@ export default function ApplicationManager() {
               {selectedApp.status === APPLICATION_STATUS.PENDING_L2 && canApproveL2 && (
                 <Stack direction="row" spacing={1}>
                   <Button variant="outlined" color="error" size="small" onClick={() => handleStageApproval('l2', 'REJECTED')}>Reject L2</Button>
-                  <Button 
-                    variant="contained" 
-                    color="success" 
-                    size="small" 
-                    onClick={() => handleStageApproval('l2', 'APPROVED')} 
+                  <Button
+                    variant="contained"
+                    color="success"
+                    size="small"
+                    onClick={() => handleStageApproval('l2', 'APPROVED')}
                     startIcon={<LucideCheckCircle size={16} />}
                     disabled={showSignatureWarning}
                   >
@@ -559,9 +608,9 @@ export default function ApplicationManager() {
           {/* Legacy single-stage or admin override if needed (Optional) */}
           {selectedApp?.status === 'PENDING' && (
             <>
-              <Button 
-                variant="outlined" 
-                color="error" 
+              <Button
+                variant="outlined"
+                color="error"
                 size="small"
                 startIcon={<LucideXCircle size={16} />}
                 disabled={isUpdating}
@@ -570,9 +619,9 @@ export default function ApplicationManager() {
               >
                 Reject
               </Button>
-              <Button 
-                variant="contained" 
-                color="success" 
+              <Button
+                variant="contained"
+                color="success"
                 size="small"
                 startIcon={<LucideCheckCircle size={16} />}
                 disabled={isUpdating}
@@ -637,7 +686,7 @@ export default function ApplicationManager() {
               <Typography variant="subtitle2" fontWeight={800} sx={{ mb: 4, textTransform: 'uppercase', letterSpacing: 1 }}>
                 Approval & Endorsement
               </Typography>
-              
+
               <Stack direction="row" spacing={4} justifyContent="space-between" sx={{ mt: 4 }}>
                 {/* L1 Signature */}
                 <Box sx={{ flex: 1, textAlign: 'center', p: 2, border: '1px solid #e2e8f0', borderRadius: 2 }}>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Box, Container, Grid, Typography, Button, Stack, Paper } from '@mui/material';
 import Link from 'next/link';
 import gsap from 'gsap';
@@ -11,8 +11,8 @@ if (typeof window !== 'undefined') {
 }
 import { useKeenSlider } from 'keen-slider/react';
 import 'keen-slider/keen-slider.min.css';
-import { 
-  LucideGraduationCap, 
+import {
+  LucideGraduationCap,
   LucideDatabase,
   LucideCpu,
   LucideGlobe,
@@ -66,6 +66,7 @@ const RESEARCH_AREAS = [
 ];
 
 export default function ResearchAreas() {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [loaded, setLoaded] = useState(false);
   const [pause, setPause] = useState(false);
@@ -94,18 +95,21 @@ export default function ResearchAreas() {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.from('.research-card', {
-        y: 40,
-        opacity: 0,
-        duration: 0.8,
-        stagger: 0.15,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: '.research-trigger',
-          start: 'top 80%',
-        }
-      });
-    }, sliderRef);
+      const cards = gsap.utils.toArray('.research-card');
+      if (cards.length > 0) {
+        gsap.from(cards, {
+          y: 40,
+          opacity: 0,
+          duration: 0.8,
+          stagger: 0.15,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: '.research-trigger',
+            start: 'top 80%',
+          }
+        });
+      }
+    }, containerRef);
 
     let interval: NodeJS.Timeout;
     if (!pause && instanceRef.current) {
@@ -126,10 +130,10 @@ export default function ResearchAreas() {
   ];
 
   return (
-    <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: '#ffffff', position: 'relative', overflow: 'hidden' }}>
+    <Box ref={containerRef} sx={{ py: { xs: 6, md: 10 }, bgcolor: '#ffffff', position: 'relative', overflow: 'hidden' }}>
       {/* Decorative Background Pattern */}
-      <Box 
-        sx={{ 
+      <Box
+        sx={{
           position: 'absolute',
           right: '-5%',
           bottom: '-10%',
@@ -153,11 +157,11 @@ export default function ResearchAreas() {
         <Grid container spacing={8} alignItems="center">
           {/* Left Content */}
           <Grid size={{ xs: 12, md: 4.5 }}>
-            <Typography 
-              variant="h2" 
-              sx={{ 
-                fontWeight: 900, 
-                color: '#1e293b', 
+            <Typography
+              variant="h2"
+              sx={{
+                fontWeight: 900,
+                color: '#1e293b',
                 mb: 3,
                 fontSize: { xs: '2rem', sm: '2.8rem', md: '3.5rem' },
                 letterSpacing: '-0.02em',
@@ -166,11 +170,11 @@ export default function ResearchAreas() {
             >
               Research Areas
             </Typography>
-            <Typography 
-              variant="body1" 
-              sx={{ 
-                color: '#64748b', 
-                fontSize: '1.1rem', 
+            <Typography
+              variant="body1"
+              sx={{
+                color: '#64748b',
+                fontSize: '1.1rem',
                 lineHeight: 1.8,
                 mb: 5,
                 textAlign: 'justify'
@@ -178,11 +182,11 @@ export default function ResearchAreas() {
             >
               From developing cyber security solutions to recommending potential medicine through AI, our researchers solve problems that impact the world. Our expertise spans multiple disciplines, including Algorithms and Theory, AI and Machine Learning, Bioinformatics, Cyber Security, Database and Data Science, Natural Language Processing, Software Engineering, and Systems and Networking.
             </Typography>
-            <Button 
+            <Button
               component={Link} // Link added
               href="/research" // Href added
-              variant="contained" 
-              sx={{ 
+              variant="contained"
+              sx={{
                 bgcolor: '#991b1b', // Dark red as in image
                 color: '#fff',
                 px: 4,
@@ -228,21 +232,21 @@ export default function ResearchAreas() {
                             <Box sx={{ color: '#1e293b', mb: 3 }}>
                               <area.icon size={32} strokeWidth={1.5} />
                             </Box>
-                            <Typography 
-                              variant="h5" 
-                              sx={{ 
-                                fontWeight: 800, 
-                                color: '#1e293b', 
+                            <Typography
+                              variant="h5"
+                              sx={{
+                                fontWeight: 800,
+                                color: '#1e293b',
                                 mb: 2,
                                 fontSize: { xs: '1.2rem', sm: '1.4rem' }
                               }}
                             >
                               {area.title}
                             </Typography>
-                            <Typography 
-                              variant="body1" 
-                              sx={{ 
-                                color: '#64748b', 
+                            <Typography
+                              variant="body1"
+                              sx={{
+                                color: '#64748b',
                                 lineHeight: 1.7,
                                 fontSize: '1rem'
                               }}
@@ -259,10 +263,10 @@ export default function ResearchAreas() {
 
               {/* Slider Dots */}
               {loaded && (
-                <Stack 
-                  direction="row" 
-                  spacing={1} 
-                  justifyContent="center" 
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  justifyContent="center"
                   sx={{ mt: 6 }}
                 >
                   {slides.map((_, idx) => (

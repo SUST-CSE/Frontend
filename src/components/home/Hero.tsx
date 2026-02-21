@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Box, Container, Typography, Button, Stack, IconButton } from '@mui/material';
 import Image from 'next/image';
 import gsap from 'gsap';
-import { LucideChevronRight, LucideTerminal, LucideChevronLeft, LucideChevronRight as LucideChevronRightIcon } from 'lucide-react';
+import { LucideChevronRight, LucideTerminal, LucideChevronLeft } from 'lucide-react';
 import { useGetHomepageQuery } from '@/features/content/contentApi';
 import { useKeenSlider } from 'keen-slider/react';
 import 'keen-slider/keen-slider.min.css';
@@ -22,10 +22,10 @@ interface HeroSlide {
 export default function Hero() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [loaded, setLoaded] = useState(false);
-  
+
   const { data: homepageData } = useGetHomepageQuery({});
   const heroSlides = (homepageData?.data?.heroSlides as HeroSlide[]) || [];
-  
+
   // Static content as fallback if no slides from DB
   const DEFAULT_SLIDES = [
     {
@@ -109,25 +109,25 @@ export default function Hero() {
       <Box ref={sliderRef} className="keen-slider" sx={{ height: '100%' }}>
         {slidesToRender.map((slide: HeroSlide, idx: number) => {
           return (
-            <Box 
-              key={idx} 
-              className="keen-slider__slide" 
-              sx={{ 
-                position: 'relative', 
+            <Box
+              key={idx}
+              className="keen-slider__slide"
+              sx={{
+                position: 'relative',
                 height: '100%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
               }}
             >
-              <Image 
-                src={slide.image} 
-                alt={`Slide ${idx + 1}`} 
+              <Image
+                src={slide.image}
+                alt={`Slide ${idx + 1}`}
                 fill
                 priority={idx === 0}
                 unoptimized={true}
                 className={`slide-image-${idx}`}
-                style={{ 
+                style={{
                   objectFit: 'cover',
                   objectPosition: 'center',
                   opacity: 1.0
@@ -147,11 +147,11 @@ export default function Hero() {
               />
 
               {/* Content Layer (Inside Slide) */}
-              <Container 
-                maxWidth="lg" 
+              <Container
+                maxWidth="lg"
                 className={`slide-content-${idx}`}
-                sx={{ 
-                  position: 'relative', 
+                sx={{
+                  position: 'relative',
                   zIndex: 10,
                   height: '100%',
                   display: 'flex',
@@ -159,29 +159,29 @@ export default function Hero() {
                 }}
               >
                 <Box sx={{ maxWidth: 850 }}>
-                  <Stack 
-                    direction="row" 
-                    spacing={1.5} 
-                    alignItems="center" 
+                  <Stack
+                    direction="row"
+                    spacing={1.5}
+                    alignItems="center"
                     sx={{ mb: 4 }}
                     className="animate-item"
                   >
-                    <Box 
-                      sx={{ 
-                        p: 0.8, 
-                        borderRadius: 1.5, 
-                        bgcolor: 'rgba(255, 255, 255, 0.1)', 
+                    <Box
+                      sx={{
+                        p: 0.8,
+                        borderRadius: 1.5,
+                        bgcolor: 'rgba(255, 255, 255, 0.1)',
                         display: 'flex',
                         border: '1px solid rgba(255, 255, 255, 0.2)'
                       }}
                     >
                       <LucideTerminal size={16} color="#ffffff" />
                     </Box>
-                    <Typography 
-                      variant="overline" 
-                      sx={{ 
-                        fontWeight: 800, 
-                        letterSpacing: 3, 
+                    <Typography
+                      variant="overline"
+                      sx={{
+                        fontWeight: 800,
+                        letterSpacing: 3,
                         color: '#ffffff',
                         fontSize: '0.85rem'
                       }}
@@ -204,7 +204,7 @@ export default function Hero() {
                       fontFamily: 'Inter, sans-serif'
                     }}
                   >
-                     {slide.title}
+                    {slide.title}
                   </Typography>
 
                   <Typography
@@ -225,9 +225,9 @@ export default function Hero() {
                     {slide.description}
                   </Typography>
 
-                  <Stack 
-                    direction={{ xs: 'column', sm: 'row' }} 
-                    spacing={2.5} 
+                  <Stack
+                    direction={{ xs: 'column', sm: 'row' }}
+                    spacing={2.5}
                     className="animate-item"
                   >
                     {slide.ctaLink && slide.ctaText && (
@@ -240,7 +240,7 @@ export default function Hero() {
                         sx={{
                           bgcolor: '#ffffff',
                           color: '#000000',
-                          '&:hover': { 
+                          '&:hover': {
                             bgcolor: '#f1f5f9',
                             transform: 'translateY(-2px)'
                           },
@@ -263,7 +263,7 @@ export default function Hero() {
                         sx={{
                           borderColor: 'rgba(255,255,255,0.6)',
                           color: '#ffffff',
-                          '&:hover': { 
+                          '&:hover': {
                             borderColor: '#ffffff',
                             bgcolor: 'rgba(255,255,255,0.1)',
                             transform: 'translateY(-2px)'
@@ -327,7 +327,7 @@ export default function Hero() {
               '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' }
             }}
           >
-            <LucideChevronRightIcon size={28} />
+            <LucideChevronRight size={28} />
           </IconButton>
 
           {/* Dots Pagination */}

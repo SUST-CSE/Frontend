@@ -1,13 +1,13 @@
 'use client';
 
 import { useGetBlogsQuery } from '@/features/blog/blogApi';
-import { 
-  Box, 
-  Container, 
-  Typography, 
-  Stack, 
-  Paper, 
-  Button, 
+import {
+  Box,
+  Container,
+  Typography,
+  Stack,
+  Paper,
+  Button,
   Avatar,
   Chip,
   Skeleton,
@@ -45,7 +45,7 @@ export default function BlogSection() {
       spacing: 20,
     },
     breakpoints: {
-      '(min-width: 640px)': {
+      '(min-width: 768px)': {
         slides: { perView: 2, spacing: 20 },
       },
       '(min-width: 1024px)': {
@@ -77,11 +77,11 @@ export default function BlogSection() {
       <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: '#f8fafc' }}>
         <Container maxWidth="lg">
           <Stack direction="row" justifyContent="space-between" alignItems="flex-end" sx={{ mb: 6 }}>
-             <Box>
-                <Skeleton width={120} height={20} sx={{ mb: 1 }} />
-                <Skeleton width={250} height={48} />
-             </Box>
-             <Skeleton width={100} height={36} />
+            <Box>
+              <Skeleton width={120} height={20} sx={{ mb: 1 }} />
+              <Skeleton width={250} height={48} />
+            </Box>
+            <Skeleton width={100} height={36} />
           </Stack>
           <Grid container spacing={3}>
             {[1, 2, 3].map((i) => (
@@ -121,13 +121,13 @@ export default function BlogSection() {
                 Latest Stories
               </Typography>
             </Stack>
-            <Typography variant="h3" fontWeight={900} color="#0f172a">
+            <Typography variant="h3" sx={{ fontWeight: 900, color: '#0f172a', fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' } }}>
               From Our <span style={{ color: '#16a34a' }}>Blog</span>
             </Typography>
           </Box>
-          <Button 
-            component={Link} 
-            href="/blogs" 
+          <Button
+            component={Link}
+            href="/blogs"
             endIcon={<LucideArrowRight size={18} />}
             sx={{ color: '#0f172a', fontWeight: 700, fontSize: '1rem' }}
           >
@@ -160,29 +160,29 @@ export default function BlogSection() {
                 }}
               >
                 <Box sx={{ flexGrow: 1 }}>
-                  <Chip 
-                    label={blog.category} 
-                    size="small" 
-                    sx={{ 
+                  <Chip
+                    label={blog.category}
+                    size="small"
+                    sx={{
                       mb: 2,
-                      fontWeight: 800, 
+                      fontWeight: 800,
                       fontSize: '0.7rem',
                       bgcolor: '#dcfce7',
                       color: '#166534',
                       borderRadius: 1
-                    }} 
+                    }}
                   />
-                  <Typography variant="h6" fontWeight={800} color="#0f172a" sx={{ 
-                    mb: 2, 
+                  <Typography variant="h6" fontWeight={800} color="#0f172a" sx={{
+                    mb: 2,
                     lineHeight: 1.3,
                     display: '-webkit-box',
                     overflow: 'hidden',
                     WebkitBoxOrient: 'vertical',
-                    WebkitLineClamp: 2 
+                    WebkitLineClamp: 2
                   }}>
                     {blog.title}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ 
+                  <Typography variant="body2" color="text.secondary" sx={{
                     mb: 3,
                     display: '-webkit-box',
                     overflow: 'hidden',
@@ -195,8 +195,8 @@ export default function BlogSection() {
                 </Box>
 
                 <Stack direction="row" spacing={1.5} alignItems="center" sx={{ pt: 3, borderTop: '1px solid #f1f5f9' }}>
-                  <Avatar 
-                    src={blog.author?.profileImage} 
+                  <Avatar
+                    src={blog.author?.profileImage}
                     alt={blog.author?.name}
                     sx={{ width: 32, height: 32, bgcolor: '#0f172a', fontSize: '0.8rem', fontWeight: 700 }}
                   >

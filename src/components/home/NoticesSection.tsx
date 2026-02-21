@@ -1,13 +1,13 @@
 'use client';
 
 import { useGetNoticesQuery } from '@/features/content/contentApi';
-import { 
-  Box, 
-  Container, 
-  Typography, 
-  Stack, 
-  Paper, 
-  Button, 
+import {
+  Box,
+  Container,
+  Typography,
+  Stack,
+  Paper,
+  Button,
   Tooltip,
   Skeleton,
   Grid
@@ -77,11 +77,11 @@ export default function NoticesSection() {
       <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: '#ffffff' }}>
         <Container maxWidth="lg">
           <Stack direction="row" justifyContent="space-between" alignItems="flex-end" sx={{ mb: 6 }}>
-             <Box>
-                <Skeleton width={120} height={20} sx={{ mb: 1 }} />
-                <Skeleton width={250} height={48} />
-             </Box>
-             <Skeleton width={100} height={36} />
+            <Box>
+              <Skeleton width={120} height={20} sx={{ mb: 1 }} />
+              <Skeleton width={250} height={48} />
+            </Box>
+            <Skeleton width={100} height={36} />
           </Stack>
           <Grid container spacing={3}>
             {[1, 2, 3].map((i) => (
@@ -117,13 +117,13 @@ export default function NoticesSection() {
                 Stay Updated
               </Typography>
             </Stack>
-            <Typography variant="h3" fontWeight={900} color="#0f172a">
+            <Typography variant="h3" sx={{ fontWeight: 900, color: '#0f172a', fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' } }}>
               Latest <span style={{ color: '#16a34a' }}>Notices</span>
             </Typography>
           </Box>
-          <Button 
-            component={Link} 
-            href="/notices" 
+          <Button
+            component={Link}
+            href="/notices"
             endIcon={<LucideArrowRight size={18} />}
             sx={{ color: '#0f172a', fontWeight: 700, fontSize: '1rem' }}
           >
@@ -156,18 +156,18 @@ export default function NoticesSection() {
                 }}
               >
                 <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                  <Typography variant="h6" fontWeight={800} color="#0f172a" sx={{ 
-                    mb: 1.5, 
+                  <Typography variant="h6" fontWeight={800} color="#0f172a" sx={{
+                    mb: 1.5,
                     lineHeight: 1.2,
                     display: '-webkit-box',
                     overflow: 'hidden',
                     WebkitBoxOrient: 'vertical',
-                    WebkitLineClamp: 2 
+                    WebkitLineClamp: 2
                   }}>
                     {notice.title}
                   </Typography>
-                  
-                  <Typography variant="body2" color="text.secondary" sx={{ 
+
+                  <Typography variant="body2" color="text.secondary" sx={{
                     display: '-webkit-box',
                     overflow: 'hidden',
                     WebkitBoxOrient: 'vertical',
@@ -199,24 +199,24 @@ export default function NoticesSection() {
                       )}
                     </Stack>
 
-                      <Tooltip title="View Details">
-                        <Box 
-                          sx={{ 
-                            p: 1,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: '#16a34a', 
-                            borderRadius: '50%',
-                            border: '1px solid #e2e8f0', 
-                            transition: 'all 0.2s ease',
-                            '&:hover': { bgcolor: '#f0fdf4', borderColor: '#16a34a' } 
-                          }}
-                        >
-                          <LucideExternalLink size={18} />
-                        </Box>
-                      </Tooltip>
-                    </Stack>
+                    <Tooltip title="View Details">
+                      <Box
+                        sx={{
+                          p: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#16a34a',
+                          borderRadius: '50%',
+                          border: '1px solid #e2e8f0',
+                          transition: 'all 0.2s ease',
+                          '&:hover': { bgcolor: '#f0fdf4', borderColor: '#16a34a' }
+                        }}
+                      >
+                        <LucideExternalLink size={18} />
+                      </Box>
+                    </Tooltip>
+                  </Stack>
                 </Box>
               </Paper>
             </Box>

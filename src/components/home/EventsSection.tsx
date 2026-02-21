@@ -1,15 +1,15 @@
 'use client';
 
 import { useGetEventsQuery } from '@/features/event/eventApi';
-import { 
-  Box, 
-  Container, 
-  Typography, 
-  Stack, 
-  Card, 
-  CardContent, 
-  CardMedia, 
-  Button, 
+import {
+  Box,
+  Container,
+  Typography,
+  Stack,
+  Card,
+  CardContent,
+  CardMedia,
+  Button,
   Paper,
   Chip,
   IconButton,
@@ -77,11 +77,11 @@ export default function EventsSection() {
       <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: '#f8fafc' }}>
         <Container maxWidth="lg">
           <Stack direction="row" justifyContent="space-between" alignItems="flex-end" sx={{ mb: 6 }}>
-             <Box>
-                <Skeleton width={120} height={20} sx={{ mb: 1 }} />
-                <Skeleton width={250} height={48} />
-             </Box>
-             <Skeleton width={150} height={36} />
+            <Box>
+              <Skeleton width={120} height={20} sx={{ mb: 1 }} />
+              <Skeleton width={250} height={48} />
+            </Box>
+            <Skeleton width={150} height={36} />
           </Stack>
           <Grid container spacing={3}>
             {[1, 2, 3].map((i) => (
@@ -121,21 +121,21 @@ export default function EventsSection() {
                 Join Us
               </Typography>
             </Stack>
-            <Typography variant="h3" fontWeight={900} color="#0f172a">
+            <Typography variant="h3" sx={{ fontWeight: 900, color: '#0f172a', fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' } }}>
               Latest <span style={{ color: '#2563eb' }}>Events</span>
             </Typography>
           </Box>
           <Stack direction="row" spacing={1} alignItems="center">
             {loaded && (
               <Stack direction="row" spacing={1} sx={{ mr: 2 }}>
-                <IconButton 
+                <IconButton
                   onClick={(e) => { e.stopPropagation(); instanceRef.current?.prev(); }}
                   disabled={!canPrev}
                   sx={{ border: '1px solid #e2e8f0', bgcolor: '#ffffff' }}
                 >
                   <LucideChevronLeft size={20} />
                 </IconButton>
-                <IconButton 
+                <IconButton
                   onClick={(e) => { e.stopPropagation(); instanceRef.current?.next(); }}
                   disabled={!canNext}
                   sx={{ border: '1px solid #e2e8f0', bgcolor: '#ffffff' }}
@@ -144,9 +144,9 @@ export default function EventsSection() {
                 </IconButton>
               </Stack>
             )}
-            <Button 
-              component={Link} 
-              href="/events" 
+            <Button
+              component={Link}
+              href="/events"
               endIcon={<LucideArrowRight size={18} />}
               sx={{ color: '#0f172a', fontWeight: 700, fontSize: '1rem' }}
             >
@@ -163,16 +163,16 @@ export default function EventsSection() {
           <Box ref={sliderRef} className="keen-slider" sx={{ alignItems: 'stretch' }}>
             {sortedEvents.map((event) => (
               <Box key={event._id} className="keen-slider__slide" sx={{ display: 'flex', height: 'auto', p: 1 }}>
-                <Card 
+                <Card
                   component={Link}
                   href={`/events/${event._id}`}
                   elevation={0}
-                  sx={{ 
+                  sx={{
                     width: '100%',
                     height: '100%',
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    borderRadius: 4, 
+                    display: 'flex',
+                    flexDirection: 'column',
+                    borderRadius: 4,
                     border: '1px solid #e2e8f0',
                     textDecoration: 'none',
                     transition: 'all 0.3s ease',
@@ -189,38 +189,38 @@ export default function EventsSection() {
                       component="img"
                       image={event.images && event.images.length > 0 ? event.images[0] : 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&q=80'}
                       alt={event.title}
-                      sx={{ 
-                        height: 240, 
+                      sx={{
+                        height: 240,
                         width: '100%',
                         objectFit: 'cover',
-                        display: 'block' 
+                        display: 'block'
                       }}
                     />
-                    <Chip 
-                      label={event.category} 
+                    <Chip
+                      label={event.category}
                       size="small"
-                      sx={{ 
-                        position: 'absolute', 
-                        top: 16, 
-                        right: 16, 
-                        bgcolor: '#ffffff', 
-                        color: '#0f172a', 
+                      sx={{
+                        position: 'absolute',
+                        top: 16,
+                        right: 16,
+                        bgcolor: '#ffffff',
+                        color: '#0f172a',
                         fontWeight: 800,
                         fontSize: '0.7rem'
-                      }} 
+                      }}
                     />
                   </Box>
                   <CardContent sx={{ p: 3, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
                     <Typography variant="subtitle1" fontWeight={800} color="#0f172a" sx={{ lineHeight: 1.2, mb: 1 }}>
                       {event.title}
                     </Typography>
-                    
+
                     <Stack direction="row" spacing={1} alignItems="center" color="text.secondary" sx={{ mb: 2 }}>
                       <LucideMapPin size={14} />
                       <Typography variant="caption" fontWeight={600}>{event.location}</Typography>
                     </Stack>
 
-                    <Typography variant="body2" color="text.secondary" sx={{ 
+                    <Typography variant="body2" color="text.secondary" sx={{
                       display: '-webkit-box',
                       overflow: 'hidden',
                       WebkitBoxOrient: 'vertical',
@@ -253,8 +253,8 @@ export default function EventsSection() {
                       </Stack>
 
                       <Tooltip title="View Details">
-                        <IconButton 
-                          size="small" 
+                        <IconButton
+                          size="small"
                           sx={{ color: '#2563eb', border: '1px solid #e2e8f0', '&:hover': { bgcolor: '#eff6ff', borderColor: '#2563eb' } }}
                         >
                           <LucideExternalLink size={18} />

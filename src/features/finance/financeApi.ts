@@ -28,6 +28,14 @@ export const financeApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Finance'],
     }),
+    adjustBalance: builder.mutation({
+      query: (data) => ({
+        url: '/finance/adjust-balance',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Finance'],
+    }),
 
     // Cost Cycle Endpoints
     createCostRequest: builder.mutation({
@@ -38,22 +46,22 @@ export const financeApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Cost'],
     }),
-    
+
     getMyCostRequests: builder.query({
       query: () => '/finance/cost/my-requests',
       providesTags: ['Cost'],
     }),
-    
+
     getPendingApprovals: builder.query({
       query: () => '/finance/cost/pending-approvals',
       providesTags: ['Cost'],
     }),
-    
+
     getAllCosts: builder.query({
       query: () => '/finance/cost/all',
       providesTags: ['Cost'],
     }),
-    
+
     approveCostRequest: builder.mutation({
       query: ({ id, comment }) => ({
         url: `/finance/cost/approve/${id}`,
@@ -62,7 +70,7 @@ export const financeApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Cost'],
     }),
-    
+
     rejectCostRequest: builder.mutation({
       query: ({ id, reason }) => ({
         url: `/finance/cost/reject/${id}`,
@@ -71,7 +79,7 @@ export const financeApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Cost'],
     }),
-    
+
     addCheckNumber: builder.mutation({
       query: ({ id, checkNumber }) => ({
         url: `/finance/cost/add-check/${id}`,
@@ -95,7 +103,7 @@ export const {
   useGetFinancialSummaryQuery,
   useAddTransactionMutation,
   useDeleteTransactionMutation,
-  
+
   // Cost Hooks
   useCreateCostRequestMutation,
   useGetMyCostRequestsQuery,
@@ -105,4 +113,5 @@ export const {
   useRejectCostRequestMutation,
   useAddCheckNumberMutation,
   useSyncApprovedCostsMutation,
+  useAdjustBalanceMutation,
 } = financeApi;

@@ -1,12 +1,12 @@
 'use client';
 
 import { useGetSocietiesQuery, useGetSocietyMembersQuery } from '@/features/society/societyApi';
-import { 
-  Box, 
-  Container, 
-  Typography, 
-  Stack, 
-  Button, 
+import {
+  Box,
+  Container,
+  Typography,
+  Stack,
+  Button,
   Paper,
   Avatar,
   Skeleton,
@@ -18,7 +18,7 @@ import { LucideArrowRight, LucideUsers, LucideAward } from 'lucide-react';
 import Link from 'next/link';
 import { useKeenSlider } from 'keen-slider/react';
 import 'keen-slider/keen-slider.min.css';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 
 interface ISocietyMember {
   _id: string;
@@ -42,8 +42,9 @@ interface ISociety {
 }
 
 export default function SocietySection() {
+  const containerRef = useRef<HTMLDivElement>(null);
   const { data: societiesData, isLoading: isLoadingSocieties } = useGetSocietiesQuery({});
-  
+
 
   const societies: ISociety[] = societiesData?.data || [];
   const cseSociety = societies.find((s) =>
@@ -88,23 +89,27 @@ export default function SocietySection() {
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
-    
-    // Animate title and cards on scroll
-    gsap.fromTo(
-      '.society-stagger',
-      { y: 50, opacity: 0 },
-      { 
-        y: 0, 
-        opacity: 1, 
-        duration: 1.2, 
-        stagger: 0.2, 
-        ease: 'power4.out',
-        scrollTrigger: {
-          trigger: '.society-trigger',
-          start: 'top 80%',
-        }
+
+    const ctx = gsap.context(() => {
+      const targets = gsap.utils.toArray('.society-stagger');
+      if (targets.length > 0) {
+        gsap.fromTo(
+          targets,
+          { y: 50, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 1.2,
+            stagger: 0.2,
+            ease: 'power4.out',
+            scrollTrigger: {
+              trigger: '.society-trigger',
+              start: 'top 80%',
+            }
+          }
+        );
       }
-    );
+    }, containerRef);
 
     let interval: NodeJS.Timeout;
     if (!pause && internalSlider.current && members.length > 0) {
@@ -112,7 +117,10 @@ export default function SocietySection() {
         internalSlider.current?.next();
       }, timer);
     }
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      ctx.revert();
+    };
   }, [pause, internalSlider, members]);
 
   if (isLoadingSocieties || isLoadingMembers) {
@@ -120,11 +128,11 @@ export default function SocietySection() {
       <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: '#0f172a' }}>
         <Container maxWidth="lg">
           <Stack direction="row" justifyContent="space-between" alignItems="flex-end" sx={{ mb: 8 }}>
-             <Box>
-                <Skeleton width={120} height={20} sx={{ mb: 2, bgcolor: 'rgba(255,255,255,0.05)' }} />
-                <Skeleton width={350} height={60} sx={{ bgcolor: 'rgba(255,255,255,0.05)' }} />
-             </Box>
-             <Skeleton width={180} height={36} sx={{ bgcolor: 'rgba(255,255,255,0.05)' }} />
+            <Box>
+              <Skeleton width={120} height={20} sx={{ mb: 2, bgcolor: 'rgba(255,255,255,0.05)' }} />
+              <Skeleton width={350} height={60} sx={{ bgcolor: 'rgba(255,255,255,0.05)' }} />
+            </Box>
+            <Skeleton width={180} height={36} sx={{ bgcolor: 'rgba(255,255,255,0.05)' }} />
           </Stack>
           <Grid container spacing={3}>
             {[1, 2, 3, 4].map((i) => (
@@ -149,16 +157,16 @@ export default function SocietySection() {
   if (!cseSociety || members.length === 0) return null;
 
   return (
-    <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: '#0f172a', color: '#ffffff', overflow: 'hidden', position: 'relative' }}>
+    <Box ref={containerRef} sx={{ py: { xs: 6, md: 10 }, bgcolor: '#0f172a', color: '#ffffff', overflow: 'hidden', position: 'relative' }}>
       {/* Background decoration */}
-      <Box sx={{ 
-        position: 'absolute', 
-        top: -100, 
-        right: -100, 
-        width: 400, 
-        height: 400, 
-        borderRadius: '50%', 
-        bgcolor: 'rgba(22, 163, 74, 0.1)', 
+      <Box sx={{
+        position: 'absolute',
+        top: -100,
+        right: -100,
+        width: 400,
+        height: 400,
+        borderRadius: '50%',
+        bgcolor: 'rgba(22, 163, 74, 0.1)',
         filter: 'blur(80px)',
         zIndex: 0
       }} />
@@ -172,19 +180,19 @@ export default function SocietySection() {
                 Leadership Team
               </Typography>
             </Stack>
-            <Typography variant="h2" fontWeight={900} sx={{ lineHeight: 1.1 }}>
-              <span style={{color: 'white'}}>Meet Our</span> <span style={{ color: '#16a34a' }}>Society</span>
+            <Typography variant="h2" sx={{ fontWeight: 900, lineHeight: 1.1, fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' } }}>
+              <span style={{ color: 'white' }}>Meet Our</span> <span style={{ color: '#16a34a' }}>Society</span>
             </Typography>
           </Box>
-          <Button 
-            component={Link} 
+          <Button
+            component={Link}
             href={`/societies/${cseSociety._id}`}
             endIcon={<LucideArrowRight size={18} />}
-            sx={{ 
-              color: '#94a3b8', 
-              fontWeight: 700, 
+            sx={{
+              color: '#94a3b8',
+              fontWeight: 700,
               mt: { xs: 2, md: 0 },
-              '&:hover': { color: '#ffffff' } 
+              '&:hover': { color: '#ffffff' }
             }}
           >
             Explore Full Society
@@ -215,21 +223,21 @@ export default function SocietySection() {
                 }}
               >
                 <Stack spacing={2} alignItems="center">
-                <Avatar
-                  src={member.image || member.user?.profileImage}
-                  alt={member.user?.name || 'Member'}
-                  sx={{
-                    width: 120,
-                    height: 120,
-                    border: '4px solid #2563eb',
-                    boxShadow: '0 8px 16px rgba(37,99,235,0.2)'
-                  }}
-                />
-                <Box textAlign="center">
-                  <Typography variant="h6" fontWeight={800} color="#ffffffff">
-                    {member.user?.name || 'Unknown Member'}
-                  </Typography>
-                </Box>
+                  <Avatar
+                    src={member.image || member.user?.profileImage}
+                    alt={member.user?.name || 'Member'}
+                    sx={{
+                      width: 120,
+                      height: 120,
+                      border: '4px solid #16a34a',
+                      boxShadow: '0 8px 16px rgba(22,163,74,0.2)'
+                    }}
+                  />
+                  <Box textAlign="center">
+                    <Typography variant="h6" fontWeight={800} color="#ffffff">
+                      {member.user?.name || 'Unknown Member'}
+                    </Typography>
+                  </Box>
                 </Stack>
 
                 <Typography variant="body2" fontWeight={700} color="#16a34a" sx={{ mb: 1, textTransform: 'uppercase', letterSpacing: 1 }}>

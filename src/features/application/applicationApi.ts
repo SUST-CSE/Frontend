@@ -18,11 +18,22 @@ export const applicationApi = apiSlice.injectEndpoints({
       providesTags: ['Application'],
     }),
     submitApplication: builder.mutation({
-      query: (data) => ({
-        url: '/applications',
-        method: 'POST',
-        body: data,
-      }),
+      query: (data) => {
+        // If data is FormData (file upload), send as-is
+        if (data instanceof FormData) {
+          return {
+            url: '/applications',
+            method: 'POST',
+            body: data,
+          };
+        }
+        // Otherwise send JSON
+        return {
+          url: '/applications',
+          method: 'POST',
+          body: data,
+        };
+      },
       invalidatesTags: ['Application'],
     }),
     updateApplicationStatus: builder.mutation({

@@ -26,9 +26,9 @@ import {
   LucidePlus,
 } from 'lucide-react';
 import { useGetMyApplicationsQuery } from '@/features/application/applicationApi';
-import { 
-  APP_STATUS_COLORS, 
-  APP_TYPE_LABELS 
+import {
+  APP_STATUS_COLORS,
+  APP_TYPE_LABELS
 } from '@/features/application/applicationConstants';
 import Link from 'next/link';
 
@@ -83,10 +83,10 @@ export default function MyApplicationsPage() {
                     </TableCell>
                     <TableCell>{new Date(app.createdAt).toLocaleDateString()}</TableCell>
                     <TableCell>
-                      <Chip 
-                        label={app.status} 
-                        size="small" 
-                        color={APP_STATUS_COLORS[app.status]} 
+                      <Chip
+                        label={app.status}
+                        size="small"
+                        color={APP_STATUS_COLORS[app.status]}
                         sx={{ fontWeight: 800, fontSize: '0.7rem' }}
                       />
                     </TableCell>
@@ -102,7 +102,9 @@ export default function MyApplicationsPage() {
                       )}
                     </TableCell>
                     <TableCell align="right">
-                      <IconButton size="small"><LucideEye size={18} /></IconButton>
+                      <IconButton size="small" component={Link} href={`/applications/${app._id}`}>
+                        <LucideEye size={18} />
+                      </IconButton>
                     </TableCell>
                   </TableRow>
                 ))}
